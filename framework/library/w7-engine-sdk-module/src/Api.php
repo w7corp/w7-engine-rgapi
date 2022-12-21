@@ -59,7 +59,7 @@ class Api
         string $app_id,
         string $app_secret,
         int $account_type = Account::TYPE_NONE,
-        string $base_uri = 'https://www.neww7.com'
+        string $base_uri = 'https://rgapi.w7.cc'
     ) {
         $this->appId       = $app_id;
         $this->appSecret   = $app_secret;

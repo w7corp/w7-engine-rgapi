@@ -1,5 +1,5 @@
 application:
-  name: 独立系统示例应用
+  name: 软擎授权独立系统示例应用
   identifie: w7-engine-rgapi
   version: 1.0.0
   description: 基于微擎2.0开发的独立应用。
