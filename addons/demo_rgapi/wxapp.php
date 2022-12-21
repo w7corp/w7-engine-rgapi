@@ -17,9 +17,9 @@ class Demo_rgapiModuleWxapp extends WeModuleWxapp {
         $this->uid = $_W['openid'];
         $this->uniacid = $_W['uniacid'];
         // 如果需要强制登录 加 下边代码
-        //if (empty($this->uid)) {
-        //    $this->result(41009, '请先登录');
-        //}
+        if (empty($this->uid)) {
+            $this->result(41009, '请先登录');
+        }
     }
 
     public function get($key, $default = null) {
