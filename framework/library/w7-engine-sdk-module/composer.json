@@ -1,0 +1,22 @@
+{
+  "name": "w7/engine-sdk-module",
+  "description": "微擎独立应用开发包",
+  "license": "Apache-2.0",
+  "type": "library",
+  "authors": [
+    {
+      "name": "虞灪",
+      "email": "995645888@qq.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "W7\\Sdk\\Module\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=8.0",
+    "guzzlehttp/guzzle": "^7.0",
+    "ext-openssl": "*"
+  }
+}

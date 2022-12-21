@@ -1,0 +1,417 @@
+{template 'common/header'}
+<ul class="we7-page-tab">
+	<li{if $action == 'setting'} class="active"{/if}><a href="{php echo url('system/setting/basic');}">基本信息</a></li>
+	<li{if $action == 'attachment'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">附件设置</a></li>
+</ul>
+
+<form action="" method="post" class="we7-form form" id="form">
+	<div class="form-group">
+		<div class="col-sm-12">
+			<input type="radio" name="type" id="type-0" value="0" onclick="$('.remote-qiniu').hide();$('.remote-alioss').hide();$('.remote-close').show();$('.remote-cos').hide();" {if empty($remote['type']) || $remote['type'] == '0'} checked="checked" {/if}>
+			<label class="radio-inline" for="type-0">
+				关闭
+			</label>
+			<input type="radio" name="type" id="type-2" value="2" onclick="$('.remote-qiniu').hide();$('.remote-alioss').show();$('.remote-close').hide();$('.remote-cos').hide();" {if !empty($remote['type']) && $remote['type'] == '2'} checked="checked" {/if}>
+			<label class="radio-inline" for="type-2">
+				阿里云OSS <span class="label label-success">推荐，快速稳定</span>
+			</label>
+			<input type="radio" name="type" id="type-3" value="3" onclick="$('.remote-qiniu').show();$('.remote-alioss').hide();$('.remote-close').hide();$('.remote-cos').hide();" {if !empty($remote['type']) && $remote['type'] == '3'} checked="checked" {/if}>
+			<label class="radio-inline" for="type-3">
+				七牛云存储 <span class="label label-success">推荐，快速稳定</span>
+			</label>
+			<input type="radio" name="type" id="type-4" value="4" onclick="$('.remote-qiniu').hide();$('.remote-alioss').hide();$('.remote-close').hide();$('.remote-cos').show();" {if !empty($remote['type']) && $remote['type'] == '4'} checked="checked" {/if}>
+			<label class="radio-inline" for="type-4">
+				腾讯云存储 <span class="label label-success">推荐，快速稳定</span>
+			</label>
+			<span class="help-block"></span>
+		</div>
+	</div>
+	<div class="remote-alioss" {if empty($remote['type']) || $remote['type'] != '2'} style="display:none;" {/if}>
+		<div class="alert alert-info we7-page-alert">
+			<i class="wi wi-info-sign"></i> 启用阿里oss后，请把/attachment目录（不包括此目录及global目录）下的子文件及子目录上传至阿里云oss,当文件大于10g时,建议手动上传
+			<ul class="link-list we7-margin-top-sm">
+				相关工具：<br>
+				<li><a target="_blank" href="http://market.aliyun.com/products/52738003/cmgj000304.html?spm=5176.383663.9.21.faitxp" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.21">cloudfs4oss(ECS挂载文件盘工具)</a></li>
+				<li><a target="_blank" href="http://market.aliyun.com/products/53690006/cmgj000281.html?spm=5176.383663.9.22.faitxp" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.22">官方推荐OSS客户端工具（Windows版）</a></li>
+				<li><a target="_blank" href="http://market.aliyun.com/products/53690006/cmgj000282.html?spm=5176.383663.9.23.faitxp" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.23">官方推荐OSS客户端工具（Mac版）</a></li>
+				<li><a target="_blank" href="http://market.aliyun.com/products/53690006/cmgj000208.html?spm=5176.383663.9.24.faitxp" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.24">Ftp4ossServer（OSS的FTP云工具）</a></li>
+				<li><a target="_blank" href="http://bbs.aliyun.com/read/239565.html?spm=5176.383663.9.25.faitxp&amp;pos=2" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.25">OSS图片服务Demo工具</a></li>
+				<li><a target="_blank" href="http://docs.aliyun.com/?spm=5176.383663.9.26.faitxp#/pub/oss/utilities/osscmd&amp;install" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.26">批量上传工具(Python)版</a></li>
+				<li><a target="_blank" href="https://docs.aliyun.com/?spm=5176.383663.9.27.faitxp#/pub/oss/utilities/oss-import&amp;index" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.27">OSS数据迁移工具-OSS Import</a></li>
+				<li><a target="_blank" href="http://market.aliyun.com/products/52738004/cmfw000394.html?spm=5176.383663.9.28.faitxp" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.28">海量数据迁移至OSS服务</a></li>
+				<li><a target="_blank" href="http://bbs.aliyun.com/read/247023.html?spm=5176.383663.9.29.faitxp" class="we7-margin-left color-default" data-spm-anchor-id="5176.383663.9.29">更多官方推荐工具</a></li>
+			</ul>
+
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">Access Key ID</label>
+			<div class="col-sm-9">
+				<input type="text" name="alioss[key]" class="form-control" value="{if !empty($remote['alioss']['key'])}{$remote['alioss']['key']}{/if}" placeholder="" />
+				<span class="help-block">
+						Access Key ID是您访问阿里云API的密钥，具有该账户完全的权限，请您妥善保管。
+					</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">Access Key Secret</label>
+			<div class="col-sm-9">
+				<input type="text" name="alioss[secret]" class="form-control encrypt" value="{if !empty($remote['alioss']['secret'])}{$remote['alioss']['secret']}{/if}" placeholder="" />
+				<span class="help-block">
+						Access Key Secret是您访问阿里云API的密钥，具有该账户完全的权限，请您妥善保管。(填写完Access Key ID 和 Access Key Secret 后请选择bucket)
+					</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">内网上传</label>
+			<div class="col-sm-9">
+				<input type="radio" name="alioss[internal]" id="type-12" value="1" {if !empty($remote['alioss']['internal']) && $remote['alioss']['internal'] == 1}checked{/if}>
+				<label class="radio-inline" for="type-12">
+					是
+				</label>
+				<input type="radio" name="alioss[internal]" id="type-13" value="0" {if empty($remote['alioss']['internal'])}checked{/if}>
+				<label class="radio-inline" for="type-13">
+					否
+				</label>
+				<span class="help-block">
+							如果此站点使用的是阿里云ecs服务器，并且服务器与bucket在同一地区（如：同在华北一区），您可以选择通过内网上传的方式上传附件，以加快上传速度、节省带宽。
+						</span>
+			</div>
+		</div>
+		<div class="form-group" id="bucket" {if empty($remote['alioss']['key'])}style="display: none;{/if}">
+		<label class="col-sm-2 control-label">Bucket选择</label>
+		<div class="col-sm-9">
+			<select name="alioss[bucket]" class="form-control">
+			</select>
+			<span class="help-block">
+				完善Access Key ID和Access Key Secret资料后可以选择存在的Bucket(请保证bucket为可公共读取的)，否则请手动输入。
+			</span>
+		</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">自定义URL</label>
+			<div class="col-sm-9">
+				<input type="text" name="custom[url]" class="form-control" {if !empty($remote['alioss']['url']) && !strexists($remote['alioss']['url'],'aliyuncs.com') && $remote['type'] == 2}value="{$remote['alioss']['url']}"{/if} placeholder="默认URL不需要填写（默认包含 aliyuncs.com 的URL不显示）"/>
+				<span class="help-block">
+							阿里云oss支持用户自定义访问域名，如果自定义了URL则用自定义的URL，如果未自定义，则用系统生成出来的URL。注：自定义url开头加http://或https://结尾不加 ‘/’例：http://abc.com
+						</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="">
+				<button name="submit" class="btn btn-primary" value="submit">保存配置</button>
+				<button name="button" type="button" class="btn btn-info js-checkremoteoss" value="check">测试配置（无需保存）</button>
+				{if !empty($_W['setting']['remote_complete_info']['type']) && !empty($local_attachment)}
+				<a name="button" class="btn btn-info one-key" href="javascript:;">一键上传</a>
+				{/if}
+				<input type="hidden" name="token" value="{$_W['token']}" />
+			</div>
+		</div>
+	</div>
+	<div class="remote-qiniu" {if empty($remote['type']) || $remote['type'] != '3'} style="display:none;" {/if}>
+		<div class="alert alert-info we7-page-alert">
+			<span><i class="wi wi-info-sign"></i> 启用七牛云存储后，请把/attachment目录（不包括此目录及global目录）下的子文件及子目录上传至七牛云存储, 当文件大于10g时,建议手动上传</span><br>
+			<span><i class="wi wi-info-sign"></i> 七牛云存储，现在不支持上传文件夹</span><br>
+			<ul class="link-list we7-margin-top-sm">
+				<li>相关工具：<a target="_blank" href="https://portal.qiniu.com/signin" class="color-default" >七牛云存储</a></li>
+			</ul>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">Accesskey</label>
+			<div class="col-sm-9">
+				<input type="text" name="qiniu[accesskey]" class="form-control" value="{if !empty($remote['qiniu']['accesskey'])}{$remote['qiniu']['accesskey']}{/if}" placeholder="" />
+				<span class="help-block">用于签名的公钥</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">Secretkey</label>
+			<div class="col-sm-9">
+				<input type="text" name="qiniu[secretkey]" class="form-control encrypt" value="{if !empty($remote['qiniu']['secretkey'])}{$remote['qiniu']['secretkey']}{/if}" placeholder="" />
+				<span class="help-block">用于签名的私钥</span>
+			</div>
+		</div>
+		<div class="form-group" id="qiniubucket">
+			<label class="col-sm-2 control-label">Bucket</label>
+			<div class="col-sm-9">
+				<input type="text" name="qiniu[bucket]" class="form-control" value="{if !empty($remote['qiniu']['bucket'])}{$remote['qiniu']['bucket']}{/if}" placeholder="" />
+				<span class="help-block">请保证bucket为可公共读取的</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">Url</label>
+			<div class="col-sm-9">
+				<input type="text" name="qiniu[url]" class="form-control" value="{if !empty($remote['qiniu']['url'])}{$remote['qiniu']['url']}{/if}" placeholder="" />
+				<span class="help-block">七牛支持用户自定义访问域名。注：url开头加http://或https://结尾不加 ‘/’例：http://abc.com</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="">
+				<button name="submit" class="btn btn-primary" value="submit">保存配置</button>
+				<button name="button" type="button" class="btn btn-info js-checkremoteqiniu" value="check">测试配置（无需保存）</button>
+				{if !empty($_W['setting']['remote_complete_info']['type']) && !empty($local_attachment)}
+				<a name="button" class="btn btn-info one-key" href="javascript:;">一键上传</a>
+				{/if}
+				<input type="hidden" name="token" value="{$_W['token']}" />
+			</div>
+		</div>
+	</div>
+	<div class="remote-cos" {if empty($remote['type']) || $remote['type'] != '4'} style="display:none;" {/if}>
+		<div class="alert alert-info we7-page-alert">
+			<i class="wi wi-info-sign"></i> 启用腾讯云cos对象存储后，请把/attachment目录（不包括此目录及global目录）下的子文件及子目录上传至腾讯云存储, 当文件大于10g时,建议手动上传<br>
+			<ul class="link-list we7-margin-top-sm">
+				<li>相关工具：<a target="_blank" href="https://console.qcloud.com/cos/bucket" class="color-default" >腾讯云存储</a></li>
+			</ul>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">APPID</label>
+			<div class="col-sm-9">
+				<input type="text" name="cos[appid]" class="form-control" value="{if !empty($remote['cos']['appid'])}{$remote['cos']['appid']}{/if}" placeholder="" />
+				<span class="help-block">APPID 是您项目的唯一ID</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">SecretID</label>
+			<div class="col-sm-9">
+				<input type="text" name="cos[secretid]" class="form-control" value="{if !empty($remote['cos']['secretid'])}{$remote['cos']['secretid']}{/if}" placeholder="" />
+				<span class="help-block">SecretID 是您项目的安全密钥，具有该账户完全的权限，请妥善保管</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">SecretKEY</label>
+			<div class="col-sm-9">
+				<input type="text" name="cos[secretkey]" class="form-control encrypt" value="{if !empty($remote['cos']['secretkey'])}{$remote['cos']['secretkey']}{/if}" placeholder="" />
+				<span class="help-block">SecretKEY 是您项目的安全密钥，具有该账户完全的权限，请妥善保管</span>
+			</div>
+		</div>
+		<div class="form-group" id="cosbucket">
+			<label class="col-sm-2 control-label">Bucket</label>
+			<div class="col-sm-9">
+				<input type="text" name="cos[bucket]" class="form-control" value="{if !empty($remote['cos']['bucket'])}{$remote['cos']['bucket']}{/if}" placeholder="" />
+				<span class="help-block">请保证bucket为可公共读取的</span>
+			</div>
+		</div>
+		<div class="form-group" id="cos_local">
+			<label class="col-xs-12 col-sm-2 col-md-2 control-label">bucket所在区域</label>
+			<div class="col-sm-9 col-xs-12">
+				<select class="form-control" name="cos[local]">
+					{loop $cos_bucket_area $bucket_key $bucket_name}
+					<option value="{$bucket_key}" {if !empty($remote['cos']['local']) && $remote['cos']['local'] == $bucket_key}selected{/if}>{$bucket_name}</option>
+					{/loop}
+				</select>
+				<span class="help-block">选择bucket对应的区域</span>
+			</div>
+		</div>
+		<div class="form-group" >
+			<label class="col-sm-2 control-label">Url</label>
+			<div class="col-sm-9">
+				<input type="text" name="cos[url]" class="form-control" value="{if !empty($remote['cos']['url'])}{$remote['cos']['url']}{/if}" placeholder="" />
+				<span class="help-block">腾讯云支持用户自定义访问域名。注：url开头加http://或https://结尾不加 ‘/’例：http://abc.com</span>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="">
+				<button name="submit" class="btn btn-primary" value="submit">保存配置</button>
+				<button name="button" type="button" class="btn btn-info js-checkremotecos" value="check">测试配置（无需保存）</button>
+				{if !empty($_W['setting']['remote_complete_info']['type']) && !empty($local_attachment)}
+				<a name="button" class="btn btn-info one-key" href="javascript:;">一键上传</a>
+				{/if}
+				<input type="hidden" name="token" value="{$_W['token']}" />
+			</div>
+		</div>
+	</div>
+	<div class="remote-close" {if !empty($remote['type'])} style="display:none;" {/if}>
+		<div class="form-group">
+			<div class="">
+				<button name="submit" class="btn btn-primary" value="submit">保存配置</button>
+				<input type="hidden" name="token" value="{$_W['token']}" />
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="name" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">上传文件</div>
+				</div>
+				<div class="modal-body">
+					正在上传....
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+
+<script type="text/javascript">
+	$(function() {
+		$('.encrypt').val(function() {
+			return util.encrypt($(this).val());
+		});
+	});
+	$('.one-key').click(function() {
+		upload_remote();
+		return false;
+	});
+	var upload_remote = function() {
+		$('#name').modal('show');
+		$.post("{php echo url('system/attachment/upload_remote')}", {}, function(data) {
+			var data = $.parseJSON(data);
+			if (data.message.errno == 0) {
+				if (data.message.message.status == 1){
+					upload_remote();
+				}
+				if (data.message.message.status == 0) {
+					util.message('上传完毕', location.reload(), 'success');
+				}
+			}
+
+			if (data.message.errno == -1) {
+				util.message(data.message.message, '', 'success');
+			}
+		});
+	}
+	$('.js-checkremoteoss').on('click', function(){
+		var bucket = $.trim($('select[name="alioss[bucket]"]').val());
+		if (bucket == '') {
+			bucket = $.trim($(':text[name="alioss[bucket]"]').val());
+		}
+		var param = {
+			'key' : $.trim($(':text[name="alioss[key]"]').val()),
+			'secret' : $.trim($(':text[name="alioss[secret]"]').val()),
+			'url'  : $.trim($(':text[name="custom[url]"]').val()),
+			'bucket' : bucket,
+			'internal' : $('[name="alioss[internal]"]:checked').val()
+		};
+		$.post("{php echo url('system/attachment/oss')}", param, function(data) {
+			var data = $.parseJSON(data);
+			if(data.message.errno == 0) {
+				util.message('配置成功');
+				return false;
+			}
+			if(data.message.errno < 0) {
+				util.message(data.message.message);
+				return false;
+			}
+		});
+	});
+	$('.js-checkremoteqiniu').on('click', function(){
+		var key = $.trim($(':text[name="qiniu[accesskey]"]').val());
+		if (key == '') {
+			util.message('请填写Accesskey');
+			return false;
+		}
+		var secret = $.trim($(':text[name="qiniu[secretkey]"]').val());
+		if (secret == '') {
+			util.message('请填写Secretkey');
+			return false;
+		}
+		var param = {
+			'accesskey' : $.trim($(':text[name="qiniu[accesskey]"]').val()),
+			'secretkey' : $.trim($(':text[name="qiniu[secretkey]"]').val()),
+			'url'  : $.trim($(':text[name="qiniu[url]"]').val()),
+			'bucket' :  $.trim($(':text[name="qiniu[bucket]"]').val())
+		};
+		$.post("{php echo url('system/attachment/qiniu')}",param, function(data) {
+			var data = $.parseJSON(data);
+			if(data.message.errno == 0) {
+				util.message('配置成功');
+				return false;
+			}
+			if(data.message.errno < 0) {
+				util.message(data.message.message);
+				return false;
+			}
+		});
+	});
+	$('.js-checkremotecos').on('click', function(){
+		var appid = $.trim($(':text[name="cos[appid]"]').val());
+		if (appid == '') {
+			util.message('请填写APPID');
+			return false;
+		}
+		var secretid = $.trim($(':text[name="cos[secretid]"]').val());
+		if (secretid == '') {
+			util.message('请填写secretid');
+			return false;
+		}
+		var secretkey = $.trim($(':text[name="cos[secretkey]"]').val());
+		if (secretkey == '') {
+			util.message('请填写Secretkey');
+			return false;
+		}
+		var bucket = $.trim($(':text[name="cos[bucket]"]').val());
+		if (bucket == '') {
+			util.message('请填写bucket');
+			return false;
+		}
+		var url = $.trim($(':text[name="cos[url]"]').val());
+		var local = $('[name="cos[local]"]').val();
+		var param = {
+			'appid' : appid,
+			'secretid' : secretid,
+			'secretkey'  : secretkey,
+			'bucket' :  bucket,
+			'url' : url,
+			'local' : local
+		};
+		$.post("{php echo url('system/attachment/cos')}",param, function(data) {
+			var data = $.parseJSON(data);
+			if(data.message.errno == 0) {
+				util.message('配置成功');
+				return false;
+			}
+			if(data.message.errno < 0) {
+				util.message(data.message.message);
+				return false;
+			}
+		});
+	});
+	var alibucket = "{php echo empty($_W['setting']['remote_complete_info']['alioss']['bucket']) ? '' : $_W['setting']['remote_complete_info']['alioss']['bucket'];}";
+
+	var buck =  function() {
+		var key = $(':text[name="alioss[key]"]').val();
+		var secret = $(':text[name="alioss[secret]"]').val();
+		if (secret.indexOf('*') > 0) {
+			secret = "{php echo empty($_W['setting']['remote']['alioss']['secret']) ? '' : $_W['setting']['remote']['alioss']['secret']}";
+		}
+		if (key == '' || secret == '') {
+			$('#bucket').hide();
+			return false;
+		}
+		$.post("{php echo url('system/attachment/buckets')}", {'key' : key, 'secret' : secret}, function(data) {
+			try {
+				var data = $.parseJSON(data);
+			} catch (error) {
+				util.message('Access Key ID 或 Access Key Secret 填写错误，请重新填写。', '', 'error');
+				$('#bucket').hide();
+				$('select[name="alioss[bucket]"]').val('');
+				return false;
+			}
+
+			if (data.message.errno < 0 ) {
+				return false;
+			} else {
+				$('#bucket').show();
+				var bucket = $('select[name="alioss[bucket]"]');
+				bucket.empty();
+				var buckets = eval(data.message.message);
+				for (var i in buckets) {
+					var selected = alibucket == buckets[i]['name'] || alibucket ==  buckets[i]['name'] + '@@' + buckets[i]['location'] ? 'selected' : '';
+					bucket.append('<option value="' + buckets[i]['name'] + '@@' + buckets[i]['location'] + '"' + selected + '>'+buckets[i]['loca_name'] + '</option>');
+				}
+				if($('select').niceSelect) {
+					$('select').niceSelect('update')
+				}
+			}
+		});
+	};
+	buck();
+	$(':text[name="alioss[secret]"]').blur(function() {buck();});
+	$('form').submit(function() {
+		if ($('[name="type"]:checked').val() == 2 && ($('select[name="alioss[bucket]"]').val() == null || $('select[name="alioss[bucket]"]').val() == '')) {
+			util.message('请完善信息后再保存设置！');
+			return false;
+		}
+	});
+</script>
+
+{template 'common/footer'}

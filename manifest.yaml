@@ -1,0 +1,45 @@
+application:
+  name: 独立系统示例应用
+  identifie: demo_v3
+  version: 1.0.0
+  description: 基于微擎2.0开发的独立应用。
+platform:
+  container:
+    containerPort: 8081
+    minNum: 1
+    maxNum: 20
+    cpu: 0.5
+    mem: 1
+    policyType: cpu
+    policyThreshold: 80
+    envParams:
+    customLogs: stdout
+    initialDelaySeconds: 2
+    volumes:
+        -
+          path: /home/WeEngine/attachment
+  supports:
+    - notapp
+  notify_url: ''
+bindings:
+  -
+    title: 创始人端
+    name: founder
+    status: 1
+    framework: iframe
+    menu:
+      -
+        displayorder: 0
+        do: /web/index.php?c=module&a=display&do=display
+        title: 应用管理
+        icon: wxapp-setting
+      -
+        displayorder: 0
+        do: /web/index.php?c=system&a=base-info&do=display
+        title: 系统功能
+        icon: user
+      -
+        displayorder: 0
+        do: /web/index.php?c=system&a=setting&do=basic
+        title: 站点设置
+        icon: apply

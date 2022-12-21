@@ -1,0 +1,57 @@
+{php define('MUI', true);}
+{template 'common/header'}
+<style>
+	.bounced{
+		width: 100%;
+		height: 30%;
+		background: #FFFFFF;
+		display: block;
+		position: fixed;
+		bottom: 0;
+		border-radius: 10px 10px  0px 0px;
+		transform: translateY(100%);
+		transition: transform .5s;
+	z-index: 1000;
+	}
+	.show.bounced{
+		transform: translateY(0%);
+	}
+</style>
+
+<div class="bounced">
+	<div class="" style="height: 30%;">
+		<span style="font-size: 19px;line-height: 68px;margin-left: 4%;font-weight: bold;">获取您的昵称,头像</span>
+	</div>
+	<div class="" style="height: 20%;">
+		<div class="">
+			<div class="content" style="color: #000;margin-left: 4%;">
+				<span style="font-size: 15px;">访问该网页需要您授权昵称头像才可操作</span>
+			</div>
+		</div>
+	</div>
+	<div style="text-align: center;height: 50%;">
+		<div style="margin-top: 6%;">
+			<button type="button" class="mui-btn" style="width: 35%;height: 48px;font-size: 16px;font-weight: bold;margin-left: -10px;" onclick="WeixinJSBridge.call('closeWindow');">拒绝</button>
+			<button type="button" class="mui-btn mui-btn-success" style="width: 35%;height: 48px;font-size: 16px;font-weight: bold;margin-left: 10px;" onclick="openUrl1();">同意</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	window.onload = function() {
+		var mask = mui.createMask(function() {
+			return false;
+		});
+		mask.show();
+		document.getElementsByClassName('bounced')[0].classList.add('show');
+	}
+
+	var mobile = function(e){e.preventDefault();};
+	document.body.style.overflow = 'hidden';
+	document.addEventListener("touchmove", mobile, false);
+
+	var openUrl1 = function() {
+		window.location.href = '{$forward}';
+		return '';
+	}
+</script>

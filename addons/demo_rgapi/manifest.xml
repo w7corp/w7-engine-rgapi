@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://www.we7.cc" versionCode="">
+	<application setting="false">
+		<name><![CDATA[软擎授权示例应用]]></name>
+		<identifie><![CDATA[demo_rgapi]]></identifie>
+		<version><![CDATA[1.0.0]]></version>
+		<type><![CDATA[activity]]></type>
+		<ability><![CDATA[基于软擎授权系统的独立系统示例应用。]]></ability>
+		<description><![CDATA[基于软擎授权系统的独立系统示例应用，供开发者参考]]></description>
+		<author><![CDATA[微擎团队]]></author>
+		<url><![CDATA[]]></url>
+	</application>
+	<platform>
+		<subscribes>
+		</subscribes>
+		<handles>
+			<message type="text" />
+		</handles>
+		<rule embed="false" />
+		<card embed="false" />
+		<supports>
+			<item type="app" />
+			<item type="wxapp" />
+		</supports>
+	</platform>
+	<bindings>
+		<page>
+			<entry title="首页" do="/pages/index/index" state="" direct="" />
+		</page>
+		<cover>
+			<entry title="首页" do="index" state="" direct="false" />
+		</cover>
+		<menu>
+			<entry title="获取accesstoken" do="accesstoken" />
+			<entry title="code换token" do="code_to_token" />
+			<entry title="其他" do="other" />
+			<entry title="小程序-日记列表" do="list" state="" direct="false" />
+		</menu>
+	</bindings>
+	<permissions>
+	</permissions>
+	<install><![CDATA[install.php]]></install>
+	<uninstall><![CDATA[]]></uninstall>
+	<upgrade><![CDATA[]]></upgrade>
+</manifest>

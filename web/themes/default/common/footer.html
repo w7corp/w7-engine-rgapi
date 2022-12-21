@@ -1,0 +1,44 @@
+</div>
+<div class="clearfix"></div>
+<div class="container-fluid footer text-center" role="footer">
+	<div class="friend-link">
+		{if empty($_W['setting']['copyright']['footerright'])}
+		<a href="http://www.w7.cc">微信开发</a>
+		<a href="http://s.w7.cc">微信应用</a>
+		<a href="http://s.w7.cc">小程序开发</a>
+		{else}
+		{$_W['setting']['copyright']['footerright']}
+		{/if}
+	</div>
+	<div class="copyright">{if empty($_W['setting']['copyright']['footerleft'])}Powered by <a href="http://www.w7.cc"><b>微擎</b></a> v{IMS_VERSION} &copy; 2014-{php echo date('Y')} <a href="http://www.w7.cc">www.w7.cc</a>{else}{$_W['setting']['copyright']['footerleft']}{/if}</div>
+
+	<div>
+		{if !empty($_W['setting']['copyright']['company'])}{$_W['setting']['copyright']['company']}{/if}
+		{php $icps = iunserializer($_W['setting']['copyright']['icps'] ?? '');}
+		{if !empty($icps)}
+		{loop $icps $icp}
+		{if strpos($_SERVER['HTTP_HOST'], $icp['domain']) !== false && strpos($_SERVER['HTTP_HOST'], $icp['domain']) !== 0 || $_SERVER['HTTP_HOST'] === $icp['domain']}
+		备案号：<a href="javascript:openUrl('http://beian.miit.gov.cn');">{$icp['icp']}</a>
+		{if !empty($icp['policeicp_location']) && !empty($icp['policeicp_code'])}
+		<a href="javascript:openUrl('http://www.beian.gov.cn/portal/registerSystemInfo?recordcode={php echo $icp['policeicp_code']}')" >
+			&nbsp;&nbsp;<img src="./resource/images/icon-police.png" >
+			{php echo $icp['policeicp_location']}{php echo $icp['policeicp_code']}号
+		</a>
+		{/if}
+		{if !empty($icp['electronic_license'])}
+		<div>
+			<a href="javascript:openUrl('{php echo $icp['electronic_license']')"><img src="https://zzlz.gsxt.gov.cn/images/lz4.png"  height="15px"> 电子执照</a>
+		</div>
+		{/if}
+		{/if}
+		{/loop}
+		{/if}
+	</div>
+</div>
+</div>
+
+</div>
+</div>
+{template 'common/footer-base'}
+</body>
+</html>

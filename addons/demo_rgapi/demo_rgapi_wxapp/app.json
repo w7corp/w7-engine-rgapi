@@ -1,0 +1,26 @@
+{
+  "pages": [
+    "demo_rgapi/pages/index/index",
+    "demo_rgapi/pages/add/add",
+    "demo_rgapi/pages/edit/edit"
+  ],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "微擎",
+    "navigationBarBackgroundColor": "#000",
+    "backgroundColor": "#f5f5f5",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "list": [
+      {
+        "pagePath": "demo_rgapi/pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "demo_rgapi/pages/add/add",
+        "text": "新增"
+      }
+    ]
+  }
+}

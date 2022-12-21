@@ -1,0 +1,66 @@
+<view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
+    <form bindsubmit='add'>
+    <view class="page__hd">
+        <view class="page__title">Input</view>
+        <view class="page__desc">添加日记</view>
+    </view>
+    <view class="page__bd">
+        <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">错误提示</view>
+
+        <view class="weui-cells__title">表单</view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">日记标题</view> 
+                </view>
+                <view class="weui-cell__bd">
+                    <input class="weui-input" placeholder="请输入日记标题" name='title' />
+                </view>
+            </view>
+            
+        </view>
+       
+
+
+        <view class="weui-cells__title">日记内容</view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell">
+                <view class="weui-cell__bd">
+                    <textarea class="weui-textarea" bin placeholder="请输入日记内容" name='content' style="height: 3.3em" />
+                    <view class="weui-textarea-counter"></view>
+                </view>
+            </view>
+        </view>
+
+          <view class="weui-cells">
+            <view class="weui-cell">
+                <view class="weui-cell__bd">
+                    <view class="weui-uploader">
+                        <view class="weui-uploader__hd">
+                            <view class="weui-uploader__title">图片上传</view>
+                            <view class="weui-uploader__info">1</view>
+                        </view>
+                        <view class="weui-uploader__bd">
+                            <view class="weui-uploader__files" id="uploaderFiles">
+                                <view class="weui-uploader__file" bindtap="previewImage" >
+                                        <image class="weui-uploader__img" src="{{image}}" mode="aspectFill" />
+                                </view>
+                                <view class="weui-uploader__file">
+                                    <image class="weui-uploader__img" mode="aspectFill" />
+                                </view>
+                            </view>
+                            <view class="weui-uploader__input-box">
+                                <view class="weui-uploader__input" bindtap="chooseImage"></view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>            
+
+        <view class="weui-btn-area">
+            <button class="weui-btn" type="primary" form-type='submit'>添加日记</button>
+        </view>
+    </view>
+    </form>
+</view>

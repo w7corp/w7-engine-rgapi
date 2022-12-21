@@ -1,0 +1,17 @@
+<view wx:if="{{tabBar}}" class="we7-bottom" style="background-color:{{tabBar.backgroundColor}};border-color:{{tabBar.borderStyle}}">
+	<block wx:for="{{tabBar.list}}" wx:key="{{index}}">
+		<view class="we7-bottom-item" wx:if="{{item.pageUrl == ('/' + thisurl)}}" hover-class="active">
+		<navigator url="{{item.pagePath}}" open-type="redirect" hover-class="active">
+			<image src="{{item.selectedIconPath}}" mode="widthFix" class="item-img"></image>
+			<view class="item-text" style="color: {{tabBar.selectedColor}};">{{item.text}}</view>
+		</navigator>
+		</view>
+		<view class="we7-bottom-item" wx:else hover-class="active">
+		<navigator url="{{item.pagePath}}" open-type="redirect" hover-class="active">
+			<image src="{{item.iconPath}}" mode="widthFix" class="item-img"></image>
+			<view class="item-text" style="color: {{tabBar.tabBarcolor}}">{{item.text}}</view>
+		</navigator>
+		</view>
+	</block>
+</view>
+<view class="we7-bottom-placeholder"></view>

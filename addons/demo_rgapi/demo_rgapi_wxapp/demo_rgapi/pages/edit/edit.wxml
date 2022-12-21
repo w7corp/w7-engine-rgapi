@@ -1,0 +1,40 @@
+<view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
+    <form bindsubmit='edit'>
+    <view class="page__hd">
+        <view class="page__title">Input</view>
+        <view class="page__desc">编辑日记</view>
+    </view>
+    <view class="page__bd">
+        <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">错误提示</view>
+
+        <view class="weui-cells__title">日记标题</view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">日记标题</view>
+                </view>
+                <view class="weui-cell__bd">
+                    <input class="weui-input" placeholder="请输入日记标题" name='title' value='{{riji.title}}' />
+                </view>
+            </view>
+        </view>
+       
+
+        <view class="weui-cells__title">日记内容</view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell">
+                <view class="weui-cell__bd">
+                    <textarea class="weui-textarea" bin placeholder="请输入日记内容" value='{{riji.content}}' name='content' style="height: 3.3em" />
+                    <view class="weui-textarea-counter">0/200</view>
+                </view>
+            </view>
+        </view>
+        <view class="weui-btn-area">
+            <button class="weui-btn" type="warn" bindtap='doDelete'>删除日记</button>
+        </view>
+        <view class="weui-btn-area">
+            <button class="weui-btn" type="primary" form-type='submit'>编辑日记</button>
+        </view>
+    </view>
+    </form>
+</view>

@@ -1,0 +1,20 @@
+<li class="dropdown user" >
+	<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" ><i class="wi wi-user"></i><span class="caret"></span></a>
+	<ul class="dropdown-menu color-gray dropdown-menu-right" role="menu">
+		<li><a href="javascript:;">系统用户名： {$_W['username']}</a></li>
+		<li class="divider"></li>
+		<li><a href="#" id="updateCache"><i class="wi wi-cache color-gray"></i> 更新缓存</a></li>
+		<li class="divider"></li><li><a href="#" id="logout"><i class="fa fa-sign-out color-gray"></i> 退出系统</a></li>
+		<script>
+			$(function() {
+				$('#logout').on('click', function(){
+					$('.loader').show();
+					$.post('./index.php?c=user&a=logout', function(data) {
+						$('.loader').hide();
+						top.location.href = data.redirect;
+					}, 'json');
+				});
+			});
+		</script>
+	</ul>
+</li>

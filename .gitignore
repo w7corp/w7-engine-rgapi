@@ -1,0 +1,4 @@
+.idea/**/*
+data/**/*
+attachment/**/*
+/.php_cs.cache

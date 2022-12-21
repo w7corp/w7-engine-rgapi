@@ -1,0 +1,120 @@
+{template 'common/header'}
+<div class="module-welcome welcome-container clearfix" id="js-module-welcome" ng-controller="userModuleWelcomeCtrl" ng-cloak>
+	<!-- 默认后台入口 start -->
+	<div class="panel we7-panel module-go-panele" ng-if="module.welcome_display">
+		<div class="panel-heading we7-padding clearfix">
+			<h4 class="pull-left">应用后台管理</h4>
+			<a href="{php echo url('module/welcome/welcome_display', array('module_name' => $module_name))}" class="btn btn-primary pull-right" target="_blank">
+				 进入后台
+			</a>
+		</div>
+	</div>
+	<!-- 默认后台入口 end -->
+	<!-- 关联账号 -->
+	<div class="panel we7-panel ">
+		<div class="panel-heading"><h4>关联平台</h4></div>
+		<div class="panel-body">
+			<div class="account-list">
+				<div class="account-item" ng-repeat="link_account in link_accounts">
+					<img ng-src="{{link_account.logo}}" class="account-img logo" alt="">
+					<div class="info">
+						<div class="title">
+							<span class="text-over name">{{link_account.name}}</span>
+						</div>
+						<div class="type">
+							<i class="wi wi-{{link_account.type_sign}}"></i>
+							<span ng-bind="link_account.type_name" ng-if="0"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 关联账号end -->
+	<!-- 功能快捷入口 start -->
+	<div class="panel we7-panel">
+		<div class="panel-heading">
+			<h4>功能快捷入口</h4>
+			<a href="{php echo url('module/shortcut', array('module_name' => $module_name))}" class="more" >管理快捷入口</a>
+		</div>
+		<div class="panel-body "> 
+			<div class="quick-list" ng-if="!(shortcuts | we7IsEmpty)">
+				<a href="{{ shortcut.url }}" class="quick-item" ng-repeat="shortcut in shortcuts" ng-if="shortcuts.length && $index < 6">
+					<div class="icon">
+						<img src="{{shortcut.icon}}" alt="" ng-if="shortcut.welcome_display">
+						<img ng-src="{{shortcut.icon}}" alt="" ng-if="!shortcut.welcome_display">
+					</div>
+					<div class="name text-over" ng-bind="shortcut.title"></div>
+				</a>
+			</div>
+			<div class="quick-list" ng-if="shortcuts | we7IsEmpty">
+				<div class="we7-empty-block" >暂无快捷入口</div>
+			</div>
+		</div>
+	</div>
+	<!-- 功能快捷入口 end -->
+	<!-- 入口 start -->
+	<div class="panel we7-panel" ng-if="covers || replies" >
+		<div class="panel-heading" >
+			<h4>入口</h4>
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" ng-class="{active: covers}"><a href="#entry" aria-controls="entry" role="tab" data-toggle="tab" ng-click="changeEntryType('entry')" ng-if="covers">封面</a></li>
+				<li role="presentation" ng-class="{active: !covers}"><a href="#keyword" aria-controls="keyword" role="tab" data-toggle="tab"  ng-click="changeEntryType('reply')" ng-if="replies">关键字</a></li>
+			</ul>
+			<a href="javascript:void(0);" ng-click="pageTo('cover', cover_id)" class="more" ng-if="entryType == 'cover'">查看更多</a>
+			<a href="javascript:void(0);" ng-click="pageTo('reply', cover_id)" class="more" ng-if="entryType == 'reply'">查看更多</a>
+		</div>
+		<div class="panel-body">
+			<div class="tab-content">
+				<div class="tab-pane" ng-class="{'active': covers}" id="entry">
+					<div class="entry-list">
+						<div class="entry-item" ng-repeat="cover in covers" ng-if="$index < 3"> <!-- 3个-->
+							<div data-url="{$_W['siteroot']}app/{{ cover.url}}" data-size="100" class="qr js-url-qrcode">
+								<div class="qrcode-block"><canvas></canvas></div>
+							</div>
+							<div class="info">
+								<div class="entry-title">
+									<span class="title">入口名称</span>
+									<span ng-bind="cover.title"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="tab-pane" ng-class="{'active': !covers}" id="keyword">
+					<div class="keyword-list">
+						<div class="keyword-item" ng-repeat="reply in replies">
+							<div class="keyword">
+								<span class="title">关键字</span>
+								<span class="keyword-label text-over" ng-repeat="keyword in reply.keywords" ng-bind="keyword.content" ng-if="$index == 0"></span> <!--1个-->
+							</div>
+							<div class="content">
+								<span class="title">回复内容</span>
+								<span ng-bind="reply.module_info.title | limitTo:10"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 入口 end-->
+</div>
+
+<script>
+	angular.module('moduleApp').value('config', {
+		'module': {php echo json_encode($module)},
+		'apiLink': "{CLOUD_API_DOMAIN}",
+		'link_accounts': {php echo !empty($link_accounts) ? json_encode($link_accounts): 'null'},
+		'links' : {
+			'cover_url' : "{php echo url('platform/cover')}",
+			'reply_url' : "{php echo url('platform/reply')}",
+			'shortcut' : "{php echo url('module/shortcut/display', array('module_name' => $module_name))}",
+			'get_module_replies_url' : "{php echo url('module/welcome/get_module_replies', array('module_name' => $module_name))}",
+			'get_module_covers_url' : "{php echo url('module/welcome/get_module_covers', array('module_name' => $module_name))}",
+		}
+	});
+	angular.bootstrap($('#js-module-welcome'), ['moduleApp']);
+</script>
+
+{template 'common/footer'}

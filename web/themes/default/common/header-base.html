@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	{if !defined('FRAME')}{php define('FRAME', '')}{/if}
+	{php $frames = buildframes(FRAME);}
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{if !empty($_W['page']['title'])}{$_W['page']['title']}{else}{php echo $_W['setting']['copyright']['site_name'] ?? '微擎应用'}{/if}</title>
+	<meta name="keywords" content="微擎,微信,微信公众平台,w7.cc" />
+	<meta name="description" content="公众平台自助引擎（www.w7.cc），简称微擎，微擎是一款免费开源的微信公众平台管理系统，是国内完善移动网站及移动互联网技术解决方案。" />
+	<link rel="shortcut icon" href="{php echo to_global_media($_W['setting']['copyright']['icon'] ?? 'resource/images/favicon.ico')}">
+	<link href="./resource/css/bootstrap.min.css?v={IMS_VERSION}" rel="stylesheet">
+	<link href="./resource/css/common.css?v={IMS_VERSION}" rel="stylesheet">
+	<script type="text/javascript">
+	if(navigator.appName == 'Microsoft Internet Explorer'){
+		if(navigator.userAgent.indexOf("MSIE 5.0")>0 || navigator.userAgent.indexOf("MSIE 6.0")>0 || navigator.userAgent.indexOf("MSIE 7.0")>0) {
+			alert('您使用的 IE 浏览器版本过低, 推荐使用 Chrome 浏览器或 IE8 及以上版本浏览器.');
+		}
+	}
+	function openUrl(url, openType = '_blank') {
+		window.open(url, openType);
+		return true;
+	}
+	window.sysinfo = {
+		{if !empty($_W['uniacid'])}'uniacid': '{$_W['uniacid']}',{/if}
+		{if !empty($_W['acid'])}'acid': '{$_W['acid']}',{/if}
+		{if !empty($_W['openid'])}'openid': '{$_W['openid']}',{/if}
+		{if !empty($_W['uid'])}'uid': '{$_W['uid']}',{/if}
+		{if !empty($_W['role'])}'role': '{$_W['role']}',{/if}
+		'isfounder': {if !empty($_W['isfounder'])}1{else}0{/if},
+		'isadmin': {if !empty($_W['isadmin'])}1{else}0{/if},
+		'username': {if !empty($_W['username'])}'{$_W['username']}'{else}''{/if},
+		'family': '{IMS_FAMILY}',
+		'siteroot': '{$_W['siteroot']}',
+		'siteurl': '{$_W['siteurl']}',
+		'attachurl': '{$_W['attachurl']}',
+		'attachurl_local': '{$_W['attachurl_local']}',
+		'attachurl_remote': {if !empty($_W['attachurl_remote'])}'{$_W['attachurl_remote']}'{else}''{/if},
+		'module' : {'url' : '{if defined('MODULE_URL')}{MODULE_URL}{/if}', 'name' : '{if defined('IN_MODULE')}{IN_MODULE}{/if}'},
+		'cookie' : {'pre': '{$_W['config']['cookie']['pre']}'},
+		'account' : {if !empty($_W['account'])}{php echo json_encode($_W['account'])}{else}''{/if},
+		'server' : {'php' : '{php echo phpversion()}'},
+		'frame': '{FRAME}',
+	};
+	</script>
+	<script>var require = { urlArgs: 'v={IMS_VERSION}' };</script>
+	<script type="text/javascript" src="./resource/js/lib/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="./resource/js/lib/bootstrap.min.js"></script>
+	<script type="text/javascript" src="./resource/js/app/util.js?v={IMS_VERSION}"></script>
+	<script type="text/javascript" src="./resource/js/app/common.min.js?v={IMS_VERSION}"></script>
+	<script type="text/javascript" src="./resource/js/require.js?v={IMS_VERSION}"></script>
+	<script type="text/javascript" src="./resource/js/lib/jquery.nice-select.js?v={IMS_VERSION}"></script>
+	<script type="text/javascript" src="//cdn.w7.cc/ued/console/jssdk.js"></script>
+	<style>
+		.is-main-page *{pointer-events: none;cursor: default;}
+		.star-menu {display: none;}
+		.star-content {padding-left: 0 !important;padding-right: 0 !important;}
+		.skin-2__right {padding-top: 0;}
+		.skin-2__right .skin-2__sub {top: 0;}
+	</style>
+</head>
+<body class="body-iframe">
+	<div class="loader" style="display:none">
+		<div class="la-ball-clip-rotate">
+			<div></div>
+		</div>
+	</div>

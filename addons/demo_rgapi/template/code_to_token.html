@@ -1,0 +1,15 @@
+{template 'common/header'}
+<div class="font-lg we7-margin-bottom">通过code换取accesstoken值（即授权获取用户信息、小程序登录）</div>
+<div class="block we7-margin-bottom">
+	<p>如果是公众号，此处的code是用户同意授权后，微信跳转 redirect_uri/?code=CODE&state=STATE  链接上的code参数</p>
+	<p>如果是小程序，此处的code是通过 <span class="color-default">wx.login</span> 获取</p>
+	代码：<span class="color-gray">$accesstoken = $_W['account']->getOauthInfo($code);</span>
+</div>
+<div>
+	公众号返回结果：<span class="color-gray">{"openid":"xxxxxx","session_key":"xxxxx","unionid":"xxxxx","errcode":0,"errmsg":"xxxxx"}</span>
+
+</div>
+<div>
+	小程序返回结果：<span class="color-gray">{"access_token":"ACCESS_TOKEN","expires_in":7200,"refresh_token":"REFRESH_TOKEN","openid":"OPENID","scope":"SCOPE","is_snapshotuser": 1,"unionid": "UNIONID"}</span>
+</div>
+{template 'common/footer'}

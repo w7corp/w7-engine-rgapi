@@ -1,0 +1,38 @@
+{template 'common/header'}
+<div class="we7-page-search">
+	<form method="get" class="form-inline">
+		<input type="hidden" name="c" value="module">
+		<input type="hidden" name="a" value="display">
+		<div class="input-group we7-margin-bottom col-sm-4">
+			<input class="form-control " name="keyword" value="{php echo $_GPC['keyword'] ?? ''}" type="text" placeholder="名称" >
+			<span class="input-group-btn"><button class="btn btn-default"><i class="fa fa-search" style="padding: 3px"></i></button></span>
+		</div>
+	</form>
+</div>
+<div class="js-module-display" ng-controller="ModuleMoreCtrl" ng-cloak>
+	<div we7-initial-searchbar we7-search-callback="searchModule(letter)"></div>
+	<div class="ext-apply-list clearfix">
+		{loop $modules $module}
+		<div class="ext-apply-item" >
+			<img src="{php echo tomedia($module['logo'])}" class="apply-img gray">
+			<h2 class="apply-title">{$module['title']}</h2>
+			<div class="mask">
+				<a href="{url 'module/display/switch'  array('module_name' => $module['name'])}" class="entry">
+					进入应用 <i class="wi wi-angle-right"></i>
+				</a>
+				<a href="{php echo url('module/display/top', array('module_name' => $module['name']))}" class="stick">
+					<i class="wi wi-stick-sign" title="置顶"></i>
+				</a>
+			</div>
+		</div>
+		{/loop}
+	</div>
+	<div class="text-right">{$pager}</div>
+</div>
+<script type="text/javascript">
+	angular.module('moduleApp').value('config', {
+		searchurl : "{php echo url('module/display')}"
+	});
+	angular.bootstrap($('.js-module-display'), ['moduleApp']);
+</script>
+{template 'common/footer'}

@@ -1,0 +1,28 @@
+<li class="dropdown msg">
+	{php load()->model('message');$message_notice = message_notice();}
+	<a href="javascript:;" class="dropdown-toogle" data-toggle="dropdown"><span class="wi wi-bell">{if !empty($message_notice['total'])}<span class="badge">{$message_notice['total']}</span>{/if}</span>消息</a>
+	<div class="dropdown-menu">
+		<div class="clearfix top">消息<a href="{php echo url('message/notice')}" class="pull-right">查看更多</a></div>
+		<div class="msg-list-container">
+			<div class="msg-list">
+				{loop $message_notice['lists'] $message_notice_list}
+				<div class="item">
+					<div class="info clearifx">
+						<div class="pull-right date">{php echo date('Y-m-d H:i:s', $message_notice_list['create_time'])}</div>
+						{if $message_notice_list['type']==MESSAGE_ORDER_TYPE}来自 <span>订单消息</span>{/if}
+						{if $message_notice_list['type']==MESSAGE_ACCOUNT_EXPIRE_TYPE}来自 <span>过期消息</span>{/if}
+						{if $message_notice_list['type']==MESSAGE_REGISTER_TYPE}来自 <span>注册消息</span>{/if}
+					</div>
+					<div class="msg-content">
+						{if $message_notice_list['type']==MESSAGE_ORDER_TYPE}<a href="{php echo url('site/entry/orders', array('m' => 'store', 'direct'=>1, 'message_id' => $message_notice_list['id']))}">{$message_notice_list['message']}</a>{/if}
+						{if $message_notice_list['type']==MESSAGE_ACCOUNT_EXPIRE_TYPE}<a href="{php echo url('account/manage', array('account_type' => ACCOUNT_TYPE_OFFCIAL_NORMAL, 'message_id' => $message_notice_list['id']))}">{$message_notice_list['message']}</a>{/if}
+						{if $message_notice_list['type']==MESSAGE_WECHAT_EXPIRE_TYPE}<a href="{php echo url('account/manage', array('account_type' => ACCOUNT_TYPE_APP_NORMAL, 'message_id' => $message_notice_list['id']))}">{$message_notice_list['message']}</a>{/if}
+						{if $message_notice_list['type']==MESSAGE_REGISTER_TYPE && $message_notice_list['status']==USER_STATUS_CHECK}<a href="{php echo url('user/display', array('type' => 'check', 'message_id' => $message_notice_list['id']))}">{$message_notice_list['message']}</a>{/if}
+						{if $message_notice_list['type']==MESSAGE_REGISTER_TYPE && $message_notice_list['status']!=USER_STATUS_CHECK}<a href="{php echo url('user/display', array('message_id' => $message_notice_list['id']))}">{$message_notice_list['message']}</a>{/if}
+					</div>
+				</div>
+				{/loop}
+			</div>
+		</div>
+	</div>
+</li>

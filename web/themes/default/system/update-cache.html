@@ -1,0 +1,22 @@
+{template 'common/header'}
+<ul class="we7-page-tab">
+	<li {if $action == 'base-info'}class="active"{/if}><a href="{url 'system/base-info'}">基本配置</a></li>
+	<li {if $action == 'common'}class="active"{/if}><a href="{url 'system/common'}">公众平台验证文件</a></li>
+	<li {if $action == 'update-cache'}class="active"{/if}><a href="{url 'system/update-cache'}">更新缓存</a></li>
+</ul>
+<form action="{php echo url('system/update-cache/update_cache')}" method="post" class="form-horizontal" role="form">
+	<div class="form-group text-center">
+		{if !empty($_W['setting']['copyright']['blogo'])}
+		<img src="{php echo to_global_media($_W['setting']['copyright']['blogo'])}" alt="">
+		{else}
+		<img src="./resource/images/logo/logo.png" alt="">
+		{/if}
+	</div>
+	<div class="form-group">
+		<div class="text-center">
+			<input name="submit" type="submit" value="更新缓存" class="btn btn-primary" />
+			<input type="hidden" name="token" value="{$_W['token']}" />
+		</div>
+	</div>
+</form>
+{template 'common/footer'}
