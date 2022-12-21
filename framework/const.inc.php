@@ -6,7 +6,7 @@
 defined('IN_IA') or exit('Access Denied');
 
 !defined('CLOUD_API_DOMAIN') && define('CLOUD_API_DOMAIN', 'https://openapi.w7.cc');
-!defined('V3_API_DOMAIN') && define('V3_API_DOMAIN', 'https://www.neww7.com');
+!defined('V3_API_DOMAIN') && define('V3_API_DOMAIN', 'https://rgapi.w7.cc');
 define('REGULAR_EMAIL', '/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/i');
 define('REGULAR_MOBILE', '/1[3456789][0-9]{9}/');
 define('REGULAR_USERNAME', '/^[\x{4e00}-\x{9fa5}a-z\d_\.]{1,30}$/iu');
