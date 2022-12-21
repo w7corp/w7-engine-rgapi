@@ -1,11 +1,11 @@
 {template 'common/header'}
 <table class="table we7-table table-hover vertical-middle">
 	<col width="150px"/>
-	<col width="200px" />
+<!--	<col width="200px" />-->
 	<col width="250px" />
 	<tr>
 		<th>日记标题</th>
-		<th class="text-left">用户</th>
+<!--		<th class="text-left">用户</th>-->
 		<th>创建时间</th>
 	</tr>
 	{loop $data $item}
@@ -13,7 +13,7 @@
 		<td>
 			{$item['title']}
 		</td>
-		<td class="text-left">{$item['uid']}</td>
+<!--		<td class="text-left">{$item['uid']}</td>-->
 		<td>{$item['createtime']}</td>
 	</tr>
 	{/loop}
