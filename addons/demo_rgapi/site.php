@@ -11,6 +11,10 @@ class Demo_rgapiModuleSite extends WeModuleSite {
 
     }
 
+    public function doMobileIndex() {
+        global $_W;
+        include $this->template('index');
+    }
     public function doWebList() {
         global $_W, $_GPC;
         $data = pdo_getall(self::TABLE, array(), '', 'orderBy createtime desc');
