@@ -129,23 +129,8 @@ if (!empty($_W['account']['oauth']) && $_W['account']['oauth']['support_oauthinf
 }
 
 if ($_W['platform'] == 'account' && $_W['account']->supportJssdk && $controller != 'utility') {
-    if (!empty($unisetting['jsauth_acid'])) {
-        $jsauth_acid = $unisetting['jsauth_acid'];
-    } else {
-        if ($_W['account']['level'] < ACCOUNT_SUBSCRIPTION_VERIFY && !empty($unisetting['oauth']['account'])) {
-            $jsauth_acid = $unisetting['oauth']['account'];
-        } else {
-            $jsauth_acid = $_W['acid'];
-        }
-    }
-    if (!empty($jsauth_acid)) {
-        $account_api = WeAccount::create($jsauth_acid);
-        if (!empty($account_api)) {
-            $_W['account']['jssdkconfig'] = $account_api->getJssdkConfig();
-            $_W['account']['jsauth_acid'] = $jsauth_acid;
-        }
-    }
-    unset($jsauth_acid, $account_api);
+    $_W['account']['jssdkconfig'] = $_W['account']->getJssdkConfig();
+    $_W['account']['jsauth_acid'] = $_W['account']['acid'];
 }
 
 $_W['attachurl'] = attachment_set_attach_url();

@@ -449,7 +449,7 @@ class WeixinAccount extends WeAccount {
             $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], "1");
             $token = $api->app()->getAccessToken()->toArray();
         } catch (Exception $e) {
-            return error(-1, '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $e['message']);
+            return error(-1, '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $e->getMessage());
         }
         if (!empty($token['errcode']) && '40164' == $token['errcode']) {
             return error(-1, $this->errorCode($token['errcode'], $token['errmsg']));
