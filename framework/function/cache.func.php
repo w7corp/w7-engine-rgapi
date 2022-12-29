@@ -492,10 +492,6 @@ function cache_key_all() {
                 'key' => 'cloud_transtoken',
                 'group' => '',
             ),
-            'cloud_w7_request_user_token' => array(
-                'key' => 'cloud_w7_request_user_token:%token',
-                'group' => '',
-            ),
 
             'upgrade' => array(
                 'key' => 'upgrade',
@@ -521,18 +517,8 @@ function cache_key_all() {
                 'group' => '',
             ),
 
-            'cloud_file_permission_pass' => array(
-                'key' => 'cloud_file_permission_pass',
-                'group' => '',
-            ),
-
             'couponsync' => array(
                 'key' => 'couponsync:%uniacid',
-                'group' => '',
-            ),
-
-            'storesync' => array(
-                'key' => 'storesync:%uniacid',
                 'group' => '',
             ),
 
@@ -543,26 +529,6 @@ function cache_key_all() {
 
             'modulesetting' => array(
                 'key' => 'modulesetting:%module:%acid',
-                'group' => '',
-            ),
-
-            'scan_config' => array(
-                'key' => 'scan_config',
-                'group' => 'scan_file',
-            ),
-
-            'scan_file' => array(
-                'key' => 'scan_file',
-                'group' => 'scan_file',
-            ),
-
-            'scan_badfile' => array(
-                'key' => 'scan_badfile',
-                'group' => 'scan_file',
-            ),
-
-            'bomtree' => array(
-                'key' => 'bomtree',
                 'group' => '',
             ),
 
@@ -611,22 +577,8 @@ function cache_key_all() {
                 'group' => '',
             ),
 
-            'system_check' => array(
-                'key' => 'system_check',
-                'group' => '',
-            ),
-
-            'delete_visit_ip' => array(
-                'key' => 'delete_visit_ip:%date',
-                'group' => '',
-            ),
-
             'account_web_view_domain' => array(
                 'key' => 'account_web_view_domain:%uniacid',
-                'group' => '',
-            ),
-            'system_db_diff' => array(
-                'key' => 'system_db_diff',
                 'group' => '',
             ),
         ),
@@ -638,10 +590,6 @@ function cache_key_all() {
 
             'accesstoken' => array(
                 'relations' => array('accesstoken', 'jsticket', 'cardticket'),
-            ),
-
-            'scan_file' => array(
-                'relations' => array('scan_file', 'scan_config', 'scan_badfile'),
             ),
 
             // '模块'

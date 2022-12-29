@@ -595,7 +595,7 @@ function ext_check_module_subscribe($modulename) {
     if (empty($modulename)) {
         return true;
     }
-    if (!is_array($_W['setting']['module_receive_ban'])) {
+    if (!empty($_W['setting']['module_receive_ban']) && !is_array($_W['setting']['module_receive_ban'])) {
         $_W['setting']['module_receive_ban'] = array();
     }
     load()->func('communication');

@@ -1,0 +1,86 @@
+{template 'common/header'}
+<script type="text/javascript">
+	angular.module('cloudApp', ['we7app']);
+	angular.module('cloudApp')
+	.controller('processor', function($scope, $http) {
+		$scope.scripts = {php echo json_encode($result);};
+		$scope.fails = [];
+		var total = $scope.scripts.length;
+		var i = 1;
+		var error = function() {
+			util.message('未能成功执行升级操作, 请联系管理员处理！');
+		}
+		$scope.proc = function() {
+			var script = $scope.scripts.shift();
+			if (script) {
+				if ($scope.fails.length > 0) {
+					error();
+				}
+				$scope.version = script.version;
+				$scope.description = script.description;
+				$scope.pragress = i + '/' + total;
+				$scope.pragressPer = Math.floor((i / total) * 100);
+				$scope.topPragress = $scope.pragressPer < 50 ? $scope.pragressPer * 3.6 - 135 : 45;
+				$scope.bottomPragress = $scope.pragressPer > 50 ? ($scope.pragressPer - 50) * 3.6 - 135 : -135;
+				var params = {version: script.version, module_name: script.module_name};
+				var postUrl = location.href + '&step=scripts';
+				if (script.type == 'module') {
+					postUrl = location.href + '&step=module_upgrade';
+				}
+				$http.post(postUrl, params).success(function (dat) {
+					i++;
+					if (dat != 'success') {
+						$scope.fails.push(script.version)
+						error();
+						return;
+					}
+					$scope.proc();
+				}).error(function () {
+					i++;
+					$scope.fails.push(script.version);
+					error();
+				});
+			} else {
+				util.message('已经成功执行升级操作!', '{url "module/display/display"}');
+			}
+		}
+		$scope.proc();
+	});
+</script>
+<div class="clearfix js-processor" ng-cloak ng-controller="processor">
+	<div class="upgrade-pragress we7-margin-bottom">
+		<div class="wrapper top">
+			<div class="circleProgress topcircle" ng-style="{transform: 'rotate('+ topPragress +'deg)'}"></div>
+		</div>
+		<div class="wrapper bottom">
+			<div class="circleProgress bottomcircle" ng-style="{transform: 'rotate('+ bottomPragress +'deg)'}"></div>
+		</div>
+		<div class="circle">
+			<img src="./resource/images/upgrade.png" alt="">
+			<div class="pragress">
+				{{pragressPer}}%
+			</div>
+		</div>
+	</div>
+	<div class="alert alert-warning we7-page-alert">
+		正在进行升级操作, 请不要关闭窗口.
+	</div>
+	<div class="alert alert-info form-horizontal " >
+		<dl class="dl-horizontal">
+			<dt>整体进度</dt>
+			<dd>{{pragress}}</dd>
+			<dt>正在处理</dt>
+			<dd>{{version}}<br />{{description}}</dd>
+		</dl>
+		<dl class="dl-horizontal" ng-show="fails.length > 0">
+			<dt>处理失败的操作</dt>
+			<dd>
+				<p class="text-danger" ng-repeat="script in fails" style="margin:0;">{{version}}</p>
+			</dd>
+		</dl>
+	</div>
+	<script>
+		angular.bootstrap($('.js-processor'), ['cloudApp']);
+	</script>
+</div>
+{template 'common/footer'}

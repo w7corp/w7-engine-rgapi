@@ -61,9 +61,5 @@ function setting_upgrade_version($version) {
     if (version_compare(IMS_VERSION, $version, '>=')) {
         return true;
     }
-    $settings = [
-        'version' => $version,
-        'family' => 'c',
-    ];
-    return (bool)setting_save($settings, 'local_version_info');
+    return (bool)setting_save($version, 'local_version');
 }

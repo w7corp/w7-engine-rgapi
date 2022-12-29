@@ -155,7 +155,7 @@ if (empty($_W['setting']['upload'])) {
     $_W['setting']['upload'] = array_merge($_W['config']['upload']);
 }
 define('IMS_FAMILY', 'v');
-define('IMS_VERSION', '1.0.0');
+define('IMS_VERSION', !empty($_W['setting']['local_version']) ? $_W['setting']['local_version'] : '1.0.0');
 define('IMS_RELEASE_DATE', '');
 $_W['os'] = Agent::deviceType();
 if (Agent::DEVICE_MOBILE == $_W['os']) {

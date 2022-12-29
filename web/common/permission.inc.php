@@ -56,7 +56,8 @@ $w7_file_permission = array(
         'default' => '',
         'direct' => array(
             'visit',
-            'bindcall'
+            'bindcall',
+            'mp-verify',
         ),
     ),
 );

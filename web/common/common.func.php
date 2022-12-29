@@ -139,6 +139,54 @@ function checklogin() {
     return true;
 }
 
+function check_upgrade() {
+    load()->model('extension');
+    $cachekey = cache_system_key('checkupgrade');
+
+    $cache = cache_load($cachekey);
+    if (!empty($cache)) {
+        return $cache;
+    }
+    $result = [];
+    $upgrade = glob(IA_ROOT . '/upgrade/*');
+    if (empty($upgrade)) {
+        return $result;
+    }
+
+    foreach ($upgrade as $item) {
+        $path_array = explode('/', $item);
+        $version = end($path_array);
+        if (!str_is_version($version)) {
+            continue;
+        }
+        if (version_compare($version, IMS_VERSION, '<=')) {
+            continue;
+        }
+        include_once $item . '/up.php';
+        $class_name = 'W7\\U' . str_replace('.', '', $version) . '\\Up';
+        $result['system'][] = array('version' => $version, 'description' => $class_name::DESCRIPTION);
+    }
+
+    $modules = pdo_getall('modules', [], ['name', 'version'], 'name');
+    foreach ($modules as $module_name => $module) {
+        $root = IA_ROOT . '/addons/' . $module_name;
+        $filename = $root . '/manifest.xml';
+        if (!file_exists($filename)) {
+            continue;
+        }
+        $xml = file_get_contents($filename);
+        $xml = ext_module_manifest_parse($xml);
+        $version = !empty($xml['application']['version']) ? $xml['application']['version'] : '1.0.0';
+        if (version_compare($version, $module['version'], '<=')) {
+            continue;
+        }
+        $result['module'][] = $module;
+    }
+    if (!empty($result)) {
+        cache_write($cachekey, $result);
+    }
+    return $result;
+}
 //新版buildframes
 function buildframes($framename = '') {
     global $_W, $_GPC;
