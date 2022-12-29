@@ -38,7 +38,7 @@ $config['setting']['memory_limit'] = '256M';
 $config['setting']['filemode'] = 0644;
 $config['setting']['authkey'] = getenv('PROJECT_AUTH_KEY');
 $config['setting']['founder'] = '1';
-$config['setting']['development'] = 0;
+$config['setting']['development'] = getenv('APP_DEBUG');
 $config['setting']['referrer'] = 0;
 
 // --------------------------  CONFIG UPLOAD  --------------------------- //
