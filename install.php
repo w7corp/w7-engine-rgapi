@@ -374,11 +374,7 @@ function we7_db() {
         $link = new PDO("mysql:host={$db['server']};port={$db['port']}", $db['username'], $db['password']); 	// dns可以没有dbname
         we7_pdo($link, 'exec', "SET character_set_connection=utf8, character_set_results=utf8, character_set_client=binary");
         we7_pdo($link, 'exec', "SET sql_mode=''");
-        if (substr($link->getAttribute(PDO::ATTR_SERVER_VERSION), 0, 3) > '4.1') {
-            we7_pdo($link, 'query', "CREATE DATABASE IF NOT EXISTS `{$db['name']}` DEFAULT CHARACTER SET utf8;");
-        } else {
-            we7_pdo($link, 'query', "CREATE DATABASE IF NOT EXISTS `{$db['name']}`;");
-        }
+        we7_pdo($link, 'query', "CREATE DATABASE IF NOT EXISTS `{$db['name']}`;");
         $databases_if_exists = we7_pdo($link, 'query', "SHOW DATABASES LIKE '{$db['name']}';");
         if (empty($databases_if_exists)) {
             $error = "数据库不存在且创建数据库失败.";
