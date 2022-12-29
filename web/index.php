@@ -55,7 +55,7 @@ checklogin();
 if (empty($_W['setting']['modules_inited']) && ($action != 'manage-system' && $do != 'install')) {
     message('应用尚未初始化，点击去初始化。', url('module/manage-system/install'));
 }
-if (check_upgrade() && ($controller != 'cloud' && $action != 'process')) {
+if (!empty($_W['setting']['modules_inited']) && check_upgrade() && ($controller != 'cloud' && $action != 'process')) {
     message('检测到有升级，点击前往。', url('cloud/process'));
 }
 require _forward($controller, $action);
