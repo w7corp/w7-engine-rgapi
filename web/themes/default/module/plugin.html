@@ -9,10 +9,11 @@
 		</div>
 	</div>
 	<div class="module-plugin-list">
+		{php $_GPC['version_id'] = empty($_GPC['version_id']) ? 0 : intval($_GPC['version_id']);}
 		{loop $plugin_list $plugin}
 		<div class="item">
 			<div class="item-box">
-				<a class="info" href="{php echo url('home/welcome/ext', array('m' => $plugin['plugin_info']['name'], 'version_id' => intval($_GPC['version_id'])))}">
+				<a class="info" href="{php echo url('module/welcome/display', array('module_name' => $plugin['plugin_info']['name'], 'version_id' => $_GPC['version_id']))}">
 					{if !empty($plugin['plugin_info']['logo'])}
 						<img src="{$plugin['plugin_info']['logo']}" alt="" class="logo">
 					{else}
@@ -21,7 +22,7 @@
 					<span class="name text-over">{$plugin['plugin_info']['title']}</span>
 				</a>
 				<div class="action">
-					{if $plugin['module_shortcut']==0}
+					{if empty($plugin['module_shortcut'])}
 					<a href="{php echo url('module/plugin/module_shortcut', array('plugin_name' => $plugin['plugin_info']['name'], 'module_shortcut' => 1))}" class="action-show" data-toggle="tooltip" data-placement="bottom" data-title="显示到菜单">
 						<i class="wi wi-eye"></i>
 					</a>
@@ -30,8 +31,7 @@
 						<i class="wi wi-eye"></i>
 					</a>
 					{/if}
-					<a href="{php echo url('module/plugin/rank', array('main_module_name' => $plugin['plugin_info']['main_module'], 'plugin_name' => $plugin['plugin_info']['name'], 'uniacid' => intval($_GPC['uniacid'])))}" class="action-up" data-toggle="tooltip" data-placement="bottom" data-title="置顶"><i class="wi wi-stick-sign"></i></a>
-					<a href="{php echo url('home/welcome/ext', array('m' => $plugin['plugin_info']['name'], 'version_id' => intval($_GPC['version_id'])))}" class="action-in"><i class="wi wi-denglu"></i> 进入</a>
+					<a href="{php echo url('module/welcome/display', array('module_name' => $plugin['plugin_info']['name'], 'version_id' => $_GPC['version_id']))}" class="action-in"><i class="wi wi-denglu"></i> 进入</a>
 				</div>
 			</div>
 		</div>

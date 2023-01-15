@@ -129,6 +129,11 @@ function itoast($message, $redirect = '', $type = '', $extend = array()) {
 function checklogin() {
     global $_W;
     if (empty($_W['uid'])) {
+        if (!empty($_SERVER['HTTP_SEC_FETCH_DEST']) && 'document' == $_SERVER['HTTP_SEC_FETCH_DEST']) {
+            $url = 'https://console.w7.cc/app/' . getenv('APP_ID') . '/founder/home';
+            header('Location:' . $url);
+            exit;
+        }
         $url = cloud_oauth_login_url();
         if (is_error($url)) {
             message('授权用户登录失败，请联系管理员处理。详情：' . $url['message']);
@@ -219,14 +224,12 @@ function buildframes($framename = '') {
                 'module_welcome_display' => true,
             );
         }
-        if (MODULE_SUPPORT_ACCOUNT == $module['account_support']) {
-            $frames['account']['section']['platform_module_common']['menu']['platform_module_member'] = [
-                'title' => '会员管理',
-                'icon' => 'wi wi-user',
-                'url' => url('platform/sync-member/display', ['module_name' => $modulename]),
-                'is_display' => 1,
-            ];
-        }
+        $frames['account']['section']['platform_module_common']['menu']['platform_module_member'] = [
+            'title' => '会员管理',
+            'icon' => 'wi wi-user',
+            'url' => url('platform/sync-member/display', ['module_name' => $modulename]),
+            'is_display' => 1,
+        ];
         if (MODULE_SUPPORT_WXAPP == $module['wxapp_support']) {
             $frames['account']['section']['platform_module_common']['menu']['platform_module_publish'] = [
                 'title' => '发布设置',
@@ -278,12 +281,15 @@ function buildframes($framename = '') {
             } else {
                 $plugin_list = $module['plugin_list'];
             }
-            $plugin_list = array_intersect($plugin_list, array_keys($modules));
+            $plugin_list = array_intersect($plugin_list, array_column($modules, 'name'));
         }
 
         if (!empty($module['plugin_list']) && empty($module['main_module'])) {
             $frames['account']['section']['platform_module_plugin']['title'] = '常用插件';
-
+            $module_menu_plugin_list = table('core_menu_shortcut')->getCurrentModuleMenuPluginList($module['name']);
+            if (!empty($module_menu_plugin_list)) {
+                $plugin_list = array_keys($module_menu_plugin_list);
+            }
             if (!empty($plugin_list)) {
                 $i = 0;
                 foreach ($plugin_list as $plugin_module) {
@@ -295,7 +301,7 @@ function buildframes($framename = '') {
                         'main_module' => $plugin_module_info['main_module'],
                         'title' => $plugin_module_info['title'],
                         'icon' => $plugin_module_info['logo'],
-                        'url' => url('home/welcome/ext', array('module_name' => $plugin_module_info['name'], 'uniacid' => $_W['uniacid'])),
+                        'url' => url('module/welcome/display', array('module_name' => $plugin_module_info['name'], 'uniacid' => $_W['uniacid'])),
                         'is_display' => 1,
                     );
                     ++$i;
@@ -303,9 +309,9 @@ function buildframes($framename = '') {
             }
 
             if (!empty($module['main_module'])) {
-                $platform_module_plugin_more_url = url('module/plugin', array('module_name' => $module['main_module'], 'uniacid' => $_W['uniacid']));
+                $platform_module_plugin_more_url = url('module/plugin', array('module_name' => $module['main_module']));
             } else {
-                $platform_module_plugin_more_url = url('module/plugin', array('module_name' => $module['name'], 'uniacid' => $_W['uniacid']));
+                $platform_module_plugin_more_url = url('module/plugin', array('module_name' => $module['name']));
             }
 
             if (!empty($plugin_list)) {

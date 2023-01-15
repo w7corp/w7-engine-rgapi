@@ -52,6 +52,9 @@ if (!empty($acl[$controller]) && is_array($acl[$controller]['direct']) && in_arr
     exit();
 }
 checklogin();
+if (!empty($_SERVER['HTTP_SEC_FETCH_DEST']) && 'document' == $_SERVER['HTTP_SEC_FETCH_DEST']) {
+    itoast('', 'https://console.w7.cc/app/' . getenv('APP_ID') . '/founder/home');
+}
 if (empty($_W['setting']['modules_inited']) && ($action != 'manage-system' && $do != 'install')) {
     message('应用尚未初始化，点击去初始化。', url('module/manage-system/install'));
 }

@@ -9,7 +9,7 @@
 	</div>
 	{if !empty($_W['current_module']['main_module'])}
 	<div class="module-plugin-info">
-		<a href="{php echo url('home/welcome/ext', array('m' => $_W['current_module']['main_module']))}"><i class="wi wi-angle-left"></i></a>
+		<a href="{php echo url('module/welcome/display', array('module_name' => $_W['current_module']['main_module']))}"><i class="wi wi-angle-left"></i></a>
 		<div class="plugin-info-box">
 			<img src="{php echo tomedia("addons/".$_W['current_module']['name']."/icon.jpg")}" class="plugin-info-logo" onerror="this.src='./resource/images/gw-wx.gif'">
 		</div>

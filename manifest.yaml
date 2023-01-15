@@ -30,7 +30,7 @@ bindings:
     menu:
       -
         displayorder: 0
-        do: /web/index.php?c=module&a=display&do=display
+        do: /web/index.php?c=module&a=display&do=switch
         title: 应用管理
         icon: wxapp-setting
       -

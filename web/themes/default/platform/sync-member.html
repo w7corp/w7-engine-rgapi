@@ -31,7 +31,7 @@
 				<input class="btn btn-primary" type="submit" name="export_submit" id="export_submit" value="导出">
 			</div>
 		</form>
-		<a href="javascript:;" ng-click="syncMember()" class="btn btn-primary">同步会员</a>
+		{if !empty($module['account_support']) && MODULE_SUPPORT_ACCOUNT == $module['account_support']}<a href="javascript:;" ng-click="syncMember()" class="btn btn-primary">同步会员</a>{/if}
 	</div>
 	<script type="text/javascript">
 		$(document).ready(function() {

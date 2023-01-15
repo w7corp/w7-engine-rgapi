@@ -22,6 +22,13 @@ if ('install' == $do) {
         }
         $modules[] = basename($item);
     }
+    asort($modules);
+    $main_module = current($modules);
+    foreach ($modules as $key => $item) {
+        if (0 !== strpos($item, $main_module)) {
+            unset($modules[$key]);
+        }
+    }
     foreach ($modules as $module_name) {
         $installed_module = table('modules')->getByName($module_name);
         if (!empty($installed_module)) {

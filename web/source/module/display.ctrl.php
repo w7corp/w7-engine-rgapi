@@ -7,45 +7,15 @@ defined('IN_IA') or exit('Access Denied');
 
 load()->model('miniapp');
 
-$dos = ['display', 'top', 'switch'];
-$do = in_array($do, $dos) ? $do : 'display';
-
-if ('display' == $do) {
-    $pindex = empty($_GPC['page']) ? 1 : max(1, intval($_GPC['page']));
-    $psize = 30;
-    $module_table = table('modules');
-    $module_table->orderby('display_order', 'DESC');
-    $keyword = safe_gpc_string($_GPC['keyword'] ?? '');
-    if (!empty($keyword)) {
-        $module_table->where('title LIKE ', '%' . $keyword . '%');
-    }
-    $letter = safe_gpc_string($_GPC['letter'] ?? '');
-    if (!empty($letter)) {
-        $module_table->where('title_initial', $letter);
-    }
-    $modules = $module_table->searchWithPage($pindex, $psize)->getall();
-    $total = $module_table->getLastQueryTotal();
-    $pager = pagination($total, $pindex, $psize);
-    template('module/display');
-}
-if ('top' == $do) {
-    $module_name = safe_gpc_string($_GPC['module_name']);
-    $module = pdo_get('modules', ['name' => $module_name]);
-    if (empty($module)) {
-        itoast('抱歉，你操作的模块不能被访问！', '', '');
-    }
-    $max_displayorder = (int) pdo_getcolumn('modules', [], 'MAX(display_order)');
-    pdo_update('modules', ['display_order' => ++$max_displayorder], ['name' => $module_name]);
-    itoast('模块置顶成功', referer(), 'success');
-}
+$dos = ['switch'];
+$do = in_array($do, $dos) ? $do : 'switch';
 
 if ('switch' == $do) {
     if (empty($_W['setting']['server_setting']['app_id']) || empty($_W['setting']['server_setting']['app_secret'])) {
         itoast('请先配置app_id和app_secret。', url('system/base-info'), 'error');
     }
-    $module_name = safe_gpc_string($_GPC['module_name']);
+    $module_name = pdo_getcolumn('modules_plugin', [], 'main_module');
     $module_info = module_fetch($module_name);
-    $module_name = empty($module_info['main_module']) ? $module_name : $module_info['main_module'];
     if (empty($module_info)) {
         itoast('模块不存在或已经删除！', referer(), 'error');
     }

@@ -31,7 +31,7 @@
 								</span>
 							</div>
 							{/if}
-							<ul class="list-group {if !empty($frame_section['title'])}collapse{/if} {if isset($_GPC['menu_fold_tag:'.$frame_section_id]) && $_GPC['menu_fold_tag:'.$frame_section_id] == 0 || ('platform_module_menu' === $frame_section_id)}in{/if}" id="frame-{$frame_section_id}" >
+							<ul class="list-group {if !empty($frame_section['title'])}collapse{/if} {if isset($_GPC['menu_fold_tag:'.$frame_section_id]) && $_GPC['menu_fold_tag:'.$frame_section_id] == 0 || in_array($frame_section_id, array('platform_module_menu', 'platform_module_plugin'))}in{/if}" id="frame-{$frame_section_id}" >
 								{loop $frame_section['menu'] $menu_id $menu}
 								{if !empty($menu['is_display'])}
 								{if $menu_id == 'platform_module_plugin_more' || $menu_id == 'platform_module_more'}

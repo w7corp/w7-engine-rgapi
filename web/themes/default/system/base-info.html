@@ -4,24 +4,35 @@
 	<li {if $action == 'common'}class="active"{/if}><a href="{url 'system/common'}">公众平台验证文件</a></li>
 </ul>
 <div class="main" id="system-info" ng-controller="baseInfoCtrl" ng-cloak>
+	<div class="pull-right" style="margin-top: -20px">
+		<span class="color-gray" style="">可通过一键关联实现当前独立系统与软擎授权系统的对接</span>
+		<button class="btn btn-primary we7-margin-bottom-sm" style="margin-top: 10px;margin-left: 10px;" onclick="card()">一键关联</button>
+	</div>
 	<table class="table we7-table table-hover site-list">
 		<col width="260px" />
 		<col />
-		<col width="100px" />
-		<tr><th class="text-left" colspan="3">3.0多平台接入信息</th></tr>
+		<col width="350px" />
+		<tr><th class="text-left" colspan="3">软擎授权系统接入信息（用于当前独立系统对接软擎授权系统，您可以前往软擎授权系统创建应用关联以实现自身功能或业务，<a
+				href="javascript:;" class="color-default" onclick="tolink()">前往创建</a>）</th></tr>
 		<tr>
-			<td class="table-label">3.0多平台服务地址</p></td>
+			<td class="table-label">软擎授权系统服务地址</p></td>
 			<td><a href="javascript:;" class="we7-padding-right">https://rgapi.w7.cc</a></td>
-			<td><div class="link-group"><a href="javascript:;" ng-click="check()">接入检测</a></div></td>
+			<td><div class="link-group"><i class="wi wi-info color-red" data-trigger="hover" data-toggle="popover" data-placement="left" data-content="appId和appSecret配置完成后点击验证"></i> <a href="javascript:;" ng-click="check()">接入检测</a></div></td>
 		</tr>
 		<tr>
 			<td class="table-label">AppId</td>
-			<td><a href="javascript:;" class="we7-padding-right" ng-bind="server_setting.app_id"></a></td>
+			<td>
+				<a href="javascript:;" ng-if="server_setting.app_id" class="we7-padding-right" ng-bind="server_setting.app_id"></a>
+				<span class="help-block color-gray" ng-if="!server_setting.app_id">该值为软擎授权系统内某一已建好的应用关联的app_id，复制后填入此处</span>
+			</td>
 			<td><div class="link-group"><a href="javascript:;" data-toggle="modal" data-target="#app_id">修改</a></div></td>
 		</tr>
 		<tr>
 			<td class="table-label">AppSecret</td>
-			<td><a href="javascript:;" class="we7-padding-right" ng-bind="server_setting.app_secret"></a></td>
+			<td>
+				<a href="javascript:;" ng-if="server_setting.app_secret" class="we7-padding-right" ng-bind="server_setting.app_secret"></a>
+				<span class="help-block color-gray" ng-if="!server_setting.app_secret">该值为软擎授权系统内某一已建好的应用关联的app_secret，复制后填入此处</span>
+			</td>
 			<td><div class="link-group"><a href="javascript:;" data-toggle="modal" data-target="#app_secret">修改</a></div></td>
 		</tr>
 	</table>
@@ -70,7 +81,7 @@
 		<col width="260px" />
 		<col />
 		<col width="200px" />
-		<tr><th class="text-left" colspan="3">服务器配置</th></tr>
+		<tr><th class="text-left" colspan="3">回调设置（供软擎授权系统使用）</th></tr>
 		<tr>
 			<td class="table-label">URL<p>(服务器地址)</p></td>
 			<td><a href="javascript:;" class="we7-padding-right" ng-bind="server_setting.url"></a></td>
@@ -144,7 +155,55 @@
 		</div>
 	</div>
 </div>
+<script src="https://cdn.w7.cc/ued/console/jssdkv2.js"></script>
 <script type="text/javascript">
+	window.addEventListener('message',(e) => {
+		if(e.data.type=='returnData') {
+			var finish = {
+				app_id: false,
+				app_secret: false,
+				redirect: '',
+			};
+			var app_id = e.data.data.app_id;
+			$.post("{php echo url('system/base-info', array('do' => 'edit'))}", {type: 'app_id', request_data: app_id}, function (data) {
+				if (data.message.errno == 0) {
+					finish.app_id = true;
+				} else {
+					util.message(data.message.message, data.redirect, 'error');
+				}
+			}, 'json');
+			var app_secret = e.data.data.app_secret;
+			$.post("{php echo url('system/base-info', array('do' => 'edit'))}", {type: 'app_secret', request_data: app_secret}, function (data) {
+				if (data.message.errno == 0) {
+					finish.app_secret = true;
+					finish.redirect = data.redirect;
+				} else {
+					util.message(data.message.message, data.redirect, 'error');
+				}
+			}, 'json');
+			setTimeout(function() {
+				if (true === finish.app_id &&  true === finish.app_secret) {
+					console.log(4);
+					util.message('卡片关联成功！', finish.redirect, 'success');
+				}
+			}, 400)
+
+		}
+	})
+	function card() {
+		window.w7.ready(()=>{
+			window.w7.navigate({
+				modulename: 'w7_engine_server30', // 根据modulename选择
+				type: 'micro', // micro or iframe 目标应用是vue 用micro
+				route: '{php echo $card_route}', // 要打开应用的路由
+				style: {width:1000, height:700},
+			});
+		})
+	}
+	function tolink() {
+		window.open('https://console.w7.cc/api/deploy/w7_engine_server30/redirect?route=/link', '_blank');
+		return true;
+	}
 	angular.module('systemApp').value('config', {
 		'server_setting' : {php echo json_encode($server_setting)},
 		'edit' : "{php echo url('system/base-info', array('do' => 'edit'))}",
