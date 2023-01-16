@@ -193,7 +193,7 @@
 	function card() {
 		window.w7.ready(()=>{
 			window.w7.navigate({
-				modulename: 'w7_engine_server30', // 根据modulename选择
+				modulename: 'w7_rangineapi', // 根据modulename选择
 				type: 'micro', // micro or iframe 目标应用是vue 用micro
 				route: '{php echo $card_route}', // 要打开应用的路由
 				style: {width:1000, height:700},
@@ -201,7 +201,7 @@
 		})
 	}
 	function tolink() {
-		window.open('https://console.w7.cc/api/deploy/w7_engine_server30/redirect?route=/link', '_blank');
+		window.open('https://console.w7.cc/api/deploy/w7_rangineapi/redirect?route=/link', '_blank');
 		return true;
 	}
 	angular.module('systemApp').value('config', {

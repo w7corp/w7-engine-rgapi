@@ -17,7 +17,7 @@ if ('switch' == $do) {
     $module_name = pdo_fetchcolumn("SELECT `name` FROM " . tablename('modules') . " ORDER BY `mid` ASC");
     $module_info = module_fetch($module_name);
     if (empty($module_info)) {
-        itoast('模块不存在或已经删除！');
+        message('应用尚未初始化，前去初始化。', url('module/manage-system/install'));
     }
 
     $support = [];

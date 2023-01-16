@@ -29,6 +29,9 @@ if ('install' == $do) {
             unset($modules[$key]);
         }
     }
+    if (empty($modules)) {
+        message('没有检测到可安装的应用，请联系开发者处理。', url('system/base-info'));
+    }
     foreach ($modules as $module_name) {
         $installed_module = table('modules')->getByName($module_name);
         if (!empty($installed_module)) {
