@@ -26,35 +26,6 @@ class MenuShortcut extends \We7Table {
 
     );
 
-    public function getUserWelcomeShortcutList($uid) {
-        return $this->query
-            ->where('position', 'home_welcome_system_common')
-            ->where('uid', $uid)
-            ->orderby('displayorder', 'desc')
-            ->getall();
-    }
-
-    public function getUserWelcomeShortcut($uid, $uniacid, $modulename) {
-        return $this->where(array('uid' => $uid, 'uniacid' => $uniacid, 'modulename' => $modulename, 'position' => 'home_welcome_system_common'))->get();
-    }
-    public function getUserPluginModuleShortcut($uid, $uniacid, $main_module) {
-        $position = 'module_' . $main_module . '_menu_plugin_shortcut';
-        return $this->where(array('uid' => $uid, 'uniacid' => $uniacid, 'modulename' => $main_module, 'position' => $position))->get();
-    }
-
-    public function saveUserWelcomeShortcut($uid, $uniacid = 0, $modulename = '') {
-        $user_welcome_short_info = $this->getUserWelcomeShortcut($uid, $uniacid, $modulename);
-        if (!$user_welcome_short_info) {
-            $save_data = array(
-                'uid' => $uid,
-                'uniacid' => $uniacid,
-                'modulename' => $modulename,
-                'position' => 'home_welcome_system_common',
-        );
-            $this->fill($save_data)->save();
-        }
-    }
-
     public function getCurrentModuleMenuPluginList($main_module) {
         global $_W;
         $position = 'module_' . $main_module . '_menu_plugin_shortcut';

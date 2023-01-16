@@ -14,10 +14,10 @@ if ('switch' == $do) {
     if (empty($_W['setting']['server_setting']['app_id']) || empty($_W['setting']['server_setting']['app_secret'])) {
         itoast('请先配置app_id和app_secret。', url('system/base-info'), 'error');
     }
-    $module_name = pdo_getcolumn('modules_plugin', [], 'main_module');
+    $module_name = pdo_fetchcolumn("SELECT `name` FROM " . tablename('modules') . " ORDER BY `mid` ASC");
     $module_info = module_fetch($module_name);
     if (empty($module_info)) {
-        itoast('模块不存在或已经删除！', referer(), 'error');
+        itoast('模块不存在或已经删除！');
     }
 
     $support = [];
@@ -27,6 +27,10 @@ if ('switch' == $do) {
         }
     }
     $account = table('account')->getOrderByTypeAsc();
+    if (empty($account)) {
+        uni_init_accounts();
+        $account = table('account')->getOrderByTypeAsc();
+    }
     if (empty($account)) {
         itoast('需先到3.0多平台关联至少一个号码后再操作！');
     }

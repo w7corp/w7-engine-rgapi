@@ -92,7 +92,23 @@ if ('install' == $do) {
     }
     cache_build_module_subscribe_type();
     setting_save('1', 'modules_inited');
-    itoast('所有模块安装成功！', url('module/display/display'), 'success');
+    $upgrade = glob(IA_ROOT . '/upgrade/*');
+    if (!empty($upgrade)) {
+        $init_version = '1.0.0';
+        foreach ($upgrade as $item) {
+            $path_array = explode('/', $item);
+            $version = end($path_array);
+            if (!str_is_version($version)) {
+                continue;
+            }
+            if (version_compare($version, $init_version, '<=')) {
+                continue;
+            }
+            $init_version = $version;
+        }
+        setting_save($init_version, 'local_version');
+    }
+    itoast('所有模块安装成功！', url('module/display'), 'success');
 }
 
 //卸载模块

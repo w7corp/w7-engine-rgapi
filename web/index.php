@@ -56,7 +56,7 @@ if (!empty($_SERVER['HTTP_SEC_FETCH_DEST']) && 'document' == $_SERVER['HTTP_SEC_
     itoast('', 'https://console.w7.cc/app/' . getenv('APP_ID') . '/founder/home');
 }
 if (empty($_W['setting']['modules_inited']) && ($action != 'manage-system' && $do != 'install')) {
-    message('应用尚未初始化，点击去初始化。', url('module/manage-system/install'));
+    message('应用初始化中，请稍等片刻...', url('module/manage-system/install'));
 }
 if (!empty($_W['setting']['modules_inited']) && check_upgrade() && ($controller != 'cloud' && $action != 'process')) {
     message('检测到有升级，点击前往。', url('cloud/process'));
