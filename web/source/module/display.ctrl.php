@@ -32,7 +32,7 @@ if ('switch' == $do) {
         $account = table('account')->getOrderByTypeAsc();
     }
     if (empty($account)) {
-        message('需先到3.0多平台关联至少一个号码后再操作！');
+        message('需先到软擎授权平台关联至少一个号码后再操作！');
     }
     $uniacid = $account['uniacid'];
     if (count($support) > 1) {
