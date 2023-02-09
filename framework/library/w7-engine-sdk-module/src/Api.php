@@ -13,19 +13,15 @@
 namespace W7\Sdk\Module;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\HandlerStack;
-use Psr\Http\Message\ResponseInterface;
-use W7\Sdk\Module\Exceptions\ApiException;
-use W7\Sdk\Module\Exceptions\ApiHttpException;
 use W7\Sdk\Module\Exceptions\InvalidArgumentException;
 use W7\Sdk\Module\Middlewares\AddSignMiddleware;
 use W7\Sdk\Module\Middlewares\ResponseHandlerMiddleware;
+use W7\Sdk\Module\Pay\AliPay;
 use W7\Sdk\Module\Pay\Wechat;
 use W7\Sdk\Module\Support\Account;
 use W7\Sdk\Module\Support\AccountRequest;
-use W7\Sdk\Module\Support\ApiResponse;
 
 class Api
 {
@@ -34,6 +30,9 @@ class Api
 
     /** @var Wechat */
     protected $wechatPay;
+
+    /** @var AliPay */
+    protected $aliPay;
 
     /** @var AccountRequest */
     protected $app;
@@ -95,18 +94,27 @@ class Api
         return $this->wechatPay;
     }
 
+    public function aliPay(string $notify_url = ''): AliPay
+    {
+        if (!isset($this->aliPay)) {
+            $this->aliPay = new AliPay($this->client, $notify_url);
+        }
+
+        return $this->aliPay;
+    }
+
     /**
      * 获取关联下的号码列表
      *
-     * @return ApiResponse|ResponseInterface
+     * @return \Psr\Http\Message\ResponseInterface|\W7\Sdk\Module\Support\ApiResponse
      *
-     * @throws GuzzleException
-     * @throws ApiHttpException
-     * @throws ApiException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \W7\Sdk\Module\Exceptions\ApiException
+     * @throws \W7\Sdk\Module\Exceptions\ApiHttpException
      *
      * @noinspection PhpDocRedundantThrowsInspection
      * @noinspection PhpReturnDocTypeMismatchInspection
-     * @noinspection PhpMultipleClassDeclarationsInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function getAccountList()
     {

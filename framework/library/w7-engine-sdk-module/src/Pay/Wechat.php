@@ -12,12 +12,6 @@
 
 namespace W7\Sdk\Module\Pay;
 
-use GuzzleHttp\Exception\GuzzleException;
-use Psr\Http\Message\ResponseInterface;
-use W7\Sdk\Module\Exceptions\ApiException;
-use W7\Sdk\Module\Exceptions\ApiHttpException;
-use W7\Sdk\Module\Support\ApiResponse;
-
 class Wechat extends BasePay
 {
     /** @var string  */
@@ -33,13 +27,13 @@ class Wechat extends BasePay
      * @param string $out_trade_no   原支付交易对应的商户订单号
      * @param array  $other          其他非必填参数
      *
-     * @return ApiResponse|ResponseInterface
+     * @return \Psr\Http\Message\ResponseInterface|\W7\Sdk\Module\Support\ApiResponse
      *
-     * @throws ApiException
-     * @throws ApiHttpException
-     * @throws GuzzleException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \W7\Sdk\Module\Exceptions\ApiException
+     * @throws \W7\Sdk\Module\Exceptions\ApiHttpException
      *
-     * @noinspection PhpMultipleClassDeclarationsInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function refund(
         string $out_refund_no,
@@ -51,14 +45,15 @@ class Wechat extends BasePay
     ) {
         return $this->request(
             'refund',
-            array_merge(compact(
+            compact(
                 'out_refund_no',
                 'out_trade_no',
                 'refund',
                 'total',
                 'transaction_id',
-                'out_trade_no'
-            ), $other)
+                'out_trade_no',
+                'other'
+            )
         );
     }
 
@@ -71,13 +66,13 @@ class Wechat extends BasePay
      * @param string $openid       用户在直连商户appid下的唯一标识。
      * @param array  $other        其他非必填参数
      *
-     * @return ApiResponse|ResponseInterface
+     * @return \Psr\Http\Message\ResponseInterface|\W7\Sdk\Module\Support\ApiResponse
      *
-     * @throws ApiException
-     * @throws ApiHttpException
-     * @throws GuzzleException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \W7\Sdk\Module\Exceptions\ApiException
+     * @throws \W7\Sdk\Module\Exceptions\ApiHttpException
      *
-     * @noinspection PhpMultipleClassDeclarationsInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function payTransactionsJsapi(
         string $description,
@@ -88,12 +83,13 @@ class Wechat extends BasePay
     ) {
         return $this->request(
             'payTransactionsJsapi',
-            array_merge(compact(
+            compact(
                 'description',
                 'out_trade_no',
                 'total',
-                'openid'
-            ), $other)
+                'openid',
+                'other'
+            )
         );
     }
 
@@ -105,13 +101,13 @@ class Wechat extends BasePay
      * @param int    $total        订单总金额，单位为分。
      * @param array  $other        其他非必填参数
      *
-     * @return ResponseInterface|ApiResponse
+     * @return \Psr\Http\Message\ResponseInterface|\W7\Sdk\Module\Support\ApiResponse
      *
-     * @throws GuzzleException
-     * @throws ApiException
-     * @throws ApiHttpException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \W7\Sdk\Module\Exceptions\ApiException
+     * @throws \W7\Sdk\Module\Exceptions\ApiHttpException
      *
-     * @noinspection PhpMultipleClassDeclarationsInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function payTransactionsNative(
         string $description,
@@ -121,11 +117,12 @@ class Wechat extends BasePay
     ) {
         return $this->request(
             'payTransactionsNative',
-            array_merge(compact(
+            compact(
                 'description',
                 'out_trade_no',
-                'total'
-            ), $other)
+                'total',
+                'other'
+            )
         );
     }
 }

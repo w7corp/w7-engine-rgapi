@@ -34,6 +34,12 @@ if (is_array($session)) {
     unset($user);
 }
 unset($session);
+if (getenv('LOCAL_DEVELOP')) {
+    $_W['user'] = user_single(1);
+    $_W['uid'] = $_W['user']['uid'];
+    $_W['username'] = $_W['user']['username'];
+    $_W['isfounder'] = $_W['isadmin'] = STATUS_ON;
+}
 $_W['uniacid'] = (int)igetcookie('__uniacid');
 
 if (!empty($_W['uid'])) {

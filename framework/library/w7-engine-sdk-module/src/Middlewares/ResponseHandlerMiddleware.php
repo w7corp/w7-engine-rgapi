@@ -57,7 +57,16 @@ class ResponseHandlerMiddleware
         $body = $response->getBody();
         $body->rewind();
         $response = new ApiResponse($response->getStatusCode(), $response->getHeaders(), $body, $response->getProtocolVersion(), $response->getReasonPhrase());
-        $response->withData($data['data'] ?? []);
+        if (is_array($data['data'])) {
+            $response->withData($data['data']);
+        } elseif (is_string($data['data'])) {
+            $dataJson = json_decode($data['data'], true);
+            if (JSON_ERROR_NONE !== json_last_error()) {
+                $response->withData(['data' => $data['data']]);
+            } else {
+                $response->withData($dataJson);
+            }
+        }
 
         return $response;
     }

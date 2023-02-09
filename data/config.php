@@ -6,7 +6,7 @@ $config = array();
 $config['db']['master']['host'] = getenv('MYSQL_ADDRESS');
 $config['db']['master']['username'] = getenv('MYSQL_USERNAME');
 $config['db']['master']['password'] = getenv('MYSQL_PASSWORD');
-$config['db']['master']['port'] = '';
+$config['db']['master']['port'] = getenv('MYSQL_PORT') ?: 3306;
 $config['db']['master']['database'] = getenv('MYSQL_DATABASE');
 $config['db']['master']['charset'] = 'utf8';
 $config['db']['master']['pconnect'] = 0;
@@ -50,7 +50,7 @@ $config['upload']['audio']['limit'] = 5000;
 
 // --------------------------  CONFIG MEMCACHE  --------------------------- //
 $config['setting']['memcache']['server'] = '';
-$config['setting']['memcache']['port'] = '';
+$config['setting']['memcache']['port'] = 11211;
 $config['setting']['memcache']['pconnect'] = 1;
 $config['setting']['memcache']['timeout'] = 30;
 $config['setting']['memcache']['session'] = 1;
@@ -66,3 +66,6 @@ $config['setting']['redis']['auth'] = '';
 // --------------------------  CONFIG PROXY  --------------------------- //
 $config['setting']['proxy']['host'] = '';
 $config['setting']['proxy']['auth'] = '';
+
+$config['config']['setting']['allow_origin'] = getenv('ALLOW_ORIGIN');
+$config['setting']['local_develop'] = getenv('LOCAL_DEVELOP');

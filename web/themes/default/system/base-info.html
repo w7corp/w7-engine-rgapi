@@ -4,10 +4,12 @@
 	<li {if $action == 'common'}class="active"{/if}><a href="{url 'system/common'}">公众平台验证文件</a></li>
 </ul>
 <div class="main" id="system-info" ng-controller="baseInfoCtrl" ng-cloak>
+	{if !getenv('LOCAL_DEVELOP')}
 	<div class="pull-right" style="margin-top: -20px">
 		<span class="color-gray" style="">可通过一键关联实现当前独立系统与软擎授权系统的对接</span>
 		<button class="btn btn-primary we7-margin-bottom-sm" style="margin-top: 10px;margin-left: 10px;" onclick="card()">一键关联</button>
 	</div>
+	{/if}
 	<table class="table we7-table table-hover site-list">
 		<col width="260px" />
 		<col />

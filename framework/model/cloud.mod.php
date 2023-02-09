@@ -92,7 +92,7 @@ function cloud_api($method, $data = array(), $extra = array(), $timeout = 60) {
 function cloud_oauth_login_url() {
     $ret = cloud_api('we7/open/oauth/login-url/index', ['redirect' => url('user/login', [], true)]);
     if (is_error($ret)) {
-        return error($ret['message']);
+        return error(-1, $ret['message']);
     }
     return $ret['url'];
 }
@@ -100,7 +100,7 @@ function cloud_oauth_login_url() {
 function cloud_oauth_accesstoken($code) {
     $result = cloud_api('we7/open/oauth/access-token/code', ['code' => $code]);
     if (is_error($result)) {
-        return error($result['message']);
+        return error(-1, $result['message']);
     }
     $cache_key = cache_system_key('oauthaccesstoken');
     cache_write($cache_key, $result['access_token'], $result['expire_time']);

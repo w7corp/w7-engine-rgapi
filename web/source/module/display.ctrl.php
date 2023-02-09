@@ -12,7 +12,7 @@ $do = in_array($do, $dos) ? $do : 'switch';
 
 if ('switch' == $do) {
     if (empty($_W['setting']['server_setting']['app_id']) || empty($_W['setting']['server_setting']['app_secret'])) {
-        itoast('请先配置app_id和app_secret。', url('system/base-info'), 'error');
+        message('请先配置app_id和app_secret。', url('system/base-info'), 'error');
     }
     $module_name = pdo_fetchcolumn("SELECT `name` FROM " . tablename('modules') . " ORDER BY `mid` ASC");
     $module_info = module_fetch($module_name);
@@ -32,7 +32,7 @@ if ('switch' == $do) {
         $account = table('account')->getOrderByTypeAsc();
     }
     if (empty($account)) {
-        itoast('需先到3.0多平台关联至少一个号码后再操作！');
+        message('需先到3.0多平台关联至少一个号码后再操作！');
     }
     $uniacid = $account['uniacid'];
     if (count($support) > 1) {

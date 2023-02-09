@@ -39,6 +39,24 @@ class AppEncryptor
         return sha1(implode($attributes));
     }
 
+    public function decrypt(string $xml): array
+    {
+        $xmlData = Xml::parse($xml);
+        if (empty($xmlData)) {
+            throw new ApiException('无效的数据。');
+        }
+        $xmlData = array_intersect_key($xmlData, array_flip(['Encrypt', 'MsgSignature', 'Nonce', 'TimeStamp']));
+        if (4 !== count($xmlData)) {
+            throw new ApiException('缺失必要的参数。');
+        }
+        $data = $this->decryptXml($xmlData['Encrypt'], $xmlData['MsgSignature'], $xmlData['Nonce'], $xmlData['TimeStamp']);
+        $data = json_decode($data, true);
+        if (JSON_ERROR_NONE != json_last_error()) {
+            throw new ApiException('无效的数据。');
+        }
+        return $data;
+    }
+
     /**
      * @param string     $ciphertext
      * @param string     $msgSignature
@@ -49,7 +67,7 @@ class AppEncryptor
      *
      * @throws ApiException
      */
-    public function decrypt(string $ciphertext, string $msgSignature, string $nonce, $timestamp): string
+    protected function decryptXml(string $ciphertext, string $msgSignature, string $nonce, $timestamp): string
     {
         $signature = $this->createSignature($this->token, $timestamp, $nonce, $ciphertext);
 

@@ -9,18 +9,33 @@ define('STARTTIME', microtime());
 define('MAGIC_QUOTES_GPC', (version_compare(PHP_VERSION, '7.4.0', '<') ? function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() : 0) || @ini_get('magic_quotes_sybase'));
 define('TIMESTAMP', time());
 
+if (is_file(IA_ROOT . '/.env')) {
+    $env = parse_ini_file(IA_ROOT . '/.env', true);
+    foreach ($env as $key => $val) {
+        $name = strtoupper($key);
+        if (is_array($val)) {
+            foreach ($val as $k => $v) {
+                $item = $name . '_' . strtoupper($k);
+                putenv("$item=$v");
+            }
+        } else {
+            putenv("$name=$val");
+        }
+    }
+}
+
 $configfile = IA_ROOT . '/data/config.php';
 if (!file_exists($configfile)) {
     header('Content-Type: text/html; charset=utf-8');
-    exit(('配置文件不存在或是不可读，请检查“data/config.php”文件或是<a href="./install.php"> 重新安装 </a>！'));
+    exit(('配置文件不存在或是不可读，请检查“data/config.php”文件是否存在！'));
 }
 require $configfile;
 $_W = $_GPC = array();
 $_W['config'] = $config;
 
 $allow_origin = array('https://user.w7.cc', 'https://m.w7.cc', 'https://console.w7.cc', 'http://console.w7.cc', 'http://user.w7.cc', 'http://m.w7.cc');
-if (!empty($_W['config']['setting']['allow_origin']) && is_array($_W['config']['setting']['allow_origin'])) {
-    $allow_origin = array_merge($allow_origin, $_W['config']['setting']['allow_origin']);
+if (!empty($_W['config']['setting']['allow_origin'])) {
+    $allow_origin = array_merge($allow_origin, explode(',', getenv('ALLOW_ORIGIN')));
 }
 if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allow_origin)) {
     header('Access-Control-Allow-Headers:Origin,X-Requested-With,Content-Type,Accept,Authorization,cancelload,X-W7-Oauthtoken,W7-Oauthtoken');

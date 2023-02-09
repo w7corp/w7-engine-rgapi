@@ -15,8 +15,12 @@
     }
   },
   "require": {
-    "php": ">=8.0",
-    "guzzlehttp/guzzle": "^7.0",
-    "ext-openssl": "*"
+    "php": ">=7.1",
+    "guzzlehttp/guzzle": "^6.5.8|^7.4.5",
+    "symfony/polyfill-php80": "^1.27",
+    "ext-openssl": "*",
+    "ext-json": "*",
+    "ext-simplexml": "*",
+    "ext-libxml": "*"
   }
 }

@@ -63,7 +63,6 @@ class BasePay implements ApiRequest
      *
      * @noinspection PhpDocRedundantThrowsInspection
      * @noinspection PhpReturnDocTypeMismatchInspection
-     * @noinspection PhpMultipleClassDeclarationsInspection
      */
     protected function request(string $method, array $data = [])
     {

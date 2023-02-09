@@ -12,6 +12,7 @@ define('IA_INSTALL_ROOT', str_replace("\\", '/', dirname(__FILE__)));
 define('INSTALL_VERSION', 'notapp');
 define('ERROR_LOG_FILE', './data/logs/error_log.php');
 set_error_handler("handleError");
+we7_load_env();
 
 $actions = array('environment', 'install', 'login');
 $action = !empty($_GET['step']) ? $_GET['step'] : '';
@@ -52,7 +53,7 @@ if ($action == 'environment') {
         $ret['fopen']['name'] = 'fopen';
         $ret['fopen']['result'] = '不支持fopen';
     }
-    if (!$is_https) {
+    if (!$is_https && !getenv('LOCAL_DEVELOP')) {
         $ret['https']['failed'] = true;
         $ret['https']['name'] = '是否支持https';
         $ret['https']['result'] = '不支持';
@@ -128,7 +129,6 @@ if ($action == 'install') {
     //2.初始化
     if (!file_exists(IA_INSTALL_ROOT . '/data/install.lock')) {
         we7_finish();
-        @unlink(IA_INSTALL_ROOT . '/data/logs/data.json');
     }
 
     touch(IA_INSTALL_ROOT . '/data/install.lock');
@@ -138,7 +138,6 @@ if ($action == 'install') {
 if ($action == 'login') {
     @unlink(IA_INSTALL_ROOT . '/data/db.lock');
     @unlink(IA_INSTALL_ROOT . '/data/logs/error_log.php');
-    @unlink(IA_INSTALL_ROOT . '/data/logs/install-' . date('Ymd') . '.php');
     exit(we7_error(0));
 }
 
@@ -431,7 +430,11 @@ function we7_db() {
     } else {
         return '安装包不正确.';
     }
-    
+    if (getenv('LOCAL_DEVELOP')) {
+        //默认用户名密码
+        $sql = "INSERT INTO `{$db['prefix']}users` (`username`, `salt`, `starttime`) VALUES('admin', 'QWE1234R', '" . time() . "')";
+        we7_pdo($link, 'exec', $sql);
+    }
     return true;
 }
 
@@ -453,6 +456,25 @@ function we7_finish() {
 function we7_error($num, $message = 'success') {
     $num = intval($num);
     return json_encode(array('errno' => $num, 'data' => $message));
+}
+
+function we7_load_env() {
+    if (!is_file(IA_INSTALL_ROOT . '/.env')) {
+        return true;
+    }
+    $env = parse_ini_file(IA_INSTALL_ROOT . '/.env', true);
+    foreach ($env as $key => $val) {
+        $name = strtoupper($key);
+        if (is_array($val)) {
+            foreach ($val as $k => $v) {
+                $item = $name . '_' . strtoupper($k);
+                putenv("$item=$v");
+            }
+        } else {
+            putenv("$name=$val");
+        }
+    }
+    return true;
 }
 
 header('content-type:text/html;charset=utf-8');

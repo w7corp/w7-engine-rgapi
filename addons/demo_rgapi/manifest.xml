@@ -35,6 +35,7 @@
 			<entry title="code换token" do="code_to_token" />
 			<entry title="其他" do="other" />
 			<entry title="小程序-日记列表" do="list" state="" direct="false" />
+			<entry title="微信支付" do="pay" />
 		</menu>
 	</bindings>
 	<permissions>

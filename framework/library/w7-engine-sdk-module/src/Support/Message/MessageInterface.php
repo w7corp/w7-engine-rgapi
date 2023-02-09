@@ -10,11 +10,11 @@
  * visited https://www.w7.cc for more details
  */
 
-namespace W7\Sdk\Module\Support;
+namespace W7\Sdk\Module\Support\Message;
 
-use GuzzleHttp\Client;
-
-interface ApiRequest
+interface MessageInterface
 {
-    public function __construct(Client $client);
+    public function getType(): string;
+    public function toArray(): array;
+    public function toXmlArray(): array;
 }
