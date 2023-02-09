@@ -12,9 +12,9 @@
 3. 浏览器访问站点域名即可；
 4. 本地开发时，需要手动切换```manifest.yaml```中对应的左侧菜单的路由，见5；
 5. 三个路由：
-<br>（1） 应用管理```域名/web/index.php?c=module&a=display&do=switch```，对应控制台已上线的软擎授权示例应用下的左侧菜单之“应用管理”，如下图：
+<br>（1） 应用管理```域名/web/index.php?c=module&a=display&do=switch```，对应控制台已上线的软擎授权示例应用下的左侧菜单之“应用管理”，如下图：<br>
    ![image.png](https://rangine-1251470023.cos.ap-shanghai.myqcloud.com/document/S1JjDJb6Kry4y04jj4jhyjj664CpPjPn.png)；
-<br>（2） 系统功能```域名/web/index.php?c=system&a=base-info&do=display```，对应控制台已上线的软擎授权示例应用下的左侧菜单之“系统功能”，如下图：
+<br>（2） 系统功能```域名/web/index.php?c=system&a=base-info&do=display```，对应控制台已上线的软擎授权示例应用下的左侧菜单之“系统功能”，如下图：<br>
    ![image.png](https://rangine-1251470023.cos.ap-shanghai.myqcloud.com/document/PGdQGglgngdl4bA5eC54NqCegQwc1YEG.png)；
-<br>（3） 站点设置```域名/web/index.php?c=system&a=setting&do=basic```，对应控制台已上线的软擎授权示例应用下的左侧菜单之“站点设置”，如下图：
+<br>（3） 站点设置```域名/web/index.php?c=system&a=setting&do=basic```，对应控制台已上线的软擎授权示例应用下的左侧菜单之“站点设置”，如下图：<br>
    ![image.png](https://rangine-1251470023.cos.ap-shanghai.myqcloud.com/document/RVVffMq56hsq365CHc553Z45mH5ZcTcf.png)；
