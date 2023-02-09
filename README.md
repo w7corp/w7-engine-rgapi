@@ -9,5 +9,5 @@
 #### 本地开发
 1. 将```.env.example```重命名为```.env```；
 2. 将数据库信息修改为自己的；
-3. 浏览器访问站点域名即可。
-> 本地开发时，需要手动切换```manifest.yaml```中对应的左侧菜单的路由，三个路由：应用管理```域名/web/index.php?c=module&a=display```，系统功能```域名/web/index.php?c=system&a=base-info```，站点设置```域名/web/index.php?c=system&a=setting&do=basic```
+3. 浏览器访问站点域名即可；
+4. 本地开发时，需要手动切换```manifest.yaml```中对应的左侧菜单的路由。三个路由：（1）应用管理```域名/web/index.php?c=module&a=display```；（2）系统功能```域名/web/index.php?c=system&a=base-info```，（3）站点设置```域名/web/index.php?c=system&a=setting&do=basic```
