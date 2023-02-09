@@ -52,7 +52,7 @@ if (!empty($acl[$controller]) && is_array($acl[$controller]['direct']) && in_arr
     exit();
 }
 checklogin();
-if (!empty($_SERVER['HTTP_SEC_FETCH_DEST']) && 'document' == $_SERVER['HTTP_SEC_FETCH_DEST']) {
+if (!getenv('LOCAL_DEVELOP') && !empty($_SERVER['HTTP_SEC_FETCH_DEST']) && 'document' == $_SERVER['HTTP_SEC_FETCH_DEST']) {
     itoast('', 'https://console.w7.cc/app/' . getenv('APP_ID') . '/founder/home');
 }
 if (empty($_W['setting']['modules_inited']) && ($action != 'manage-system' && $do != 'install')) {
