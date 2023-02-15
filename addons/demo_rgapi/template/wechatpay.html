@@ -1,0 +1,127 @@
+{template 'common/header'}
+<div class="alert we7-page-alert">
+	<p>支付功能需先配置支付参数：软擎授权系统->进入对应关联的号码->配置->支付参数</p>
+</div>
+<div id="bind" ng-controller="ctrl">
+	<a href="javascript:;" class="btn btn-primary" style="margin-bottom: 8px;" ng-click="pay(2)">创建微信支付</a>
+	<a href="javascript:location.reload();" class="btn btn-default pull-right">刷新</a>
+	<table class="table we7-table table-hover vertical-middle">
+		<col width="250px"/>
+		<col width="250px" />
+		<col width="100px" />
+		<col width="50px" />
+		<tr>
+			<th>订单号</th>
+			<th>创建时间</th>
+			<th>状态</th>
+			<th class="text-center">操作</th>
+		</tr>
+		<tr ng-repeat="item in data">
+			<td>{{item.no}}</td>
+			<td>{{item.createtime}}</td>
+			<td>
+				<span ng-if="1 == item.status">已支付</span>
+				<span ng-if="2 == item.status">已退款</span>
+				<span ng-if="0 == item.status">未支付</span>
+			</td>
+			<td class="text-center">
+				<div class="link-group">
+					<a href="javascript:;" ng-if="1 == item.status" ng-click="refund(item.no)">退款</a>
+					<a href="javascript:;" ng-if="2 == item.status">-</a>
+					<a href="javascript:;" ng-if="0 == item.status" ng-click="pay(1, item.code, item.no)">支付</a>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<div class="modal fade" id="key" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">支付</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<div id="qrcode" class="text-center"></div>
+						<span class="help-block"></span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+<script>
+	$('#key').on('hidden.bs.modal', function (e) {
+		window.location.reload();
+	})
+	angular.module('myApp', []);
+	angular.module('myApp').value('config', {
+		'data': {php echo !empty($data) ? json_encode($data) : '[]'},
+		'links': {
+			'payUrl': "{php echo url('site/entry/pay', array('module_name' => 'demo_rgapi', 'type' => 'wechat'))}",
+			'refundUrl': "{php echo url('site/entry/refund', array('module_name' => 'demo_rgapi', 'type' => 'wechat'))}",
+			'payStatusUrl': "{php echo url('site/entry/paystatus', array('module_name' => 'demo_rgapi'))}",
+		}
+	});
+	angular.module('myApp').controller('ctrl', ['$scope', '$http', 'config', '$interval', function($scope, $http, config, $interval) {
+		$scope.data = config.data;
+
+		$scope.pay = function(type, code = '', no = '') {
+			document.getElementById("qrcode").innerHTML = "";
+			if (2 == type) {
+				$http.post(config.links.payUrl)
+					.success(function (data) {
+						if (0 != data.message.errno) {
+							util.message(data.message.message, '', 'error');
+							return '';
+						}
+						$scope.payStatus(data.message.message.no);
+						$('#qrcode').qrcode({
+							text: data.message.message.code,
+							width: 200,
+							height: 200,
+						});
+						$('#key').modal('show')
+					})
+			} else {
+				$scope.payStatus(no);
+				$('#qrcode').qrcode({
+					text: code,
+					width: 200,
+					height: 200,
+				});
+				$('#key').modal('show')
+			}
+		};
+
+		$scope.payStatus = function(no) {
+			$interval(function() {
+				$http.post(config.links.payStatusUrl, {no: no})
+						.success(function (data) {
+							if (0 == data.message.errno) {
+								util.message(data.message.message, data.redirect);
+							}
+						})
+			}, 3000);
+		};
+
+		$scope.refund = function(no) {
+			util.confirm(function () {
+				$http.post(config.links.refundUrl, {no: no})
+						.success(function (data) {
+							if (0 != data.message.errno) {
+								util.message(data.message.message, '', 'error');
+								return '';
+							}
+							util.message(data.message.message, '', 'success');
+						})
+			}, function () {
+				return false;
+			}, '确认要发起退款申请吗?');
+		};
+	}]);
+	angular.bootstrap($('#bind'), ['myApp']);
+</script>
+{template 'common/footer'}

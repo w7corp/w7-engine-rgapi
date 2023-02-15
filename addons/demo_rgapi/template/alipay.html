@@ -1,6 +1,9 @@
 {template 'common/header'}
+<div class="alert we7-page-alert">
+	<p>支付功能需先配置支付参数：软擎授权系统->进入对应关联的号码->配置->支付参数</p>
+</div>
 <div id="bind" ng-controller="ctrl">
-	<a href="javascript:;" class="btn btn-primary" style="margin-bottom: 8px;" ng-click="pay(2)">创建支付</a>
+	<a href="javascript:;" class="btn btn-primary" style="margin-bottom: 8px;" ng-click="pay(2)">创建支付宝支付</a>
 	<a href="javascript:location.reload();" class="btn btn-default pull-right">刷新</a>
 	<table class="table we7-table table-hover vertical-middle">
 		<col width="250px"/>
@@ -30,35 +33,16 @@
 			</td>
 		</tr>
 	</table>
-	<div class="modal fade" id="key" tabindex="-1" role="dialog" aria-hidden="true">
-		<div class="we7-modal-dialog modal-dialog we7-form">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-					<div class="modal-title">支付</div>
-				</div>
-				<div class="modal-body">
-					<div class="form-group">
-						<div id="qrcode" class="text-center"></div>
-						<span class="help-block"></span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
 </div>
 
 <script src="https://cdn.bootcss.com/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 <script>
-	$('#key').on('hidden.bs.modal', function (e) {
-		window.location.reload();
-	})
 	angular.module('myApp', []);
 	angular.module('myApp').value('config', {
 		'data': {php echo !empty($data) ? json_encode($data) : '[]'},
 		'links': {
-			'payUrl': "{php echo url('site/entry/wechatpay', array('module_name' => 'demo_rgapi'))}",
-			'refundUrl': "{php echo url('site/entry/wechatrefund', array('module_name' => 'demo_rgapi'))}",
+			'payUrl': "{php echo url('site/entry/pay', array('module_name' => 'demo_rgapi', 'type' => 'ali'))}",
+			'refundUrl': "{php echo url('site/entry/refund', array('module_name' => 'demo_rgapi', 'type' => 'ali'))}",
 			'payStatusUrl': "{php echo url('site/entry/paystatus', array('module_name' => 'demo_rgapi'))}",
 		}
 	});
@@ -66,7 +50,6 @@
 		$scope.data = config.data;
 
 		$scope.pay = function(type, code = '', no = '') {
-			document.getElementById("qrcode").innerHTML = "";
 			if (2 == type) {
 				$http.post(config.links.payUrl)
 					.success(function (data) {
@@ -74,22 +57,24 @@
 							util.message(data.message.message, '', 'error');
 							return '';
 						}
-						$scope.payStatus(data.message.message.no);
-						$('#qrcode').qrcode({
-							text: data.message.message.code,
-							width: 200,
-							height: 200,
-						});
-						$('#key').modal('show')
+						// $scope.payStatus(data.message.message.no);
+						util.confirm(function () {
+							location.reload();
+						}, function () {
+							return false;
+						}, '是否已完成支付?');
+						window.open(data.message.message.code);
+						return false;
 					})
 			} else {
-				$scope.payStatus(no);
-				$('#qrcode').qrcode({
-					text: code,
-					width: 200,
-					height: 200,
-				});
-				$('#key').modal('show')
+				// $scope.payStatus(no);
+				util.confirm(function () {
+					location.reload();
+				}, function () {
+					return false;
+				}, '是否已完成支付?');
+				window.open(code);
+				return false;
 			}
 		};
 
@@ -108,11 +93,11 @@
 			util.confirm(function () {
 				$http.post(config.links.refundUrl, {no: no})
 						.success(function (data) {
-							if (0 != data.message.errno) {
-								util.message(data.message.message, '', 'error');
+							if (0 == data.message.errno) {
+								util.message(data.message.message, data.redirect);
 								return '';
 							}
-							util.message(data.message.message, '', 'success');
+							util.message(data.message.message, '', 'error');
 						})
 			}, function () {
 				return false;
