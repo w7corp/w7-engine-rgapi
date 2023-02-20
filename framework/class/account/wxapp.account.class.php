@@ -71,6 +71,7 @@ class WxappAccount extends WeAccount {
     }
 
     public function getAccessToken() {
+        global $_W;
         $cachekey = cache_system_key('accesstoken_key', array('key' => $this->account['key']));
         $cache = cache_load($cachekey);
         if (!empty($cache) && !empty($cache['token'])) {
