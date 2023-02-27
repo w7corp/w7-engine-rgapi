@@ -16,8 +16,9 @@ platform:
     customLogs: stdout
     initialDelaySeconds: 2
     volumes:
-        -
-          path: /home/WeEngine/attachment
+      -
+        mountPath: /home/WeEngine/attachment
+        type: diskStorage
   supports:
     - notapp
   notify_url: ''
