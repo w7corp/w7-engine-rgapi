@@ -3,7 +3,7 @@ defined('IN_IA') or exit('Access Denied');
 
 $config = array();
 
-$config['db']['master']['host'] = getenv('MYSQL_ADDRESS');
+$config['db']['master']['host'] = getenv('MYSQL_HOST');
 $config['db']['master']['username'] = getenv('MYSQL_USERNAME');
 $config['db']['master']['password'] = getenv('MYSQL_PASSWORD');
 $config['db']['master']['port'] = getenv('MYSQL_PORT') ?: 3306;
@@ -56,12 +56,11 @@ $config['setting']['memcache']['timeout'] = 30;
 $config['setting']['memcache']['session'] = 1;
 
 // --------------------------  CONFIG REDIS  --------------------------- //
-$config['setting']['redis']['server'] =  getenv('REDIS_ADDRESS');
+$config['setting']['redis']['server'] =  getenv('REDIS_HOST');
 $config['setting']['redis']['port'] = getenv('REDIS_PORT');
 $config['setting']['redis']['pconnect'] = 1;
 $config['setting']['redis']['timeout'] = 30;
-$config['setting']['redis']['session'] = 1;
-$config['setting']['redis']['auth'] = '';
+$config['setting']['redis']['auth'] = getenv('REDIS_PASSWORD');
 
 // --------------------------  CONFIG PROXY  --------------------------- //
 $config['setting']['proxy']['host'] = '';

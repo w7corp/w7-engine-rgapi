@@ -1,8 +1,8 @@
 application:
   name: 软擎授权独立系统示例应用
   identifie: w7-engine-rgapi
-  version: 1.0.0
   description: 基于微擎2.0开发的独立应用。
+  author: 微擎团队
 platform:
   container:
     containerPort: 8081
@@ -15,6 +15,56 @@ platform:
     envParams:
     customLogs: stdout
     initialDelaySeconds: 2
+    startParams:
+      -
+        name: REDIS_HOST
+        title: redis地址
+        required: true
+        type: text
+        values_text: '%REDIS_HOST%'
+        module_name: w7_redis
+      -
+        name: REDIS_PORT
+        title: redis端口
+        required: true
+        type: text
+        values_text: '%REDIS_PORT%'
+        module_name: w7_redis
+      -
+        name: REDIS_PASSWORD
+        title: redis密码
+        required: true
+        type: text
+        values_text: '%REDIS_PASSWORD%'
+        module_name: w7_redis
+      -
+        name: MYSQL_HOST
+        title: mysql地址
+        required: true
+        type: text
+        values_text: '%MYSQL_HOST%'
+        module_name: w7_mysql
+      -
+        name: MYSQL_PORT
+        title: mysql端口
+        required: true
+        type: text
+        values_text: '%MYSQL_PORT%'
+        module_name: w7_mysql
+      -
+        name: MYSQL_USERNAME
+        title: mysql用户名
+        required: true
+        type: text
+        values_text: '%MYSQL_ROOT_USERNAME%'
+        module_name: w7_mysql
+      -
+        name: MYSQL_PASSWORD
+        title: mysql密码
+        required: true
+        type: text
+        values_text: '%MYSQL_ROOT_PASSWORD%'
+        module_name: w7_mysql
     volumes:
       -
         mountPath: /home/WeEngine/attachment

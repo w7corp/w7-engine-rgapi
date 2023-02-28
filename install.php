@@ -356,7 +356,6 @@ function we7_pdo($link, $method, $sql) {
  * @return bool|string
  */
 function we7_db() {
-    global $is_https;
     define('IN_IA', true);
     require IA_INSTALL_ROOT . '/data/config.php';
     $db = array(
