@@ -53,7 +53,6 @@ $config['setting']['memcache']['server'] = '';
 $config['setting']['memcache']['port'] = 11211;
 $config['setting']['memcache']['pconnect'] = 1;
 $config['setting']['memcache']['timeout'] = 30;
-$config['setting']['memcache']['session'] = 1;
 
 // --------------------------  CONFIG REDIS  --------------------------- //
 $config['setting']['redis']['server'] =  getenv('REDIS_HOST');

@@ -94,3 +94,9 @@ bindings:
         do: /web/index.php?c=system&a=setting&do=basic
         title: 站点设置
         icon: apply
+      -
+        displayorder: 0
+        do: "manage"
+        title: 号码库
+        icon: branch
+        module_name: 'w7_rangineapi'
