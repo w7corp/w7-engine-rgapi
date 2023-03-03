@@ -96,7 +96,7 @@ bindings:
         icon: apply
       -
         displayorder: 0
-        do: "manage"
+        do: manage
         title: 号码库
         icon: branch
         module_name: 'w7_rangineapi'
