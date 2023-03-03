@@ -38,8 +38,21 @@
 			</div>
 			<div class="media-right media-middle">
 				<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'version_id' => $version_id])}" class="btn btn-primary">立即下载</a>
+				<a href="javascript:;" class="btn btn-primary" onclick="authorizationUpload()">授权上传</a>
 			</div>
 		</div>
+		<script>
+			function authorizationUpload() {
+				window.w7.ready(()=>{
+					window.w7.navigate({
+						modulename: 'w7_rangineapi', // 根据modulename选择
+						type: 'micro', // micro or iframe 目标应用是vue 用micro
+						route: '{php echo $upload_route}', // 要打开应用的路由
+						style: {width:1000, height:700},
+					});
+				})
+			}
+		</script>
 		<style>
 			.img img{
 				width: 250px;

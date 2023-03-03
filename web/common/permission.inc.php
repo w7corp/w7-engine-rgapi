@@ -18,48 +18,48 @@ defined('IN_IA') or exit('Access Denied');
  *    'clerk'         代表  店员拥有的权限
  * 权限中带星号'*'指拥有该文件夹下所有权限.
  */
-$w7_file_permission = array();
-$w7_file_permission = array(
-    'account' => array(
+$w7_file_permission = [];
+$w7_file_permission = [
+    'account' => [
         'default' => '',
-        'direct' => array(),
-    ),
-    'message' => array(
+        'direct' => [],
+    ],
+    'message' => [
         'default' => '',
-        'direct' => array(),
-    ),
-    'module' => array(
+        'direct' => [],
+    ],
+    'module' => [
         'default' => '',
-        'direct' => array(),
-    ),
-    'platform' => array(
+        'direct' => [],
+    ],
+    'platform' => [
         'default' => '',
-        'direct' => array(),
-    ),
-    'site' => array(
+        'direct' => [],
+    ],
+    'site' => [
         'default' => '',
-        'direct' => array(
+        'direct' => [
             'entry',
-        ),
-    ),
-    'system' => array(
+        ],
+    ],
+    'system' => [
         'default' => '',
-        'direct' => array(),
-    ),
-    'user' => array(
+        'direct' => [],
+    ],
+    'user' => [
         'default' => '',
-        'direct' => array(
+        'direct' => [
             'login',
-        ),
-    ),
-    'utility' => array(
+        ],
+    ],
+    'utility' => [
         'default' => '',
-        'direct' => array(
+        'direct' => [
             'visit',
             'bindcall',
             'mp-verify',
-        ),
-    ),
-);
+        ],
+    ],
+];
 
 return $w7_file_permission;

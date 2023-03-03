@@ -97,6 +97,10 @@ if ('tominiprogram' == $do) {
 
 if ('front_download' == $do) {
     $type = 'wxapp';
+    if (!empty($_W['setting']['server_setting']) && !empty($_W['setting']['server_setting']['app_id'])) {
+        $package_url = url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'version_id' => $version_id, '__session' => $_GPC['__session']], true);
+        $upload_route = '/upload?url=' . urlencode($package_url) . '&app_id=' . $_W['setting']['server_setting']['app_id'] . '&support_type[]=2';
+    }
     template('wxapp/version-front-download');
 }
 if ('getpackage' == $do) {
@@ -112,7 +116,7 @@ if ('getpackage' == $do) {
         $uniacid_zip_name = $module['name'] . '_wxapp_' . $uniacid . md5(time()) . '.zip';
         $zip = new ZipArchive();
         if ($zip->open($module_root . $uniacid_zip_name, ZipArchive::CREATE) === true) {//如果只用ZipArchive::OVERWRITE那么如果指定目标存在的话就会复写，否则返回错误9，而两个都用则会避免这个错误
-            addFileToZip($module_root . $dir_name, $zip, $module_root);
+            addFileToZip($module_root . $dir_name, $zip, $module_root . $dir_name . '/');
             $zip->close();
         }
         if (!is_dir(ATTACHMENT_ROOT . '/siteinfo')) {
@@ -144,12 +148,12 @@ EOF;
             file_write($tmp_app_json_file, json_encode($app_json));
         }
         if ($zip->open(ATTACHMENT_ROOT . '/siteinfo/' . $uniacid_zip_name) === true) {
-            $zip->addFile(ATTACHMENT_ROOT . '/' . $tmp_siteinfo_file, $dir_name . '/siteinfo.js');
+            $zip->addFile(ATTACHMENT_ROOT . '/' . $tmp_siteinfo_file, 'siteinfo.js');
             if (!empty($tmp_app_json_file)) {
-                $zip->addFile(ATTACHMENT_ROOT . '/' . $tmp_app_json_file, $dir_name . '/app.json');
+                $zip->addFile(ATTACHMENT_ROOT . '/' . $tmp_app_json_file, 'app.json');
             }
             $zip->close();
-            $result = array('url' => $_W['siteroot'] . 'attachment/siteinfo/' . $uniacid_zip_name);
+            $result = array('url' => ATTACHMENT_ROOT . '/siteinfo/' . $uniacid_zip_name);
         }
         @unlink(ATTACHMENT_ROOT . '/' . $tmp_siteinfo_file);
         if (!empty($tmp_app_json_file)) {
@@ -161,8 +165,15 @@ EOF;
     if (is_error($result)) {
         itoast($result['message'], '', '');
     } else {
-        header("http/1.1 301 moved permanently");
-        header("location: " . $result['url']);
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition:attachment;filename=' . $uniacid_zip_name);
+        $fp = fopen(ATTACHMENT_ROOT . '/siteinfo/' . $uniacid_zip_name, 'r+');
+        $buffer = 1024;
+        while (!feof($fp)) {
+            $file_data = fread($fp, $buffer);
+            echo $file_data;
+        }
+        fclose($fp);
     }
     exit;
 }
