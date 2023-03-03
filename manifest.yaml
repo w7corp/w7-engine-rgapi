@@ -99,4 +99,4 @@ bindings:
         do: manage
         title: 号码库
         icon: branch
-        module_name: 'w7_rangineapi'
+        module_name: w7_rangineapi
