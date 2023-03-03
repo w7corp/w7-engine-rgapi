@@ -11,7 +11,6 @@ load()->app('template');
 load()->model('payment');
 
 $sl = $_GPC['ps'];
-$payopenid = $_GPC['payopenid'];
 $params = @json_decode(base64_decode($sl), true);
 if ($_GPC['done'] == '1') {
     $log = table('core_paylog')
@@ -56,8 +55,6 @@ if ($auth != $_GPC['auth']) {
     exit('参数传输错误.');
 }
 
-$setting = uni_setting($_W['uniacid'], array('payment'));
-
 //如果GET参数中包含code参数，则更新粉丝openid
 if (!empty($_GPC['code'])) {
     $proxy_pay_account = payment_proxy_pay_account();
@@ -69,19 +66,6 @@ if (!empty($_GPC['code'])) {
 
 $_W['uniacid'] = $log['uniacid'];
 $_W['openid'] = $log['openid'];
-
-if (!is_array($setting['payment'])) {
-    exit('没有设定支付参数.');
-}
-
-$wechat = $setting['payment']['wechat'];
-$row = table('account_wechats')
-    ->select(array('key', 'secret'))
-    ->where(array('acid' => $wechat['account']))
-    ->get();
-$wechat['appid'] = $row['key'];
-$wechat['secret'] = $row['secret'];
-$wechat['openid'] = $payopenid;
 $params = array(
     'tid' => $log['tid'],
     'fee' => $log['card_fee'],
@@ -90,12 +74,7 @@ $params = array(
     'uniontid' => $log['uniontid'],
     'goods_tag' => $params['goods_tag']
 );
-if (intval($wechat['switch']) == 3 || intval($wechat['switch']) == 2) {
-    $wOpt = wechat_proxy_build($params, $wechat);
-} else {
-    unset($wechat['sub_mch_id']);
-    $wOpt = wechat_build($params, $wechat);
-}
+$wOpt = wechat_build($params);
 if (is_error($wOpt)) {
     if ($wOpt['message'] == 'invalid out_trade_no' || $wOpt['message'] == 'OUT_TRADE_NO_USED') {
         $id = date('YmdH');

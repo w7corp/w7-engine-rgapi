@@ -419,7 +419,7 @@ function uni_init_accounts() {
     global $_W;
     load()->library('sdk-module');
     try {
-        $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret']);
+        $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], 0, V3_API_DOMAIN);
         $accounts = $api->getAccountList()->toArray();
         $uni_accounts = pdo_getall('uni_account', [], [], 'type');
         pdo_delete('account');

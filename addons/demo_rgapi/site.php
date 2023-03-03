@@ -14,6 +14,31 @@ class Demo_rgapiModuleSite extends WeModuleSite {
         global $_W;
         include $this->template('index');
     }
+
+    public function doMobilePay() {
+        global $_W, $_GPC;
+        $out_trade_no = 'wechat' . date('YmdHis', time()) . time() . rand(11, 99);
+
+        $insert = array(
+            'no' => $out_trade_no,
+            'code' => '',
+            'status' => 0,
+            'type' => 3,
+            'createtime' => TIMESTAMP,
+            'updatetime' => TIMESTAMP,
+            'uid' => $_W['uid'],
+            'uniacid' => $_W['uniacid'],
+        );
+        pdo_insert('demo_rgapi_paylog', $insert);
+
+        $params['tid'] = $out_trade_no;
+        $params['ordersn'] = $out_trade_no;
+        $params['user'] = $_W['uid'];
+        $params['fee'] = 0.01;
+        $params['title'] = '测试支付';
+        $this->pay($params);
+    }
+
     public function doWebList() {
         global $_W, $_GPC;
         $data = pdo_getall(self::TABLE, array(), '', 'orderBy createtime desc');
@@ -46,7 +71,7 @@ class Demo_rgapiModuleSite extends WeModuleSite {
 
     public function doWebWechatpay() {
         global $_W;
-        $data = pdo_getall('demo_rgapi_paylog', array('type' => 1), '', '', 'id DESC');
+        $data = pdo_getall('demo_rgapi_paylog', array('type in' => array(1, 3, 4)), '', '', 'id DESC');
         foreach ($data as $key => &$value) {
             $value['createtime'] = date('Y-m-d H:i:s', $value['createtime']);
         }
@@ -70,18 +95,19 @@ class Demo_rgapiModuleSite extends WeModuleSite {
                 iajax(-1, '支付类型错误！');
             }
             load()->library('sdk-module');
-            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], "1");
+            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], "1", V3_API_DOMAIN);
+            $uniontid = date('YmdHis') . random(14, 1);
             $out_trade_no = $type . date('YmdHis', time()) . time() . rand(11, 99);
             if ('wechat' == $type) {
                 $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/notify.php');
-                $data = $pay->payTransactionsNative("测试支付", $out_trade_no, 1, array('attach' => json_encode(array('uniacid' => $_W['uniacid']))))->toArray();
+                $data = $pay->payTransactionsNative("测试支付", $uniontid, 1, array('attach' => json_encode(array('uniacid' => $_W['uniacid']))))->toArray();
                 if (empty($data['code_url'])) {
                     iajax(-1, '支付失败！');
                 }
                 $code = $data['code_url'];
             } else {
                 $pay = $api->aliPay($_W['siteroot'] . 'payment/alipay/notify.php');
-                $data = $pay->payForPc("测试支付", $out_trade_no, 0.01)->toArray();
+                $data = $pay->payForPc("测试支付", $uniontid, 0.01)->toArray();
                 if (empty($data['data'])) {
                     iajax(-1, '支付失败！');
                 }
@@ -94,7 +120,7 @@ class Demo_rgapiModuleSite extends WeModuleSite {
                 'acid' => $_W['acid'],
                 'openid' => $_W['member']['uid'],
                 'module' => 'demo_rgapi',
-                'uniontid' => $out_trade_no,
+                'uniontid' => $uniontid,
                 'tid' => $out_trade_no,
                 'fee' => 0.01,
                 'card_fee' => 0.01,
@@ -127,17 +153,19 @@ class Demo_rgapiModuleSite extends WeModuleSite {
                 iajax(-1, '退款类型错误！');
             }
             load()->library('sdk-module');
-            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], "1");
             $out_trade_no = safe_gpc_string($_GPC['__input']['no']);
+            $paylog = pdo_get('core_paylog', array('tid' => $out_trade_no));
+            $account_type = 'wxapp' == $paylog['type'] ? 2 : 1;
+            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], $account_type, V3_API_DOMAIN);
             if ('wechat' == $type) {
                 $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/refund.php');
-                $data = $pay->refund($out_trade_no, 1, 1, '', $out_trade_no)->toArray();
+                $data = $pay->refund($out_trade_no, 1, 1, '', $paylog['uniontid'])->toArray();
                 if (!empty($data['status']) && 'SUCCESS' == $data['status']) {
                     iajax(0, '已申请退款!');
                 }
             } else {
                 $pay = $api->aliPay($_W['siteroot'] . 'payment/alipay/refund.php');
-                $data = $pay->refund($out_trade_no, 0.01)->toArray();
+                $data = $pay->refund($paylog['uniontid'], 0.01)->toArray();
             }
             $refund = array(
                 'uniacid' => $_W['uniacid'],
@@ -162,7 +190,7 @@ class Demo_rgapiModuleSite extends WeModuleSite {
     public function payResult($params) {
         $paylog = pdo_get('core_paylog', array('uniontid' => $params['uniontid']));
         if (!empty($paylog['status'])) {
-            pdo_update('demo_rgapi_paylog', array('status' => 1), array('no' => $params['uniontid']));
+            pdo_update('demo_rgapi_paylog', array('status' => 1), array('no' => $paylog['tid']));
         }
         exit('success');
     }
@@ -170,7 +198,7 @@ class Demo_rgapiModuleSite extends WeModuleSite {
     public function refundResult($params) {
         $paylog = pdo_get('core_refundlog', array('refund_uniontid' => $params['refund_uniontid']));
         if (!empty($paylog['status'])) {
-            pdo_update('demo_rgapi_paylog', array('status' => 2), array('no' => $params['uniontid']));
+            pdo_update('demo_rgapi_paylog', array('status' => 2), array('no' => $paylog['uniontid']));
         }
         exit('success');
     }

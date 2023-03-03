@@ -27,10 +27,10 @@ function wxPay(param) {
   console.log('wxPay');
   return new Promise((resolve, reject)=>{
     wx.requestPayment({
-      'timeStamp': param.timeStamp,
+      'timeStamp': param.timeStamp.toString(),
       'nonceStr': param.nonceStr,
       'package': param.package,
-      'signType': 'MD5',
+      'signType': param.signType,
       'paySign': param.paySign,
       'success': function (res) {
          console.log(res);

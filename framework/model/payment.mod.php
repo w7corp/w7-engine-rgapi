@@ -50,167 +50,24 @@ function alipay_build($params, $alipay = array()) {
     return array('url' => $response['headers']['Location']);
 }
 
-function wechat_proxy_build($params, $wechat) {
+function wechat_build($params) {
     global $_W;
-    $uniacid = !empty($wechat['service']) ? $wechat['service'] : $wechat['borrow'];
-    $oauth_account = uni_setting($uniacid, array('payment'));
-    if (intval($wechat['switch']) == '2') {
-        $_W['uniacid'] = $uniacid;
-        $wechat['signkey'] = $oauth_account['payment']['wechat']['signkey'];
-        $wechat['mchid'] = $oauth_account['payment']['wechat']['mchid'];
-        unset($wechat['sub_mch_id']);
-    } else {
-        $wechat['signkey'] = $oauth_account['payment']['wechat_facilitator']['signkey'];
-        $wechat['mchid'] = $oauth_account['payment']['wechat_facilitator']['mchid'];
+    if (empty($params['uniontid']) || empty($params['fee']) || empty($params['user'])) {
+        return error(-1, '参数错误！');
     }
-    $wechat['appid'] = pdo_getcolumn('account_wechats', array('uniacid' => $uniacid), 'key');
-    $wechat['version'] = 2;
-    return wechat_build($params, $wechat);
-}
-
-function wechat_build($params, $wechat) {
-    global $_W;
-    load()->func('communication');
-    if (empty($wechat['version']) && !empty($wechat['signkey'])) {
-        $wechat['version'] = 1;
+    load()->library('sdk-module');
+    $account_type = empty($params['account_type']) ? 1 : $params['account_type'];
+    $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], $account_type, V3_API_DOMAIN);
+    $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/notify.php');
+    if (!empty($params['user']) && is_numeric($params['user'])) {
+        $params['user'] = mc_uid2openid($params['user']);
     }
-    $wOpt = array();
-    if ($wechat['version'] == 1) {
-        $wOpt['appId'] = $wechat['appid'];
-        $wOpt['timeStamp'] = strval(TIMESTAMP);
-        $wOpt['nonceStr'] = random(8);
-        $package = array();
-        $package['bank_type'] = 'WX';
-        $package['body'] = $params['title'];
-        $package['attach'] = $_W['uniacid'];
-        $package['partner'] = $wechat['partner'];
-        $package['out_trade_no'] = $params['uniontid'];
-        $package['total_fee'] = $params['fee'] * 100;
-        $package['fee_type'] = '1';
-        $package['notify_url'] = $_W['siteroot'] . 'payment/wechat/notify.php';
-        $package['spbill_create_ip'] = $_W['clientip'];
-        $package['time_start'] = date('YmdHis', TIMESTAMP);
-        $package['time_expire'] = date('YmdHis', TIMESTAMP + 600);
-        $package['input_charset'] = 'UTF-8';
-        if (!empty($wechat['sub_mch_id'])) {
-            $package['sub_mch_id'] = $wechat['sub_mch_id'];
-        }
-        if (!empty($params['goods_tag'])) {
-            $package['goods_tag'] = $params['goods_tag'];
-        }
-        ksort($package);
-        $string1 = '';
-        foreach ($package as $key => $v) {
-            if (empty($v)) {
-                unset($package[$key]);
-                continue;
-            }
-            $string1 .= "{$key}={$v}&";
-        }
-        $string1 .= "key={$wechat['key']}";
-        $sign = strtoupper(md5($string1));
-
-        $string2 = '';
-        foreach ($package as $key => $v) {
-            $v = urlencode($v);
-            $string2 .= "{$key}={$v}&";
-        }
-        $string2 .= "sign={$sign}";
-        $wOpt['package'] = $string2;
-
-        $string = '';
-        $keys = array('appId', 'timeStamp', 'nonceStr', 'package', 'appKey');
-        sort($keys);
-        foreach ($keys as $key) {
-            $v = $wOpt[$key];
-            if ($key == 'appKey') {
-                $v = $wechat['signkey'];
-            }
-            $key = strtolower($key);
-            $string .= "{$key}={$v}&";
-        }
-        $string = rtrim($string, '&');
-        $wOpt['signType'] = 'SHA1';
-        $wOpt['paySign'] = sha1($string);
-        return $wOpt;
-    } else {
-        //当用户传过来UID时，需要转换一下Openid
-        if (!empty($params['user']) && is_numeric($params['user'])) {
-            $params['user'] = mc_uid2openid($params['user']);
-        }
-        $package = array();
-        $package['appid'] = $wechat['appid'];
-        $package['mch_id'] = $wechat['mchid'];
-        $package['nonce_str'] = random(8);
-        $package['body'] = cutstr($params['title'], 26);
-        $package['attach'] = $_W['uniacid'];
-        $package['out_trade_no'] = $params['uniontid'];
-        $package['total_fee'] = $params['fee'] * 100;
-        $package['spbill_create_ip'] = $_W['clientip'];
-        $package['time_start'] = date('YmdHis', TIMESTAMP);
-        $package['time_expire'] = date('YmdHis', TIMESTAMP + 600);
-        $package['notify_url'] = $_W['siteroot'] . 'payment/wechat/notify.php';
-        $package['trade_type'] = 'JSAPI';
-        if ($params['pay_way'] == 'web') {
-            $package['trade_type'] = 'NATIVE';
-            $package['product_id'] = $params['goodsid'];
-        } else {
-            $package['openid'] = empty($params['user']) ? $_W['fans']['from_user'] : $params['user'];
-            if (!empty($wechat['sub_appid'])) {
-                $package['sub_appid'] = $wechat['sub_appid'];
-            }
-            if (!empty($wechat['sub_mch_id'])) {
-                $package['sub_mch_id'] = $wechat['sub_mch_id'];
-            }
-            if (!empty($params['sub_user'])) {
-                $package['sub_openid'] = $params['sub_user'];
-                unset($package['openid']);
-            }
-        }
-        if (!empty($params['goods_tag'])) {
-            $package['goods_tag'] = $params['goods_tag'];
-        }
-        ksort($package, SORT_STRING);
-        $string1 = '';
-        foreach ($package as $key => $v) {
-            if (empty($v)) {
-                unset($package[$key]);
-                continue;
-            }
-            $string1 .= "{$key}={$v}&";
-        }
-        $string1 .= "key={$wechat['signkey']}";
-        $package['sign'] = strtoupper(md5($string1));
-        $dat = array2xml($package);
-        $response = ihttp_request('https://api.mch.weixin.qq.com/pay/unifiedorder', $dat);
-        if (is_error($response)) {
-            return $response;
-        }
-        $xml = @isimplexml_load_string($response['content'], 'SimpleXMLElement', LIBXML_NOCDATA);
-        if (strval($xml->return_code) == 'FAIL') {
-            return error(-1, strval($xml->return_msg));
-        }
-        if (strval($xml->result_code) == 'FAIL') {
-            return error(-1, strval($xml->err_code) . ': ' . strval($xml->err_code_des));
-        }
-        $prepayid = $xml->prepay_id;
-        $wOpt['appId'] = isset($wechat['sub_appid']) ? $wechat['sub_appid'] : $wechat['appid'];
-        $wOpt['timeStamp'] = strval(TIMESTAMP);
-        $wOpt['nonceStr'] = random(8);
-        $wOpt['package'] = 'prepay_id=' . $prepayid;
-        $wOpt['signType'] = 'MD5';
-        if ($xml->trade_type == 'NATIVE') {
-            $code_url = $xml->code_url;
-            $wOpt['code_url'] = strval($code_url);
-        }
-        ksort($wOpt, SORT_STRING);
-        foreach ($wOpt as $key => $v) {
-            $string .= "{$key}={$v}&";
-        }
-        $string .= "key={$wechat['signkey']}";
-        $wOpt['paySign'] = strtoupper(md5($string));
-        return $wOpt;
+    $params['title'] = empty($params['title']) ? '测试支付' : $params['title'];
+    $data = $pay->payTransactionsJsapi($params['title'], $params['uniontid'], $params['fee'] * 100, $params['user'], array('attach' => json_encode(array('uniacid' => $_W['uniacid']))))->toArray();
+    if (empty($data['appId'])) {
+        return error(-1, '支付失败！');
     }
+    return $data;
 }
 
 function payment_proxy_pay_account() {

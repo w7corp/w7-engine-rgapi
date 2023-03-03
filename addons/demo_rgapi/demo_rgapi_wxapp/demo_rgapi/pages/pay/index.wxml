@@ -1,0 +1,5 @@
+<!--demo_rgapi/pages/pay/index.wxml-->
+<text>小程序支付：</text>
+<view class="weui-btn-area">
+  <button class="weui-btn" type="primary" bindtap="pay">去支付</button>
+</view>

@@ -1830,28 +1830,6 @@ abstract class WeModuleSite extends WeBase {
         if ('1' == $log['status']) {
             message('这个订单已经支付成功, 不需要重复支付.', '', 'info');
         }
-        $setting = uni_setting($_W['uniacid'], array('payment', 'creditbehaviors'));
-        if (!is_array($setting['payment'])) {
-            message('没有有效的支付方式, 请联系网站管理员.', '', 'error');
-        }
-        $pay = $setting['payment'];
-        foreach ($pay as &$value) {
-            $value['switch'] = $value['pay_switch'];
-        }
-        unset($value);
-        if (empty($_W['member']['uid'])) {
-            $pay['credit']['switch'] = false;
-        }
-        if ('paycenter' == $params['module']) {
-            $pay['delivery']['switch'] = false;
-            $pay['line']['switch'] = false;
-        }
-        if (!empty($pay['credit']['switch'])) {
-            $credtis = mc_credit_fetch($_W['member']['uid']);
-            $credit_pay_setting = mc_fetch($_W['member']['uid'], array('pay_password'));
-            $credit_pay_setting = $credit_pay_setting['pay_password'];
-        }
-        $you = 0;
         include $this->template('common/paycenter');
     }
 
@@ -2055,7 +2033,8 @@ abstract class WeModuleWxapp extends WeBase {
         load()->model('account');
         $paytype = !empty($order['paytype']) ? $order['paytype'] : 'wechat';
         $moduels = uni_modules();
-        if (empty($order) || !array_key_exists($this->module['name'], $moduels)) {
+        $moduels = empty($moduels) ? array() : array_column($moduels, 'name');
+        if (empty($order) || !in_array($this->module['name'], $moduels)) {
             return error(1, '模块不存在');
         }
         $moduleid = empty($this->module['mid']) ? '000000' : sprintf('%06d', $this->module['mid']);
@@ -2095,6 +2074,7 @@ abstract class WeModuleWxapp extends WeBase {
             'user' => $paylog['openid'],
             'uniontid' => $paylog['uniontid'],
             'title' => $order['title'],
+            'account_type' => 2
         );
         if ('wechat' == $paytype) {
             return $this->wechatExtend($params);
@@ -2106,38 +2086,7 @@ abstract class WeModuleWxapp extends WeBase {
     protected function wechatExtend($params) {
         global $_W;
         load()->model('payment');
-        $wxapp_uniacid = intval($_W['account']['uniacid']);
-        $setting = uni_setting($wxapp_uniacid, array('payment'));
-
-        if (empty($setting['payment'])) {
-            message('支付方式错误,请联系商家', '', 'error');
-        }
-        if (isset($setting['payment']['wechat']['switch']) && ($setting['payment']['wechat']['switch'] == true)) {
-            $wechat_payment = array(
-                'appid' => $_W['account']['key'],
-                'signkey' => $setting['payment']['wechat']['signkey'],
-                'mchid' => $setting['payment']['wechat']['mchid'],
-                'version' => 2,
-            );
-        }
-        if (isset($setting['payment']['wechat_facilitator']['switch']) && ($setting['payment']['wechat_facilitator']['switch'] == true)) {
-            if (empty($setting['payment']['wechat_facilitator']['service'])) {
-                message('支付方式错误,请联系商家', '', 'error');
-            }
-            $wechat_facilitator_setting = uni_setting($setting['payment']['wechat_facilitator']['service'], array('payment'));
-            $appid = pdo_get('account_wechats', array('uniacid' => $setting['payment']['wechat_facilitator']['service']), array('key'));
-            $wechat_payment = array(
-                'appid' => !empty($appid['key']) ? $appid['key'] : '',
-                'mchid' => !empty($wechat_facilitator_setting['payment']['wechat_facilitator']['mchid']) ? $wechat_facilitator_setting['payment']['wechat_facilitator']['mchid'] : '',
-                'signkey' => !empty($wechat_facilitator_setting['payment']['wechat_facilitator']['signkey']) ? $wechat_facilitator_setting['payment']['wechat_facilitator']['signkey'] : '',
-                'sub_appid' => $_W['account']['key'],
-                'sub_mch_id' => !empty($setting['payment']['wechat_facilitator']['sub_mch_id']) ? $setting['payment']['wechat_facilitator']['sub_mch_id'] : '',
-                'version' => 2,
-            );
-            $params['sub_user'] = $params['user'];
-        }
-
-        return wechat_build($params, $wechat_payment);
+        return wechat_build($params);
     }
 
     protected function creditExtend($params) {

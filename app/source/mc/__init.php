@@ -18,18 +18,3 @@ if ($controller == 'mc' && $action == 'card') {
         exit;
     }
 }
-$filter = array();
-$setting = uni_setting($_W['uniacid'], array('creditnames', 'creditbehaviors', 'payment', 'passport'));
-$behavior = $setting['creditbehaviors'];
-$creditnames = $setting['creditnames'];
-$credits = mc_credit_fetch($_W['member']['uid'], '*');
-
-$ucpage = table('site_page')
-    ->where(array(
-        'uniacid' => $_W['uniacid'],
-        'type' => 3,
-    ))->get();
-if (!empty($ucpage['params'])) {
-    $ucpage['params'] = json_decode($ucpage['params'], true);
-}
-$title = $ucpage['title'];

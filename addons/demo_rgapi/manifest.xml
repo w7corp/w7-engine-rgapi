@@ -3,7 +3,7 @@
 	<application setting="false">
 		<name><![CDATA[软擎授权示例应用]]></name>
 		<identifie><![CDATA[demo_rgapi]]></identifie>
-		<version><![CDATA[1.0.0]]></version>
+		<version><![CDATA[1.0.1]]></version>
 		<type><![CDATA[activity]]></type>
 		<ability><![CDATA[基于软擎授权系统的独立系统示例应用。]]></ability>
 		<description><![CDATA[基于软擎授权系统的独立系统示例应用，供开发者参考]]></description>

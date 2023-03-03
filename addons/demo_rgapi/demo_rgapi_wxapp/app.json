@@ -2,7 +2,8 @@
   "pages": [
     "demo_rgapi/pages/index/index",
     "demo_rgapi/pages/add/add",
-    "demo_rgapi/pages/edit/edit"
+    "demo_rgapi/pages/edit/edit",
+    "demo_rgapi/pages/pay/index"
   ],
   "window": {
     "navigationBarTextStyle": "white",
@@ -20,6 +21,10 @@
       {
         "pagePath": "demo_rgapi/pages/add/add",
         "text": "新增"
+      },
+      {
+        "pagePath": "demo_rgapi/pages/pay/index",
+        "text": "支付"
       }
     ]
   }

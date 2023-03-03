@@ -84,7 +84,7 @@ class WxappAccount extends WeAccount {
         }
         try {
             load()->library('sdk-module');
-            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], "2");
+            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], "2", V3_API_DOMAIN);
             $token = $api->app()->getAccessToken()->toArray();
         } catch (Exception $e) {
             return error(-1, '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $e['message']);

@@ -179,16 +179,6 @@ class CoreModuleSite extends WeModuleSite {
             ))
             ->save();
         $_W['uniacid'] = $paylog['uniacid'];
-
-        $setting = uni_setting($_W['uniacid'], array('payment'));
-        $wechat_payment = $setting['payment']['wechat'];
-
-        $account = table('account_wechats')
-            ->where(array('acid' => $wechat_payment['account']))
-            ->get();
-        $wechat_payment['appid'] = $account['key'];
-        $wechat_payment['secret'] = $account['secret'];
-
         $params = array(
             'tid' => $paylog['tid'],
             'fee' => $paylog['card_fee'],
@@ -197,29 +187,7 @@ class CoreModuleSite extends WeModuleSite {
             'uniontid' => $paylog['uniontid'],
             'goods_tag' => empty($paylog['goods_tag']) ? '' : $paylog['goods_tag'],
         );
-        if (PAYMENT_WECHAT_TYPE_SERVICE == intval($wechat_payment['switch']) || PAYMENT_WECHAT_TYPE_BORROW == intval($wechat_payment['switch'])) {
-            //借用支付和服务商支付均需要获取当前粉丝在被借用或服务商公众号下的 openid
-            if (PAYMENT_WECHAT_TYPE_SERVICE == intval($wechat_payment['switch'])) {
-                $wechat_payment['sub_appid'] = $wechat_payment['appid'];
-            }
-            $params['tid'] = $paylog['plid'];
-            //借用服务商支付时，没有获取到当前公众号的Openid时，只能跳转至收银台继续付款
-            $params['title'] = urlencode($params['title']);
-            $sl = base64_encode(json_encode($params));
-            $auth = sha1($sl . $paylog['uniacid'] . $_W['config']['setting']['authkey']);
-
-            $callback = urlencode($_W['siteroot'] . "payment/wechat/pay.php?i={$_W['uniacid']}&auth={$auth}&ps={$sl}");
-            $proxy_pay_account = payment_proxy_pay_account();
-            if (!is_error($proxy_pay_account)) {
-                $forward = $proxy_pay_account->getOauthCodeUrl($callback, 'we7sid-' . $_W['session_id']);
-                //手机端的 util.message() 方法需要在链接中拼 ##auto 才会自动跳转
-                message(error(2, $forward . '##auto'), $forward, 'ajax');
-                exit;
-            }
-        } else {
-            unset($wechat_payment['sub_mch_id']);
-            $wechat_payment_params = wechat_build($params, $wechat_payment);
-        }
+        $wechat_payment_params = wechat_build($params);
         if (is_error($wechat_payment_params)) {
             message($wechat_payment_params, '', 'ajax', true);
         } else {

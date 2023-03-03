@@ -21,41 +21,13 @@ if ($do == 'check_password') {
 }
 
 $moduels = uni_modules();
+$moduels = empty($moduels) ? array() : array_column($moduels, 'name');
 $params = @json_decode(base64_decode($_GPC['params']), true);
-if (empty($params) || !array_key_exists($params['module'], $moduels)) {
+if (empty($params) || !in_array($params['module'], $moduels)) {
     message('访问错误.');
 }
 
-$setting = uni_setting($_W['uniacid'], 'payment');
-if (empty($setting['payment'])) {
-    message('支付方式错误,请联系商家', '', 'error');
-}
-foreach ($setting['payment'] as &$value) {
-    $value['switch'] = $params['module'] == 'recharge' ? $value['recharge_switch'] : $value['pay_switch'];
-}
-unset($value);
-$dos = array();
-if (!empty($setting['payment']['credit']['switch'])) {
-    $dos[] = 'credit';
-}
-if (!empty($setting['payment']['alipay']['switch'])) {
-    $dos[] = 'alipay';
-}
-if (!empty($setting['payment']['wechat']['switch'])) {
-    $dos[] = 'wechat';
-}
-if (!empty($setting['payment']['delivery']['switch'])) {
-    $dos[] = 'delivery';
-}
-if (!empty($setting['payment']['unionpay']['switch'])) {
-    $dos[] = 'unionpay';
-}
-if (!empty($setting['payment']['baifubao']['switch'])) {
-    $dos[] = 'baifubao';
-}
-if (!empty($setting['payment']['mix']['switch'])) {
-    $dos[] = 'mix';
-}
+$dos = array('wechat', 'alipay');
 $type = in_array($do, $dos) ? $do : '';
 
 if (empty($type)) {
@@ -63,17 +35,13 @@ if (empty($type)) {
 }
 
 if (!empty($type)) {
-    //混合支付会有两条paylog记录,所以使用getall
-    $log = table(core_paylog)
+    $log = table('core_paylog')
         ->where(array(
             'uniacid' => $_W['uniacid'],
             'module' => $params['module'],
             'tid' => $params['tid']
         ))
-        ->orderby(array('plid' => 'ASC'))
-        ->limit(1)
-        ->getall();
-    $log = empty($log) ? $log : $log[0];
+        ->get();
 
     if (!empty($log) && ($type != 'credit' && !empty($_GPC['notify'])) && $log['status'] != '0') {
         message('这个订单已经支付成功, 不需要重复支付.');
@@ -203,149 +171,6 @@ if (!empty($type)) {
             exit;
         }
         header("Location: $callback");
-        exit();
-    }
-
-    if ($type == 'credit') {
-        ignore_user_abort(true);
-        $setting = uni_setting($_W['uniacid'], array('creditbehaviors'));
-        $credtis = mc_credit_fetch($_W['member']['uid']);
-        $log = table('core_paylog')
-            ->where(array('plid' => $ps['tid']))
-            ->get();
-        if ($log['module'] == 'recharge') {
-            message('不能使用余额支付', referer(), 'error');
-        }
-        if (!is_numeric($log['openid'])) {
-            $uid = mc_openid2uid($log['openid']);
-            if (empty($uid)) {
-                $fans_info = mc_init_fans_info($log['openid']);
-                $uid = $fans_info['uid'];
-            }
-            $log['openid'] = $uid;
-        }
-        //如果是return返回的话，处理相应付款操作
-        if (empty($_GPC['notify'])) {
-            if (!empty($log) && $log['status'] == '0') {
-                if ($credtis[$setting['creditbehaviors']['currency']] < $ps['fee']) {
-                    message("余额不足以支付, 需要 {$ps['fee']}, 当前 {$credtis[$setting['creditbehaviors']['currency']]}");
-                }
-                $fee = floatval($ps['fee']);
-                $result = mc_credit_update($_W['member']['uid'], $setting['creditbehaviors']['currency'], -$fee, array($_W['member']['uid'], '消费' . $setting['creditbehaviors']['currency'] . ':' . $fee));
-                if (is_error($result)) {
-                    message($result['message'], '', 'error');
-                }
-                table('core_paylog')->where(array('plid' => $log['plid']))->fill(array('status' => '1'))->save();
-                if (!empty($_W['openid'])) {
-                    if (is_error($is_grant_credit)) {
-                        $grant_credit_nums = 0;
-                    } else {
-                        $grant_credit_nums = $is_grant_credit['message'];
-                    }
-                    if (!empty($params['grant_credit1_num'])) {
-                        $grant_credit_nums += intval($params['grant_credit1_num']);
-                    }
-                    mc_notice_credit2($_W['openid'], $_W['member']['uid'], $fee, $grant_credit_nums, '线上消费');
-                }
-                $site = WeUtility::createModuleSite($log['module']);
-                if (!is_error($site)) {
-                    $site->weid = $_W['weid'];
-                    $site->uniacid = $_W['uniacid'];
-                    $site->inMobile = true;
-                    $method = 'payResult';
-                    if (method_exists($site, $method)) {
-                        $ret = array();
-                        $ret['result'] = 'success';
-                        $ret['type'] = $log['type'];
-                        $ret['from'] = 'return';
-                        $ret['tid'] = $log['tid'];
-                        $ret['user'] = $log['openid'];
-                        $ret['fee'] = $log['fee'];
-                        $ret['weid'] = $log['weid'];
-                        $ret['uniacid'] = $log['uniacid'];
-                        $ret['acid'] = $log['acid'];
-                        //支付成功后新增是否使用优惠券信息【需要模块去处理】
-                        $ret['is_usecard'] = $log['is_usecard'];
-                        $ret['card_type'] = $log['card_type']; //区分是系统优惠券还是微信卡券
-                        $ret['card_fee'] = $log['card_fee'];
-                        $ret['card_id'] = $log['card_id'];
-                        $notify_url = murl('mc/cash/credit', array('notify' => 'yes', 'params' => safe_gpc_string($_GPC['params']), 'code' => safe_gpc_string($_GPC['code']), 'coupon_id' => intval($_GPC['coupon_id'])), true, true);
-                        ihttp_request($notify_url);
-                        $site->$method($ret);
-                    }
-                }
-            }
-        } else {
-            $site = WeUtility::createModuleSite($log['module']);
-            if (!is_error($site)) {
-                $site->weid = $_W['weid'];
-                $site->uniacid = $_W['uniacid'];
-                $site->inMobile = true;
-                $method = 'payResult';
-                if (method_exists($site, $method)) {
-                    $ret = array();
-                    $ret['result'] = 'success';
-                    $ret['type'] = $log['type'];
-                    $ret['from'] = 'notify';
-                    $ret['tid'] = $log['tid'];
-                    $ret['user'] = $log['openid'];
-                    $ret['fee'] = $log['fee'];
-                    $ret['weid'] = $log['weid'];
-                    $ret['uniacid'] = $log['uniacid'];
-                    $ret['acid'] = $log['acid'];
-                    //支付成功后新增是否使用优惠券信息【需要模块去处理】
-                    $ret['is_usecard'] = $log['is_usecard'];
-                    $ret['card_type'] = $log['card_type']; //区分是系统优惠券还是微信卡券
-                    $ret['card_fee'] = $log['card_fee'];
-                    $ret['card_id'] = $log['card_id'];
-                    $site->$method($ret);
-                }
-            }
-        }
-    }
-
-    if ($type == 'delivery') {
-        $log = table('core_paylog')
-            ->where(array('plid' => $ps['tid']))
-            ->get();
-        if (!empty($log) && $log['status'] == '0') {
-            $site = WeUtility::createModuleSite($log['module']);
-
-            if (!is_error($site)) {
-                $site->weid = $_W['weid'];
-                $site->uniacid = $_W['uniacid'];
-                $site->inMobile = true;
-                $method = 'payResult';
-                if (method_exists($site, $method)) {
-                    $ret = array();
-                    $ret['result'] = 'failed';
-                    $ret['type'] = $log['type'];
-                    $ret['from'] = 'return';
-                    $ret['tid'] = $log['tid'];
-                    $ret['user'] = $log['openid'];
-                    $ret['fee'] = $log['fee']; //原价
-                    $ret['weid'] = $log['weid'];
-                    $ret['uniacid'] = $log['uniacid'];
-                    //支付成功后新增是否使用优惠券信息【需要模块去处理】
-                    $ret['is_usecard'] = $log['is_usecard'];
-                    $ret['card_type'] = $log['card_type']; //区分是系统优惠券还是微信卡券
-                    $ret['card_fee'] = $log['card_fee'];
-                    $ret['card_id'] = $log['card_id'];
-                    exit($site->$method($ret));
-                }
-            }
-        }
-    }
-    if ($type == 'unionpay') {
-        $sl = base64_encode(json_encode($ps));
-        $auth = sha1($sl . $_W['uniacid'] . $_W['config']['setting']['authkey']);
-        header("location: ../payment/unionpay/pay.php?i={$_W['uniacid']}&auth={$auth}&ps={$sl}");
-        exit();
-    }
-    if ($type == 'baifubao') {
-        $sl = base64_encode(json_encode($ps));
-        $auth = sha1($sl . $_W['uniacid'] . $_W['config']['setting']['authkey']);
-        header("location: ../payment/baifubao/pay.php?i={$_W['uniacid']}&auth={$auth}&ps={$sl}");
         exit();
     }
 }

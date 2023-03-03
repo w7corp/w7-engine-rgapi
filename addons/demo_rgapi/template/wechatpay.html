@@ -9,11 +9,13 @@
 		<col width="250px"/>
 		<col width="250px" />
 		<col width="100px" />
+		<col width="100px" />
 		<col width="50px" />
 		<tr>
 			<th>订单号</th>
 			<th>创建时间</th>
 			<th>状态</th>
+			<th>来源</th>
 			<th class="text-center">操作</th>
 		</tr>
 		<tr ng-repeat="item in data">
@@ -24,11 +26,17 @@
 				<span ng-if="2 == item.status">已退款</span>
 				<span ng-if="0 == item.status">未支付</span>
 			</td>
+			<td>
+				<span ng-if="1 == item.type">Native</span>
+				<span ng-if="3 == item.type">Wechat</span>
+				<span ng-if="4 == item.type">Wxapp</span>
+			</td>
 			<td class="text-center">
 				<div class="link-group">
 					<a href="javascript:;" ng-if="1 == item.status" ng-click="refund(item.no)">退款</a>
 					<a href="javascript:;" ng-if="2 == item.status">-</a>
-					<a href="javascript:;" ng-if="0 == item.status" ng-click="pay(1, item.code, item.no)">支付</a>
+					<a href="javascript:;" ng-if="0 == item.status && (3 == item.type || 4 == item.type)">-</a>
+					<a href="javascript:;" ng-if="0 == item.status && 3 != item.type && 4 != item.type" ng-click="pay(1, item.code, item.no)">支付</a>
 				</div>
 			</td>
 		</tr>

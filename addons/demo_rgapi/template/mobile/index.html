@@ -12,5 +12,11 @@
       <p>{$_W['openid']}</p>
     </div>
   </div>
+  <div class="mui-table mui-table-inline mui-mt15 nav-action">
+    <div class="mui-table-cell">
+      微信支付：
+      <p><a href="{php echo $this->createMobileUrl('pay')}" type="button" class="btn btn-default" style="line-height: 24px;">去支付</a></p>
+    </div>
+  </div>
 </div>
 {template 'common/footer'}
