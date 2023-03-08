@@ -8,9 +8,6 @@ $step = $_GPC['step'] ?? '';
 $steps = array('scripts', 'module_upgrade');
 $step = in_array($step, $steps) ? $step : '';
 
-$cachekey = cache_system_key('checkupgrade');
-cache_delete($cachekey);
-
 $upgrade = glob(IA_ROOT . '/upgrade/*');
 $result = [];
 if (!empty($upgrade)) {
@@ -28,6 +25,21 @@ if (!empty($upgrade)) {
         $result[] = array('version' => $version, 'class' => $class_name, 'module_name' => '', 'description' => $class_name::DESCRIPTION, 'type' => 'system');
     }
 }
+if ('scripts' == $step && $_W['ispost']) {
+    $version = trim($_GPC['version']);
+    $result = array_column($result, null, 'version');
+    if (class_exists($result[$version]['class'])) {
+        set_time_limit(0);
+        $up_class = new $result[$version]['class']();
+        if ($up_class->up()) {
+            cache_build_setting();
+            setting_upgrade_version($version);
+            cache_delete(cache_system_key('checkupgrade'));
+            exit('success');
+        }
+    }
+    exit('failed');
+}
 $modules = pdo_getall('modules', [], ['name', 'title', 'version'], 'name');
 foreach ($modules as $module_name => $module) {
     $root = IA_ROOT . '/addons/' . $module_name;
@@ -42,22 +54,6 @@ foreach ($modules as $module_name => $module) {
         continue;
     }
     $result[] = ['version' => $version, 'module_name' => $module_name, 'description' => '应用“' . $module['title'] . '”升级', 'type' => 'module'];
-}
-
-if ('scripts' == $step && $_W['ispost']) {
-    $version = trim($_GPC['version']);
-    $result = array_column($result, null, 'version');
-    if (class_exists($result[$version]['class'])) {
-        set_time_limit(0);
-        $up_class = new $result[$version]['class']();
-        if ($up_class->up()) {
-            cache_build_users_struct();
-            cache_build_setting();
-            setting_upgrade_version($version);
-            exit('success');
-        }
-    }
-    exit('failed');
 }
 if ('module_upgrade' == $step && $_W['ispost']) {
     $module_name = safe_gpc_string($_GPC['module_name']);
@@ -143,6 +139,7 @@ if ('module_upgrade' == $step && $_W['ispost']) {
         ext_check_module_subscribe($module_name);
     }
     cache_build_module_info($module_name);
+    cache_delete(cache_system_key('checkupgrade'));
     exit('success');
 }
 if (empty($result)) {
@@ -150,6 +147,6 @@ if (empty($result)) {
     if (ini_get('opcache.enable') || ini_get('opcache.enable_cli')) {
         opcache_reset();
     }
-    itoast('', url('module/display/display'), 'success');
+    itoast('', url('module/display'), 'success');
 }
 template('cloud/process');

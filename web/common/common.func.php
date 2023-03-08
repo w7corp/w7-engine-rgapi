@@ -154,9 +154,6 @@ function check_upgrade() {
     }
     $result = [];
     $upgrade = glob(IA_ROOT . '/upgrade/*');
-    if (empty($upgrade)) {
-        return $result;
-    }
 
     foreach ($upgrade as $item) {
         $path_array = explode('/', $item);

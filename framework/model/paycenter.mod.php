@@ -51,10 +51,4 @@ function paycenter_check_login() {
     if (empty($_W['uid']) && $_GPC['do'] != 'login') {
         itoast('抱歉，您无权进行该操作，请先登录', murl('entry', array('m' => 'we7_coupon', 'do' => 'clerk', 'op' => 'login'), true, true), 'error');
     }
-    if ($_W['user']['type'] == ACCOUNT_OPERATE_CLERK) {
-        isetcookie('__uniacid', $_W['user']['uniacid'], 7 * 86400);
-        isetcookie('__uid', $_W['uid'], 7 * 86400);
-    } else {
-        itoast('非法访问', '', 'error');
-    }
 }
