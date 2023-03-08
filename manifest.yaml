@@ -97,6 +97,6 @@ bindings:
       -
         displayorder: 0
         do: manage
-        title: 号码库
+        title: 平台管理
         icon: branch
         module_name: w7_rangineapi
