@@ -128,5 +128,5 @@ if ('uninstall' == $do) {
     cache_build_module_subscribe_type();
     
     cache_build_module_info($name);
-    itoast('卸载成功！', url('module/display/display'), 'success');
+    itoast('卸载成功！', url('module/display'), 'success');
 }

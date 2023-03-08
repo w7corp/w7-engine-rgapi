@@ -7,12 +7,6 @@ defined('IN_IA') or exit('Access Denied');
 global $_W;
 
 $w7_system_menu = array();
-$w7_system_menu['welcome'] = array(
-    'title' => '所有应用',
-    'icon' => 'wi wi-home',
-    'url' => url('module/display/display', array('page' => 'home')),
-    'section' => array(),
-);
 
 $w7_system_menu['system'] = array(
     'title' => '系统功能',

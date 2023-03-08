@@ -73,26 +73,7 @@ define('ACCOUNT_OAUTH_LOGIN', 3);
 //api接入
 define('ACCOUNT_NORMAL_LOGIN', 1);
 
-//店员操作
-define('ACCOUNT_OPERATE_CLERK', 3);
-
 define('ACCOUNT_MANAGE_NAME_FOUNDER', 'founder');
-//系统卡券
-define('SYSTEM_COUPON', 1);
-//微信卡券
-define('WECHAT_COUPON', 2);
-//卡券类型
-define('COUPON_TYPE_DISCOUNT', '1'); //折扣券
-define('COUPON_TYPE_CASH', '2'); //代金券
-define('COUPON_TYPE_GROUPON', '3'); //团购券
-define('COUPON_TYPE_GIFT', '4'); //礼品券
-define('COUPON_TYPE_GENERAL', '5'); //优惠券
-define('COUPON_TYPE_MEMBER', '6'); //会员卡
-define('COUPON_TYPE_SCENIC', '7'); //景点票
-define('COUPON_TYPE_MOVIE', '8'); //电影票
-define('COUPON_TYPE_BOARDINGPASS', '9'); //飞机票
-define('COUPON_TYPE_MEETING', '10'); //会议票
-define('COUPON_TYPE_BUS', '11'); //汽车票
 
 define('ATTACH_OSS', 2); //远程附件类型：阿里云
 define('ATTACH_QINIU', 3); //远程附件类型：七牛
