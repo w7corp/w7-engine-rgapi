@@ -21,7 +21,7 @@ if ('display' == $do) {
         );
         setting_save($server_setting, 'server_setting');
     }
-    $card_route = '/card?url=' . urlencode($server_setting['url']) . '&token=' . $server_setting['token'] . '&aes_key=' . $server_setting['encodingaeskey'];
+    $card_route = '/card?url=' . urlencode($server_setting['url']) . '&app_id=' . $server_setting['app_id'] . '&token=' . $server_setting['token'] . '&aes_key=' . $server_setting['encodingaeskey'];
     template('system/base-info');
 }
 
