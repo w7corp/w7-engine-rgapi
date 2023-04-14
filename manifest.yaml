@@ -72,6 +72,9 @@ platform:
   supports:
     - notapp
   notify_url: ''
+  openapi:
+    require:
+      - w7_rangineapi
 bindings:
   -
     title: 创始人端
@@ -81,14 +84,9 @@ bindings:
     menu:
       -
         displayorder: 0
-        do: /web/index.php?c=module&a=display&do=switch
+        do: /web/index.php?c=module&a=display&do=switch_module
         title: 应用管理
         icon: wxapp-setting
-      -
-        displayorder: 0
-        do: /web/index.php?c=system&a=base-info&do=display
-        title: 系统功能
-        icon: user
       -
         displayorder: 0
         do: /web/index.php?c=system&a=setting&do=basic

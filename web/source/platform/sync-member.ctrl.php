@@ -14,12 +14,12 @@ $module = $_W['current_module'] = module_fetch($module_name);
 define('IN_MODULE', true);
 $creditnames = array(
     'credit1' =>
-        array (
+        array(
             'title' => '积分',
             'enabled' => 1,
         ),
     'credit2' =>
-        array (
+        array(
             'title' => '余额',
             'enabled' => 1,
         ),
@@ -78,7 +78,7 @@ if ('display' == $do) {
         if (empty($members)) {
             itoast('暂无会员数据可以导出！', referer(), 'error');
         }
-        $available_fields = array (
+        $available_fields = array(
             'realname' => '真实姓名',
             'nickname' => '昵称',
             'avatar' => '头像',
@@ -153,8 +153,8 @@ if ('display' == $do) {
 }
 
 if ('sync' == $do) {
-    if (empty($_W['setting']['server_setting']['app_id']) || empty($_W['setting']['server_setting']['app_secret'])) {
-        iajax(-1, '请先配置3.0多平台接入信息', url('system/base-info'));
+    if (!getenv('LOCAL_DEVELOP') && empty($_W['setting']['server_setting']['app_id'])) {
+        iajax(-1, '请先到系统功能下进行“一键授权关联”。', url('system/base-info'));
     }
     load()->classs('weixin.account');
     $account_api = new WeixinAccount();
@@ -215,13 +215,10 @@ if ('del' == $do) {
     if (!empty($delete_uids)) {
         $tables = array('mc_members', 'mc_cash_record', 'mc_credits_recharge', 'mc_credits_record', 'mc_member_address');
         foreach ($tables as $key => $value) {
-            table($value)->where(array('uniacid' => $_W['uniacid'], 'uid' => $delete_uids))->delete();
+            table($value)->where(array('uid' => $delete_uids))->delete();
         }
         table('mc_mapping_fans')
-            ->where(array(
-                'uid' => $delete_uids,
-                'uniacid' => $_W['uniacid']
-            ))
+            ->where(array('uid' => $delete_uids))
             ->fill(array('uid' => 0))
             ->save();
         itoast('删除成功！', referer(), 'success');

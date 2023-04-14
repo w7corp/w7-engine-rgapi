@@ -1,5 +1,3 @@
-
-// 微擎暂未封装 上传 使用 web目录上传
 // 开发者可自己封装
 let app = getApp();
 
@@ -15,12 +13,10 @@ export function chooseImage() {
       }
     })
   });
-  
 }
 
 export function upload(path) {
   let siteroot = app.siteInfo.siteroot;
-  siteroot = siteroot.replace('app/index.php', 'web/index.php');
   let upurl = siteroot + '?i='+app.siteInfo.uniacid+'&c=utility&a=file&do=upload&thumb=0';
   return new Promise((resolve,reject)=>{
     wx.uploadFile({

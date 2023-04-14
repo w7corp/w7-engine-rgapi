@@ -38,7 +38,6 @@
                     <view class="weui-uploader">
                         <view class="weui-uploader__hd">
                             <view class="weui-uploader__title">图片上传</view>
-                            <view class="weui-uploader__info">1</view>
                         </view>
                         <view class="weui-uploader__bd">
                             <view class="weui-uploader__files" id="uploaderFiles">

@@ -41,6 +41,9 @@ class Api
     protected $appId;
 
     /** @var string */
+    protected $linkAppId;
+
+    /** @var string */
     protected $appSecret;
 
     /** @var int  */
@@ -49,6 +52,7 @@ class Api
     /**
      * @param string $app_id       应用关联的Appid
      * @param string $app_secret   应用关联AppSecret
+     * @param string $link_app_id  应用关联App Id
      * @param int    $account_type 号码类型，使用
      * @param string $base_uri     基础通信URI
      *
@@ -57,16 +61,18 @@ class Api
     public function __construct(
         string $app_id,
         string $app_secret,
+        string $link_app_id,
         int $account_type = Account::TYPE_NONE,
-        string $base_uri = 'https://rgapi.w7.cc'
+        string $base_uri = 'https://api.w7.cc/w7api/mgw/w7_rangineapi/'
     ) {
         $this->appId       = $app_id;
         $this->appSecret   = $app_secret;
         $this->accountType = $account_type;
+        $this->linkAppId   = $link_app_id;
 
         $handler = new CurlHandler();
         $stack   = HandlerStack::create($handler);
-        $stack->push($this->getMiddleware(AddSignMiddleware::class, $this->appId, $this->appSecret, $this->accountType));
+        $stack->push($this->getMiddleware(AddSignMiddleware::class, $this->appId, $this->appSecret, $this->linkAppId, $this->accountType));
         $stack->push($this->getMiddleware(ResponseHandlerMiddleware::class));
 
         $this->client = new Client([
@@ -118,7 +124,7 @@ class Api
      */
     public function getAccountList()
     {
-        return $this->client->post('/open/api/account/list');
+        return $this->client->post('open/api/account/list');
     }
 
     /**

@@ -91,21 +91,19 @@ function _forward($c, $a) {
 }
 
 function _calc_current_frames(&$frames) {
-    global $_W;
+    global $_W, $controller, $action;
     $frames = empty($frames) ? array() : $frames;
     $frames['dimension'] = empty($frames['dimension']) ? '' : $frames['dimension'];
     $frames['title'] = empty($frames['title']) ? '' : $frames['title'];
-    if (defined('IN_MODULE')) {
-        $_W['breadcrumb'] = $_W['current_module']['title'];
-    }
     if (empty($frames['section']) || !is_array($frames['section'])) {
         return true;
     }
+    $finished = STATUS_OFF;
     foreach ($frames['section'] as &$frame) {
         if (empty($frame['menu'])) {
             continue;
         }
-        foreach ($frame['menu'] as $key => &$menu) {
+        foreach ($frame['menu'] as &$menu) {
             if (defined('IN_MODULE') && !empty($menu['multilevel'])) {
                 foreach ($menu['childs'] as $module_child_key => $module_child_menu) {
                     $query = parse_url($module_child_menu['url'], PHP_URL_QUERY);
@@ -115,7 +113,31 @@ function _calc_current_frames(&$frames) {
                         break;
                     }
                 }
+            } else {
+                $query = empty($menu['url']) ? array() : parse_url($menu['url'], PHP_URL_QUERY);
+                if (!empty($query)) {
+                    parse_str($query, $urls);
+                }
+                if (empty($urls)) {
+                    continue;
+                }
+                $get = $_GET;
+                $get['c'] = $controller;
+                $get['a'] = $action;
+                if (!empty($do)) {
+                    $get['do'] = $do;
+                }
+                $diff = array_diff_assoc($urls, $get);
+                if (empty($diff)) {
+                    $menu['active'] = ' active';
+                    $_W['page']['title'] = !empty($_W['page']['title']) ? $_W['page']['title'] : $menu['title'];
+                    $finished = STATUS_ON;
+                    break;
+                }
             }
+        }
+        if ($finished) {
+            break;
         }
     }
     return true;

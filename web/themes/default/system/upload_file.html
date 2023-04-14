@@ -1,12 +1,13 @@
 {template 'common/header'}
 <ul class="we7-page-tab">
-	<li {if $action == 'base-info'}class="active"{/if}><a href="{url 'system/base-info'}">基本配置</a></li>
+	<li {if $action == 'setting'} class="active"{/if}><a href="{php echo url('system/setting/basic');}">基本信息</a></li>
 	<li {if $action == 'common'}class="active"{/if}><a href="{url 'system/common'}">公众平台验证文件</a></li>
+	<li {if $action == 'attachment'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">附件设置</a></li>
 </ul>
 <div class="main">
 	<form id="form21" action="{php echo url('system/common/upload_file')}" method="post" class="we7-form form" enctype="multipart/form-data">
 		<div class="alert we7-page-alert">
-				设置业务域名、JS接口安全域名、网页授权域名，需要上传的文件。
+			<p><i class="wi wi-info"></i>设置业务域名、JS接口安全域名、网页授权域名，需要上传的文件。</p>
 		</div>
 		<table class="we7-table table-hover table-form">
 			<col width="150px"/>

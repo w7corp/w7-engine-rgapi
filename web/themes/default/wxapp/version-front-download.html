@@ -1,174 +1,79 @@
 {template 'common/header'}
-{if $do == 'front_download'}
-	{if $type != 'wxapp'}
-	<div class="front-download">
-		<div class="alert we7-page-alert">
-			<p>
-				<i class="wi wi-info-sign"></i>
-				下载{$account_all_type[$_W['account']['type']]['title']}模块zip包, 然后用{$account_all_type[$_W['account']['type']]['title']}开发者工具上传开发版本
-			</p>
-			<p>
-				<i class="wi wi-info-sign"></i>
-				{$account_all_type[$_W['account']['type']]['title']}开发者工具下载链接：
-				{if $_W['account']['type_sign'] == ALIAPP_TYPE_SIGN}
-				<a href="javascript:openUrl('https://docs.alipay.com/mini/ide/download')">https://docs.alipay.com/mini/ide/download/</a>
-				{elseif $_W['account']['type_sign'] == BAIDUAPP_TYPE_SIGN}
-				<a href="javascript:openUrl('https://smartprogram.baidu.com/docs/develop/devtools/show_sur')">https://smartprogram.baidu.com/docs/develop/devtools/show_sur/</a>
-				{elseif $_W['account']['type_sign'] == TOUTIAOAPP_TYPE_SIGN}
-				<a href="javascript:openUrl('https://microapp.bytedance.com/docs/zh-CN/mini-app/develop/developer-instrument/developer-instrument-update-and-download')">https://microapp.bytedance.com/docs/zh-CN/mini-app/develop/developer-instrument/developer-instrument-update-and-download</a>
-				{/if}
-			</p>
+{if $if_link_wxapp}
+	<div class="media media-wechat-setting">
+		<div class="media-left color-default">
+			<span class="wi wi-wxapp-webpack" style="font-size: 55px;"></span>
 		</div>
-		<div class="app-down-box">
-			<img src="{if !empty($module['logo'])}{$module['logo']}{/if}" alt="{if !empty($module['title'])}{$module['title']}{/if}" class="logo">
-			<div class="title">{if !empty($module['title'])}{$module['title']}{/if}{$account_all_type[$_W['account']['type']]['title']}zip包</div>
-			<a class="btn btn-primary" href="{php echo url('wxapp/front-download/getpackage', array('version_id' => $version_id))}">
-				立即下载
-			</a>
+		<div class="media-body media-middle ">
+			<h4 class="media-heading color-dark">{$module['title']}</h4>
+			<div class="color-gray">版本: v{$version_info['version']}</div>
+		</div>
+		{if getenv('LOCAL_DEVELOP')}
+		<div class="media-right media-middle">
+			<span class="color-gray">授权上传功能在本地开发模式下不支持；在 <a href="javascript:openUrl('https://dev.w7.cc')" class="color-default">开发者中心</a> 发布后可用。</span>
+		</div>
+		{/if}
+		<div class="media-right media-middle">
+			<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'version_id' => $version_id])}" class="btn btn-primary">立即下载</a>
+			{if !empty($_W['setting']['server_setting']['app_id'])}
+			<a href="javascript:;" class="btn btn-primary" onclick="authorizationUpload()" {if getenv('LOCAL_DEVELOP')}disabled="1"{/if}>授权上传</a>
+			{/if}
 		</div>
 	</div>
+	<script>
+		function authorizationUpload() {
+			window.w7.ready(()=>{
+				window.w7.navigate({
+					modulename: '{php echo CARD_NAVIGATE_MODULE_NAME}',
+					type: 'micro',
+					route: '{php echo $upload_route}',
+					title: '上传小程序',
+					style: {width:1000, height:700},
+				});
+			})
+		}
+	</script>
+	<style>
+		.img img{width: 250px;height: auto;}
+	</style>
+	<div class="wxapp-download-procedure">
+		<div class="title color-gray">小程序前端下载后操作流程说明：</div>
+		<div class="step">1.进入微信小程序后台（mp.weixin.qq.com），添加小程序开发者（如已经是管理员或开发者则不需要添加）</div>
+		<div class="img">
+			<img src="./resource/images/wxapp/01.png" alt=""/>
+			<img src="./resource/images/wxapp/02.png" alt=""/>
+		</div>
+		<div class="step">2.进入小程序后台。点击开发管理/开发设置，修改服务器域名（设置自己的微擎域名，<span class="color-red">必须是https</span>）</div>
+		<div class="img">
+			<img src="./resource/images/wxapp/03.png" alt=""/>
+			<img src="./resource/images/wxapp/04.png" alt=""/>
+		</div>
+		<div class="step">3.下载 <a href="javascript:openUrl('https://developers.weixin.qq.com/miniprogram/dev/devtools/stable.html')" class="color-default">微信开发者工具</a>，更新到最新版后（切记），将<span class="color-red">下载解压后的小程序导入</span>，填写小程序appid
+		</div>
+		<div class="img">
+			<img src="./resource/images/wxapp/05.png" alt=""/>
+			<img src="./resource/images/wxapp/06.png" alt=""/>
+		</div>
+		<div class="step">4.点击上传，并设置更新类型和版本号</div>
+		<div class="img">
+			<img src="./resource/images/wxapp/07.png" alt=""/>
+			<img src="./resource/images/wxapp/08.png" alt=""/>
+		</div>
+		<div class="step">5.进入小程序后台（mp.weixin.qq.com），点击版本管理，提交审核，小程序<span class="color-red">管理员</span>（必须需要管理员扫描，小程序开发者不可）扫描即可
+		</div>
+		<div class="img">
+			<img src="./resource/images/wxapp/09.png" alt=""/>
+			<img src="./resource/images/wxapp/10.png" alt=""/>
+		</div>
+		<div class="step">6.微信官方审核通过即可使用</div>
+	</div>
+{else}
+<div class="panel we7-panel panel-body">
+	{if getenv('LOCAL_DEVELOP')}
+	检测到未关联微信小程序，请先在 <span class="color-gray">data/init.accounts.php</span> 文件内配置微信小程序的初始化数据后重新安装。
 	{else}
-		<div class="media media-wechat-setting">
-			<div class="media-left color-default">
-				<span class="wi wi-wxapp-webpack" style="font-size: 55px;"></span>
-			</div>
-			<div class="media-body media-middle ">
-				<h4 class="media-heading color-dark">{$module['title']}</h4>
-				<div class="color-gray">版本: v{$version_info['version']}</div>
-			</div>
-			<div class="media-right media-middle">
-				<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'version_id' => $version_id])}" class="btn btn-primary">立即下载</a>
-				<a href="javascript:;" class="btn btn-primary" onclick="authorizationUpload()">授权上传</a>
-			</div>
-		</div>
-		<script>
-			function authorizationUpload() {
-				window.w7.ready(()=>{
-					window.w7.navigate({
-						modulename: 'w7_rangineapi', // 根据modulename选择
-						type: 'micro', // micro or iframe 目标应用是vue 用micro
-						route: '{php echo $upload_route}', // 要打开应用的路由
-						style: {width:1000, height:700},
-					});
-				})
-			}
-		</script>
-		<style>
-			.img img{
-				width: 250px;
-				height: auto;
-			}
-		</style>
-		<div class="wxapp-download-procedure">
-			<div class="title color-gray">小程序前端下载后操作流程说明：</div>
-			<div class="step">1.进入微信小程序后台（mp.weixin.qq.com），添加小程序开发者（如已经是管理员或开发者则不需要添加）</div>
-			<div class="img">
-				<img src="./resource/images/wxapp/01.png" alt=""/>
-				<img src="./resource/images/wxapp/02.png" alt=""/>
-			</div>
-			<div class="step">2.进入小程序后台。点击开发管理/开发设置，修改服务器域名（设置自己的微擎域名，<span class="color-red">必须是https</span>）</div>
-			<div class="img">
-				<img src="./resource/images/wxapp/03.png" alt=""/>
-				<img src="./resource/images/wxapp/04.png" alt=""/>
-			</div>
-			<div class="step">3.下载 <a href="javascript:openUrl('https://developers.weixin.qq.com/miniprogram/dev/devtools/stable.html')" class="color-default">微信开发者工具</a>，更新到最新版后（切记），将<span class="color-red">下载解压后的小程序导入</span>，填写小程序appid
-			</div>
-			<div class="img">
-				<img src="./resource/images/wxapp/05.png" alt=""/>
-				<img src="./resource/images/wxapp/06.png" alt=""/>
-			</div>
-			<div class="step">4.点击上传，并设置更新类型和版本号</div>
-			<div class="img">
-				<img src="./resource/images/wxapp/07.png" alt=""/>
-				<img src="./resource/images/wxapp/08.png" alt=""/>
-			</div>
-			<div class="step">5.进入小程序后台（mp.weixin.qq.com），点击版本管理，提交审核，小程序<span class="color-red">管理员</span>（必须需要管理员扫描，小程序开发者不可）扫描即可
-			</div>
-			<div class="img">
-				<img src="./resource/images/wxapp/09.png" alt=""/>
-				<img src="./resource/images/wxapp/10.png" alt=""/>
-			</div>
-			<div class="step">6.微信官方审核通过即可使用</div>
-		</div>
+	检测到未关联微信小程序，请先在 <a class="color-default" href="{php echo $frames['section']['platform_module_common']['menu']['platform_module_welcome']['url']}">模块首页</a> 关联一个微信小程序类型的平台。
 	{/if}
-{/if}
-
-{if $do == 'tominiprogram'}
-<div id="tominiprogram" ng-controller="tominiprogram" ng-cloak>
-	<div class="alert alert-info we7-page-alert">
-		<p><i class="wi wi-info-sign"></i>最多可添加10个跳转小程序</p>
-	</div>
-	<div class="pull-right clearfix we7-margin-bottom search-box">
-		<a href="javascript:;" class="btn btn-primary" ng-click="showForm(1)">添加</a>
-	</div>
-	<table class="table we7-table table-manage vertical-middle" id="js-users-display">
-		<col width="150px">
-		<col width="">
-		<col width="">
-		<col width="170px">
-		<tr>
-			<th>序号</th>
-			<th class="text-center">APPID</th>
-			<th class="text-center">小程序名称</th>
-			<th class="text-right">操作</th>
-		</tr>
-		<tr ng-repeat="item in tomini_lists">
-			<td ng-init="p_index=$index">{{p_index + 1}}</td>
-			<td class="color-default text-center">{{item.appid}}</td>
-			<td class="color-default text-center">{{item.app_name}}</td>
-			<td class="" style="border-left: 1px solid #ddd;" ng-if="p_index == 0" rowspan="{{tomini_lists.length}}">
-				<div class="link-group">
-					<a href="javascript:;" ng-click="showForm(0)">编辑</a>
-				</div>
-			</td>
-		</tr>
-		<tr ng-if="tomini_lists | we7IsEmpty">
-			<td colspan="4" class="text-center">暂无数据</td>
-		</tr>
-	</table>
-	<div class="modal fade" id="addminiprogram" tabindex="-1" role="dialog" aria-hidden="true">
-		<div class="we7-modal-dialog modal-dialog we7-form">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-					<div class="modal-title">{{is_add ? '添加' : '编辑'}}可跳转小程序</div>
-				</div>
-				<form action="" method="post">
-					<input type="hidden" name="c" value="wxapp">
-					<input type="hidden" name="a" value="front-download">
-					<input type="hidden" name="do" value="tominiprogram">
-					<input type="hidden" name="version_id" value="{$version_id}">
-					<input type="hidden" name="is_add" value="{{is_add}}">
-					<input type="hidden" name="token" value="{$_W['token']}">
-					<div class="modal-body overflow-auto">
-						<div class="alert alert-info we7-page-alert" ng-show="is_add">
-							<p><i class="wi wi-info-sign"></i>历史添加{{tomini_lists.length}}个，还可添加<span class="color-default">{{max_count - tomini_lists.length}}</span>个</p>
-						</div>
-						<div class="row" ng-repeat="item in edit_list">
-							<div class="form-group col-sm-6 " style="margin-bottom: 20px;">
-								<input type="text" name="appid[]" ng-model="item.appid" class="form-control" placeholder="小程序APPID">
-							</div>
-							<div class="form-group col-sm-6 " style="margin-bottom: 20px;">
-								<input type="text" name="app_name[]" ng-model="item.app_name" class="form-control" placeholder="小程序名称">
-							</div>
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="submit" class="btn btn-primary" name="submit" value="submit">确定</button>
-						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
 </div>
-
-<script type="text/javascript">
-	angular.module('wxApp').value('config',{
-		'tomini_lists' : {php echo json_encode(array_values($tomini_lists))},
-		'max_count': 10
-	});
-	angular.bootstrap($('#tominiprogram'), ['wxApp']);
-</script>
 {/if}
 {template 'common/footer'}

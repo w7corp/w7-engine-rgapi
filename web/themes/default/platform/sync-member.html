@@ -41,6 +41,7 @@
 		});
 		angular.module('memberAPP').value('config', {
 			search_mod: "{$search_mod}",
+			sync_link: "{php echo url('platform/sync-member/sync', ['module_name' => $module_name])}",
 		});
 		angular.bootstrap($('#memberSync'), ['memberAPP']);
 	</script>
@@ -1316,11 +1317,6 @@
 			{/if}
 		</form>
 	</div>
-<!--	<script type="text/javascript">-->
-<!--		require(['trade'], function(trade){-->
-<!--			trade.init();-->
-<!--		});-->
-<!--	</script>-->
 {/if}
 {if 'credit_statistics' == $do}
 	<style>

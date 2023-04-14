@@ -216,7 +216,7 @@ function buildframes($framename = '') {
             $frames['account']['section']['platform_module_common']['menu']['platform_module_welcome'] = array(
                 'title' => '模块首页',
                 'icon' => 'wi wi-home',
-                'url' => url('module/welcome', array('module_name' => $modulename, 'uniacid' => empty($_GPC['uniacid']) ? 0 : intval($_GPC['uniacid']))),
+                'url' => url('module/welcome', array('module_name' => $modulename)),
                 'is_display' => empty($module['main_module']) ? true : false,
                 'module_welcome_display' => true,
             );

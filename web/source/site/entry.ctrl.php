@@ -36,6 +36,7 @@ $module = module_fetch($entry['module']);
 if (empty($module)) {
     itoast("访问非法, 没有操作权限. (module: {$entry['module']})", '', '');
 }
+
 if (!$entry['direct']) {
     checklogin();
     $referer = (url_params(referer()));
@@ -46,12 +47,11 @@ if (!$entry['direct']) {
         'module' == $referer['c'] && in_array($referer['a'], array('manage-account', 'permission')))) {
         itoast('', $_W['siteurl'] . '&version_id=' . $referer['version_id']);
     }
-
-    // 兼容历史性问题：模块内获取不到模块信息$module的问题
-    define('CRUMBS_NAV', 1);
+    if (!getenv('LOCAL_DEVELOP') && empty($_W['setting']['server_setting']['app_id'])) {
+        message('请先在模块首页点击“+”关联至少一个平台！', url('module/display/switch_module'), 'error');
+    }
 
     $_W['page']['title'] = !empty($entry['title']) ? $entry['title'] : '';
-    define('ACTIVE_FRAME_URL', url('site/entry/', array('eid' => !empty($entry['eid']) ? $entry['eid'] : 0, 'version_id' => !empty($_GPC['version_id']) ? intval($_GPC['version_id']) : 0)));
 }
 
 $_GPC['__entry'] = !empty($entry['title']) ? $entry['title'] : '';
@@ -62,13 +62,8 @@ $_GPC['do'] = $entry['do'];
 
 $_W['current_module'] = $module;
 
-if ((!empty($entry['entry']) && 'system_welcome' == $entry['entry']) || (!empty($_GPC['module_type']) && 'system_welcome' == $_GPC['module_type'])) {
-    $_GPC['module_type'] = 'system_welcome';
-    define('SYSTEM_WELCOME_MODULE', true);
-    $site = WeUtility::createModuleSystemWelcome($entry['module']);
-} else {
-    $site = WeUtility::createModuleSite($entry['module']);
-}
+$site = WeUtility::createModuleSite($entry['module']);
+
 if (!empty($_W['uniacid'])) {
     $_W['account'] = uni_fetch();
 }

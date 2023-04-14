@@ -23,7 +23,7 @@ use W7\Sdk\Module\Support\ApiResponse;
 class BasePay implements ApiRequest
 {
     /** @var string */
-    protected $uri = '/open/pay/create';
+    protected $uri = 'open/pay/create';
 
     /** @var string */
     protected $type;

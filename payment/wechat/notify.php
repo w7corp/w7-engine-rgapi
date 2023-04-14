@@ -9,9 +9,7 @@ $input = file_get_contents('php://input');
 $isxml = true;
 
 if (!empty($input) && empty($_GET['out_trade_no'])) {
-    load()->library('sdk-module');
-    $appEncryptor = new \W7\Sdk\Module\Support\AppEncryptor($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['token'], $_W['setting']['server_setting']['encodingaeskey']);
-    $data = $appEncryptor->decrypt($input);
+    $data = json_decode($input, true);
     if (empty($data)) {
         $result = array(
             'return_code' => 'FAIL',
@@ -34,8 +32,6 @@ if (!empty($input) && empty($_GET['out_trade_no'])) {
     $get = $_GET;
 }
 load()->web('common');
-load()->classs('coupon');
-$get['attach'] = json_decode($get['attach'], true);
 $_W['uniacid'] = $_W['weid'] = intval($get['attach']['uniacid']);
 $_W['uniaccount'] = $_W['account'] = uni_fetch($_W['uniacid']);
 WeUtility::logging('pay', var_export($get, true));
@@ -50,16 +46,6 @@ if (!empty($log) && $log['status'] == '0' && (($get['amount']['payer_total'] / 1
     $record = array();
     $record['status'] = '1';
     $record['tag'] = iserializer($log['tag']);
-    $coupon_info = array();
-    if (!empty($get['coupon_count'])) {
-        $coupon_info['settlement_total_fee'] = empty($get['settlement_total_fee']) ? '' : $get['settlement_total_fee'];
-        foreach ($get as $key => $value) {
-            if ('coupon_' == substr($key, 0, 7)) {
-                $coupon_info[$key] = $value;
-            }
-        }
-    }
-    $record['coupon'] = empty($coupon_info) ? '' : iserializer($coupon_info);
     table('core_paylog')
         ->where(array('plid' => $log['plid']))
         ->fill($record)
@@ -110,7 +96,6 @@ if (!empty($log) && $log['status'] == '0' && (($get['amount']['payer_total'] / 1
             $ret['card_type'] = $log['card_type'];
             $ret['card_fee'] = $log['card_fee'];
             $ret['card_id'] = $log['card_id'];
-            $ret['coupon'] = $coupon_info;
             if (!empty($get['time_end'])) {
                 $ret['paytime'] = strtotime($get['time_end']);
             }

@@ -4,7 +4,7 @@
  */
 defined('IN_IA') or exit('Access Denied');
 
-if (in_array($action, array('manage-account', 'welcome', 'link-account', 'shortcut', 'plugin'))) {
+if (in_array($action, array('manage-account', 'welcome', 'shortcut', 'plugin'))) {
     //模块内定死使用account
     define('FRAME', 'account');
 } else {

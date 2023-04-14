@@ -57,7 +57,7 @@ function wechat_build($params) {
     }
     load()->library('sdk-module');
     $account_type = empty($params['account_type']) ? 1 : $params['account_type'];
-    $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], $account_type, V3_API_DOMAIN);
+    $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], $account_type, V3_API_DOMAIN);
     $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/notify.php');
     if (!empty($params['user']) && is_numeric($params['user'])) {
         $params['user'] = mc_uid2openid($params['user']);

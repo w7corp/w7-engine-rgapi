@@ -38,6 +38,42 @@ class AccountRequest implements ApiRequest
      */
     public function getAccessToken()
     {
-        return $this->client->post('/open/api/account/getAccessToken');
+        return $this->client->post('open/api/account/getAccessToken');
+    }
+
+    /**
+     * @return ApiResponse|ResponseInterface
+     *
+     * @throws ApiException
+     * @throws ApiHttpException
+     *
+     * @noinspection PhpDocRedundantThrowsInspection
+     * @noinspection PhpReturnDocTypeMismatchInspection
+     */
+    public function jsCode2Session(string $js_code)
+    {
+        return $this->client->post('open/api/account/jsCode2Session', [
+            'form_params' => [
+                'code' => $js_code,
+            ],
+        ]);
+    }
+
+    /**
+     * @return ApiResponse|ResponseInterface
+     *
+     * @throws ApiException
+     * @throws ApiHttpException
+     *
+     * @noinspection PhpDocRedundantThrowsInspection
+     * @noinspection PhpReturnDocTypeMismatchInspection
+     */
+    public function snsOauthAccessToken(string $code)
+    {
+        return $this->client->post('open/api/account/snsOauthAccessToken', [
+            'form_params' => [
+                'code' => $code,
+            ],
+        ]);
     }
 }

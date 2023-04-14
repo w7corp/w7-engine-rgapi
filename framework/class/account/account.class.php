@@ -61,7 +61,6 @@ class WeAccount extends ArrayObject {
         global $_W;
         $this->uniacid = 1;
         $this->account = $uniaccount;
-        $this->sdkUriPre = V3_API_DOMAIN . "/wechat/api/{$_W['setting']['server_setting']['app_id']}/{$this->account['type']}";
     }
 
     public function __get($name) {

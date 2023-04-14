@@ -1,8 +1,9 @@
 {template 'common/header'}
 <div id="system-site-setting" ng-controller="systemSiteSettingCtrl" ng-cloak>
 	<ul class="we7-page-tab">
-		<li{if $action == 'setting'} class="active"{/if}><a href="{php echo url('system/setting/basic');}">基本信息</a></li>
-		<li{if $action == 'attachment'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">附件设置</a></li>
+		<li {if $action == 'setting'} class="active"{/if}><a href="{php echo url('system/setting/basic');}">基本信息</a></li>
+		<li {if $action == 'common'}class="active"{/if}><a href="{url 'system/common'}">公众平台验证文件</a></li>
+		<li {if $action == 'attachment'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">附件设置</a></li>
 	</ul>
 	<div class="form-files-box">
 		<div class="form-files we7-margin-bottom">

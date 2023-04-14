@@ -12,50 +12,61 @@
 
 namespace W7\Sdk\Module\Middlewares;
 
+use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\RequestInterface;
 
 class AddSignMiddleware
 {
-    public function __invoke(string $app_id, string $app_secret, string $account_type): \Closure
+    public function __invoke(string $app_id, string $app_secret, string $link_app_id, string $account_type): \Closure
     {
-        return function (callable $handler) use ($app_id, $app_secret, $account_type) {
+        return function (callable $handler) use ($app_id, $app_secret, $link_app_id, $account_type) {
             return function (
                 RequestInterface $request,
                 array $options
-            ) use ($handler, $app_id, $app_secret, $account_type) {
-                $body = $request->getBody()->getContents();
-                if (str_contains($request->getHeader('Content-Type')[0] ?? '', 'multipart/form-data;')) {
-                    if (preg_match_all("/Content-Disposition: form-data; name=\"body\"\r\nContent-Length: (\d+)/", $body, $result)) {
-                        $body = substr(
-                            $body,
-                            stripos($body, $result[0][0]) + strlen($result[0][0]) + 4,
-                            $result[1][0]
-                        );
-                    }
+            ) use ($handler, $app_id, $app_secret, $link_app_id, $account_type) {
+                $timeStamp  = time();
+                $nonce      = $this->random(16);
+                $bodyString = $request->getBody()->getContents();
+                $body       = json_decode($bodyString, true);
+
+                if (JSON_ERROR_NONE !== json_last_error()) {
+                    $request->getBody()->rewind();
+                    parse_str($request->getBody()->getContents(), $body);
                 }
-                $timeStamp = time();
-                $nonce     = $this->random(8);
-                $data      = [
-                    'Body'      => $body,
-                    'AppSecret' => $app_secret,
-                    'TimeStamp' => $timeStamp,
-                    'Nonce'     => $nonce,
-                    'Uri'       => $request->getUri()->getPath()
+
+                if ('POST' === $request->getMethod()) {
+                    $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded');
+                }
+
+                $data = [
+                    'appid'       => $app_id,
+                    'link_app_id' => $link_app_id,
+                    'timestamp'   => $timeStamp,
+                    'type'        => $account_type,
+                    'nonce'       => $nonce,
                 ];
-                sort($data, SORT_STRING);
-                $sign = sha1(implode($data));
-                $uri  = $request->getUri()->withQuery(http_build_query([
-                    'sign'  => $sign,
-                    'appid' => $app_id,
-                    'type'  => $account_type,
-                    'time'  => $timeStamp,
-                    'nonce' => $nonce
-                ]));
-                $request = $request->withUri($uri);
+
+                if (!empty($body)) {
+                    $data['body'] = $body;
+                }
+
+                $data['sign'] = $this->getSign($data, $app_secret);
+
+                $bodyStream = Utils::streamFor(http_build_query($data));
+                $request    = $request->withBody($bodyStream);
 
                 return $handler($request, $options);
             };
         };
+    }
+
+    protected function getSign($data, string $app_secret = ''): string
+    {
+        unset($data['sign']);
+
+        ksort($data, SORT_STRING);
+
+        return md5(http_build_query($data, '', '&') . $app_secret);
     }
 
     protected function random(int $length = 16): string

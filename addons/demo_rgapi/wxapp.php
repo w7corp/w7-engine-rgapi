@@ -11,8 +11,7 @@ class Demo_rgapiModuleWxapp extends WeModuleWxapp {
     private $uid; // 用户ID
 
     public function __construct() {
-        global $_W;
-        global $_GPC;
+        global $_W, $_GPC;
         $this->gpc = $_GPC;
         $this->w = $_W;
         $this->uid = $_W['openid'];

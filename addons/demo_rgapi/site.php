@@ -95,7 +95,7 @@ class Demo_rgapiModuleSite extends WeModuleSite {
                 iajax(-1, '支付类型错误！');
             }
             load()->library('sdk-module');
-            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], "1", V3_API_DOMAIN);
+            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 1, V3_API_DOMAIN);
             $uniontid = date('YmdHis') . random(14, 1);
             $out_trade_no = $type . date('YmdHis', time()) . time() . rand(11, 99);
             if ('wechat' == $type) {
@@ -156,7 +156,7 @@ class Demo_rgapiModuleSite extends WeModuleSite {
             $out_trade_no = safe_gpc_string($_GPC['__input']['no']);
             $paylog = pdo_get('core_paylog', array('tid' => $out_trade_no));
             $account_type = 'wxapp' == $paylog['type'] ? 2 : 1;
-            $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], $account_type, V3_API_DOMAIN);
+            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], $account_type, V3_API_DOMAIN);
             if ('wechat' == $type) {
                 $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/refund.php');
                 $data = $pay->refund($out_trade_no, 1, 1, '', $paylog['uniontid'])->toArray();

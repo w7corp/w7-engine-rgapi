@@ -55,7 +55,7 @@ $config['setting']['memcache']['pconnect'] = 1;
 $config['setting']['memcache']['timeout'] = 30;
 
 // --------------------------  CONFIG REDIS  --------------------------- //
-$config['setting']['redis']['server'] =  getenv('REDIS_HOST');
+$config['setting']['redis']['server'] = getenv('REDIS_HOST');
 $config['setting']['redis']['port'] = getenv('REDIS_PORT');
 $config['setting']['redis']['pconnect'] = 1;
 $config['setting']['redis']['timeout'] = 30;
@@ -67,3 +67,9 @@ $config['setting']['proxy']['auth'] = '';
 
 $config['config']['setting']['allow_origin'] = getenv('ALLOW_ORIGIN');
 $config['setting']['local_develop'] = getenv('LOCAL_DEVELOP');
+if (getenv('V3_API_DOMAIN')) {
+    define('V3_API_DOMAIN', getenv('V3_API_DOMAIN'));
+}
+if (getenv('CARD_NAVIGATE_MODULE_NAME')) {
+    define('CARD_NAVIGATE_MODULE_NAME', getenv('CARD_NAVIGATE_MODULE_NAME'));
+}

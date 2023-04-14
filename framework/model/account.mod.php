@@ -417,38 +417,57 @@ function uni_delete_rule($rid, $relate_table_name) {
 
 function uni_init_accounts() {
     global $_W;
-    load()->library('sdk-module');
-    try {
-        $api = new \W7\Sdk\Module\Api($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['app_secret'], 0, V3_API_DOMAIN);
-        $accounts = $api->getAccountList()->toArray();
-        $uni_accounts = pdo_getall('uni_account', [], [], 'type');
-        pdo_delete('account');
-        foreach ($accounts as $account) {
-            if (!empty($uni_accounts[$account['type']])) {
-                $uniacid = $uni_accounts[$account['type']]['uniacid'];
-            } else {
-                pdo_insert('uni_account', [
-                    'type' => $account['type'],
-                    'isconnect' => 1,
-                    'createtime' => TIMESTAMP
-                ]);
-                $uniacid = pdo_insertid();
+    $accounts = [];
+    if (getenv('LOCAL_DEVELOP')) {
+        $init_accounts = require IA_ROOT . '/data/init-accounts.php';
+        foreach ($init_accounts as $account) {
+            if (empty($account)) {
+                continue;
             }
-            $data = [
-                'uniacid' => $uniacid,
-                'name' => $account['name'],
-                'logo' => $account['logo_url'],
-                'type' => $account['type'],
-                'level' => intval($account['account_type']), //1订阅号;2服务号;3认证订阅号;4认证服务号
-                'access_type' => intval($account['access_type']), //1普通接入;2授权接入
-                'app_id' => $account['app_id'],
-                'token' => $account['token'],
-                'aes_key' => $account['aes_key'],
-            ];
-            pdo_insert('account', $data);
+            $accounts[] = $account;
         }
-    } catch (Exception $e) {
-        return error(-1, $e->getMessage());
+        if (empty($accounts)) {
+            return error(-1, '请先在“/data/init-accounts.php”文件下添加初始化数据');
+        }
+    } else {
+        load()->library('sdk-module');
+        try {
+            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 0, V3_API_DOMAIN);
+            $rgapi_accounts = $api->getAccountList()->toArray();
+            if (!empty($rgapi_accounts) && is_array($rgapi_accounts)) {
+                $accounts = $rgapi_accounts;
+            } else {
+                throw new \Exception('API授权获取平台失败，可能原因：1. 人为关闭了API授权；2. 平台被删除；');
+            }
+        } catch (\Exception $e) {
+            return error(-1, $e->getMessage());
+        }
+    }
+    $uni_accounts = pdo_getall('uni_account', [], [], 'type');
+    pdo_delete('account');
+    foreach ($accounts as $account) {
+        if (!empty($uni_accounts[$account['type']])) {
+            $uniacid = $uni_accounts[$account['type']]['uniacid'];
+        } else {
+            pdo_insert('uni_account', [
+                'type' => $account['type'],
+                'isconnect' => 1,
+                'createtime' => TIMESTAMP
+            ]);
+            $uniacid = pdo_insertid();
+        }
+        $data = [
+            'uniacid' => $uniacid,
+            'name' => $account['name'],
+            'logo' => $account['logo_url'],
+            'type' => $account['type'],
+            'level' => intval($account['account_type']) ?: 1, //1订阅号;2服务号;3认证订阅号;4认证服务号
+            'access_type' => intval($account['access_type']) ?: 1, //1普通接入;2授权接入
+            'app_id' => $account['app_id'],
+            'app_secret' => $account['app_secret'] ?? '',
+            'app_key' => $account['app_key'] ?? '',
+        ];
+        pdo_insert('account', $data);
     }
     return true;
 }

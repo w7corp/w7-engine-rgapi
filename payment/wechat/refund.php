@@ -9,9 +9,7 @@ load()->web('common');
 $input = file_get_contents('php://input');
 
 if (!empty($input)) {
-    load()->library('sdk-module');
-    $appEncryptor = new \W7\Sdk\Module\Support\AppEncryptor($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['token'], $_W['setting']['server_setting']['encodingaeskey']);
-    $wechat_data = $appEncryptor->decrypt($input);
+    $wechat_data = json_decode($input, true);
     if (empty($wechat_data)) {
         $result = array(
             'return_code' => 'FAIL',

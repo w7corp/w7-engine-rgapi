@@ -2,7 +2,7 @@
 <html lang="zh-cn">
 <head>
 	{if !defined('FRAME')}{php define('FRAME', '')}{/if}
-	{php $frames = buildframes(FRAME);}
+	{php $frames = buildframes(FRAME);_calc_current_frames($frames);}
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,7 +51,7 @@
 	<script type="text/javascript" src="./resource/js/app/common.min.js?v={IMS_VERSION}"></script>
 	<script type="text/javascript" src="./resource/js/require.js?v={IMS_VERSION}"></script>
 	<script type="text/javascript" src="./resource/js/lib/jquery.nice-select.js?v={IMS_VERSION}"></script>
-	<script type="text/javascript" src="//cdn.w7.cc/ued/console/jssdk.js"></script>
+	<script type="text/javascript" src="//cdn.w7.cc/ued/console/jssdkv2.js"></script>
 	<style>
 		.is-main-page *{pointer-events: none;cursor: default;}
 		.star-menu {display: none;}

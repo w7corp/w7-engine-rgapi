@@ -7,19 +7,21 @@ defined('IN_IA') or exit('Access Denied');
 
 load()->model('miniapp');
 
-$dos = ['switch'];
-$do = in_array($do, $dos) ? $do : 'switch';
+$dos = ['switch_module', 'switch_uniacid'];
+$do = in_array($do, $dos) ? $do : 'switch_module';
 
-if ('switch' == $do) {
-    if (empty($_W['setting']['server_setting']['app_id']) || empty($_W['setting']['server_setting']['app_secret'])) {
-        message('请先配置app_id和app_secret。', url('system/base-info'), 'error');
-    }
+if ('switch_module' == $do) {
     $module_name = pdo_fetchcolumn("SELECT `name` FROM " . tablename('modules') . " ORDER BY `mid` ASC");
     $module_info = module_fetch($module_name);
     if (empty($module_info)) {
         message('应用尚未初始化，前去初始化。', url('module/manage-system/install'));
     }
+    itoast('', url('module/welcome/display', ['module_name' => $module_name]));
+}
 
+if ('switch_uniacid' == $do) {
+    $module_name = safe_gpc_string($_GPC['module_name']);
+    $module_info = module_fetch($module_name);
     $support = [];
     foreach (module_support_type() as $key => $type) {
         if ($module_info[$key] == $type['support']) {
@@ -28,11 +30,11 @@ if ('switch' == $do) {
     }
     $account = table('account')->getOrderByTypeAsc();
     if (empty($account)) {
-        uni_init_accounts();
+        $init_accounts = uni_init_accounts();
+        if (is_error($init_accounts)) {
+            message($init_accounts['message'], url('system/setting/basic'));
+        }
         $account = table('account')->getOrderByTypeAsc();
-    }
-    if (empty($account)) {
-        message('需先到软擎授权平台关联至少一个号码后再操作！');
     }
     $uniacid = $account['uniacid'];
     if (count($support) > 1) {
@@ -50,7 +52,7 @@ if ('switch' == $do) {
             }
         }
     }
-
+    
     $account_info = uni_fetch($uniacid);
     $url = url('module/welcome/display', ['module_name' => $module_name]);
     if (MODULE_SUPPORT_WXAPP == $module_info['wxapp_support']) {

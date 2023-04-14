@@ -8,9 +8,7 @@ if (!empty($input)) {
     WeUtility::logging('pay-alipay', var_export($input, true));
     load()->web('common');
     load()->classs('coupon');
-    load()->library('sdk-module');
-    $appEncryptor = new \W7\Sdk\Module\Support\AppEncryptor($_W['setting']['server_setting']['app_id'], $_W['setting']['server_setting']['token'], $_W['setting']['server_setting']['encodingaeskey']);
-    $data = $appEncryptor->decrypt($input);
+    $data = json_decode($input, true);
     if (!empty($data['trade_status']) && 'TRADE_SUCCESS' == $data['trade_status']) {
         $log = table('core_paylog')
             ->where(array('uniontid' => $data['out_trade_no']))

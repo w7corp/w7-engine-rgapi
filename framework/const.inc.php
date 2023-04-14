@@ -6,7 +6,8 @@
 defined('IN_IA') or exit('Access Denied');
 
 !defined('CLOUD_API_DOMAIN') && define('CLOUD_API_DOMAIN', 'https://openapi.w7.cc');
-!defined('V3_API_DOMAIN') && define('V3_API_DOMAIN', 'https://rgapi.w7.cc');
+!defined('V3_API_DOMAIN') && define('V3_API_DOMAIN', 'https://api.w7.cc/w7api/mgw/w7_rangineapi/');
+!defined('CARD_NAVIGATE_MODULE_NAME') && define('CARD_NAVIGATE_MODULE_NAME', 'w7_rangineapi');
 define('REGULAR_EMAIL', '/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/i');
 define('REGULAR_MOBILE', '/1[3456789][0-9]{9}/');
 define('REGULAR_USERNAME', '/^[\x{4e00}-\x{9fa5}a-z\d_\.]{1,30}$/iu');
@@ -39,8 +40,16 @@ define('ACCOUNT_TYPE_PHONEAPP_NORMAL', 4);
 define('ACCOUNT_TYPE_ALIAPP_NORMAL', 5);
 //百度小程序
 define('ACCOUNT_TYPE_BAIDUAPP_NORMAL', 6);
-//字节跳动小程序
+//抖音小程序
 define('ACCOUNT_TYPE_TOUTIAOAPP_NORMAL', 7);
+//企业微信
+define('ACCOUNT_TYPE_WECHAT_WORK_NORMAL', 8);
+//快手小程序
+define('ACCOUNT_TYPE_K_WAI_NORMAL', 9);
+//微信视频号
+define('ACCOUNT_TYPE_WECHAT_EC_NORMAL', 10);
+//QQ小程序
+define('ACCOUNT_TYPE_QQ_NORMAL', 11);
 //正常接入PC
 define('ACCOUNT_TYPE_WEBAPP_NORMAL', 12);
 //正常接入系统首页

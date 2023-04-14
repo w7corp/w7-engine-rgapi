@@ -1,122 +1,96 @@
 {template 'common/header'}
-<div class="module-welcome welcome-container clearfix" id="js-module-welcome" ng-controller="userModuleWelcomeCtrl" ng-cloak>
+<div class="module-welcome welcome-container clearfix" style="background: #fff;margin: 0 -30px;">
 	<!-- 默认后台入口 start -->
-	<div class="panel we7-panel module-go-panele" ng-if="module.welcome_display">
-		<div class="panel-heading we7-padding clearfix">
+	{if $module['welcome_display']}
+	<div class="panel we7-panel">
+		<div class="panel-heading clearfix">
 			<h4 class="pull-left">应用后台管理</h4>
 			<a href="{php echo url('module/welcome/welcome_display', array('module_name' => $module_name))}" class="btn btn-primary pull-right" target="_blank">
 				 进入后台
 			</a>
 		</div>
 	</div>
+	{/if}
 	<!-- 默认后台入口 end -->
 	<!-- 关联账号 -->
 	{if empty($module['main_module'])}
-	<div class="panel we7-panel ">
+	<div class="panel we7-panel">
 		<div class="panel-heading"><h4>关联平台</h4></div>
 		<div class="panel-body">
+			<span class="hidden">{$server_setting['app_id']}</span>
+			<div class="alert we7-page-alert">
+				<p><i class="wi wi-info"></i>此处只展示应用所支持平台类型的平台。如关联了公众号、微信小程序，而应用只支持公众号，那么此处只显示公众号。</p>
+			</div>
 			<div class="account-list">
-				<div class="account-item" ng-repeat="link_account in link_accounts">
-					<img ng-src="{{link_account.logo}}" class="account-img logo" alt="">
+				{if !empty($link_accounts)}
+				{loop $link_accounts $link_account}
+				<div class="account-item">
+					<img src="{$link_account['logo']}" class="account-img logo" alt="">
 					<div class="info">
 						<div class="title">
-							<span class="text-over name">{{link_account.name}}</span>
+							<span class="text-over name">{$link_account['name']}</span>
 						</div>
 						<div class="type">
-							<i class="wi wi-{{link_account.type_sign}}"></i>
-							<span ng-bind="link_account.type_name" ng-if="0"></span>
+							<i class="wi wi-{$link_account['type_sign']}"></i>
+							<span bind="{$link_account['type_name']" ng-if="0"></span>
 						</div>
 					</div>
+				</div>
+				{/loop}
+				{/if}
+				<div style="height: 102px;box-sizing: border-box;border: 1px solid #e8e9eb;border-radius: 4px;text-align: center;cursor: pointer">
+					<a href="javascript:;" style="font-size:50px;padding-top: 9px;padding-bottom: 24px;" onclick="card()" {if getenv('LOCAL_DEVELOP')}disabled="1"{/if}>
+					<span style="width: 100px;height: 100px;display: inline-block;padding-top: 20px;margin: 0 75px;color: #999;font-weight: 1">+</span>
+					</a>
 				</div>
 			</div>
 		</div>
 	</div>
 	{/if}
 	<!-- 关联账号end -->
-	<!-- 功能快捷入口 start -->
-	<div class="panel we7-panel">
-		<div class="panel-heading">
-			<h4>功能快捷入口</h4>
-			<a href="{php echo url('module/shortcut', array('module_name' => $module_name))}" class="more" >管理快捷入口</a>
-		</div>
-		<div class="panel-body "> 
-			<div class="quick-list" ng-if="!(shortcuts | we7IsEmpty)">
-				<a href="{{ shortcut.url }}" class="quick-item" ng-repeat="shortcut in shortcuts" ng-if="shortcuts.length && $index < 6">
-					<div class="icon">
-						<img src="{{shortcut.icon}}" alt="" ng-if="shortcut.welcome_display">
-						<img ng-src="{{shortcut.icon}}" alt="" ng-if="!shortcut.welcome_display">
-					</div>
-					<div class="name text-over" ng-bind="shortcut.title"></div>
-				</a>
-			</div>
-			<div class="quick-list" ng-if="shortcuts | we7IsEmpty">
-				<div class="we7-empty-block" >暂无快捷入口</div>
-			</div>
-		</div>
-	</div>
-	<!-- 功能快捷入口 end -->
-	<!-- 入口 start -->
-	<div class="panel we7-panel" ng-if="covers || replies" >
-		<div class="panel-heading" >
-			<h4>入口</h4>
-			<ul class="nav nav-tabs" role="tablist">
-				<li role="presentation" ng-class="{active: covers}"><a href="#entry" aria-controls="entry" role="tab" data-toggle="tab" ng-click="changeEntryType('entry')" ng-if="covers">封面</a></li>
-				<li role="presentation" ng-class="{active: !covers}"><a href="#keyword" aria-controls="keyword" role="tab" data-toggle="tab"  ng-click="changeEntryType('reply')" ng-if="replies">关键字</a></li>
-			</ul>
-			<a href="javascript:void(0);" ng-click="pageTo('cover', cover_id)" class="more" ng-if="entryType == 'cover'">查看更多</a>
-			<a href="javascript:void(0);" ng-click="pageTo('reply', cover_id)" class="more" ng-if="entryType == 'reply'">查看更多</a>
-		</div>
-		<div class="panel-body">
-			<div class="tab-content">
-				<div class="tab-pane" ng-class="{'active': covers}" id="entry">
-					<div class="entry-list">
-						<div class="entry-item" ng-repeat="cover in covers" ng-if="$index < 3"> <!-- 3个-->
-							<div data-url="{$_W['siteroot']}app/{{ cover.url}}" data-size="100" class="qr js-url-qrcode">
-								<div class="qrcode-block"><canvas></canvas></div>
-							</div>
-							<div class="info">
-								<div class="entry-title">
-									<span class="title">入口名称</span>
-									<span ng-bind="cover.title"></span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="tab-pane" ng-class="{'active': !covers}" id="keyword">
-					<div class="keyword-list">
-						<div class="keyword-item" ng-repeat="reply in replies">
-							<div class="keyword">
-								<span class="title">关键字</span>
-								<span class="keyword-label text-over" ng-repeat="keyword in reply.keywords" ng-bind="keyword.content" ng-if="$index == 0"></span> <!--1个-->
-							</div>
-							<div class="content">
-								<span class="title">回复内容</span>
-								<span ng-bind="reply.module_info.title | limitTo:10"></span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- 入口 end-->
 </div>
 
 <script>
-	angular.module('moduleApp').value('config', {
-		'module': {php echo json_encode($module)},
-		'apiLink': "{CLOUD_API_DOMAIN}",
-		'link_accounts': {php echo !empty($link_accounts) ? json_encode($link_accounts): 'null'},
-		'links' : {
-			'cover_url' : "{php echo url('platform/cover')}",
-			'reply_url' : "{php echo url('platform/reply')}",
-			'shortcut' : "{php echo url('module/shortcut/display', array('module_name' => $module_name))}",
-			'get_module_replies_url' : "{php echo url('module/welcome/get_module_replies', array('module_name' => $module_name))}",
-			'get_module_covers_url' : "{php echo url('module/welcome/get_module_covers', array('module_name' => $module_name))}",
+	window.addEventListener('message',(e) => {
+		if(e.data.type=='returnData') {
+			var finish = {
+				app_id: false,
+				redirect: '',
+			};
+			var app_id = e.data.data.app_id;
+			$.post("{php echo url('module/welcome/edit_link', ['module_name' => $module_name])}", {'link_app_id': app_id}, function (data) {
+				if (data.message.errno == 0) {
+					finish.app_id = true;
+					finish.redirect = data.redirect;
+				} else {
+					util.message(data.message.message, data.redirect, 'error');
+				}
+			}, 'json');
+			setTimeout(function() {
+				if (true === finish.app_id) {
+					util.message('关联软擎平台成功！', finish.redirect, 'success');
+				}
+			}, 900)
 		}
-	});
-	angular.bootstrap($('#js-module-welcome'), ['moduleApp']);
+	})
+	function card() {
+		window.w7.ready(()=>{
+			window.w7.navigate({
+				modulename: '{php echo CARD_NAVIGATE_MODULE_NAME}',
+				type: 'micro',
+				route: '{php echo $card_route}',
+				title: '关联平台',
+				style: {width:1000, height:700},
+				enable_api: true,
+			});
+		})
+	}
 </script>
+
+<style type="text/css">
+.account-list .account-item:nth-child(n+3) {
+	border-right: 1px solid #e8e9eb !important;
+}
+</style>
 
 {template 'common/footer'}
