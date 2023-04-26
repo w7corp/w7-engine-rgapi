@@ -12,7 +12,7 @@
 2. 在```.env```中将数据库信息修改为自己的；
 3. 初始化```data/init-accounts.php```的平台数据；
 4. 浏览器访问站点域名即可；
-5. 本地开发时，需要手动切换```manifest.yaml```中对应的左侧菜单的路由，见5；
+5. 本地开发时，需要手动切换```manifest.yaml```中对应的左侧菜单的路由，见6；
 6. 两个路由：
 <br>（1） 应用管理```域名/web/index.php?c=module&a=display&do=switch_module```，对应控制台已上线的软擎授权示例应用下的左侧菜单之“应用管理”，如下图：<br>
    ![image.png](https://rangine-1251470023.cos.ap-shanghai.myqcloud.com/document/ixwFtvU3wpwmLPaApKAUpVPT3A131mFF.png)
