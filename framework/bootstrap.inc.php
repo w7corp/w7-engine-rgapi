@@ -102,7 +102,7 @@ $_W['isajax'] = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 'xmlhttprequest' ==
 // 附件地址绝对路径
 define('ATTACHMENT_ROOT', IA_ROOT . '/attachment/');
 $pdo_if_start = (pdo()->getPDO() instanceof PDO);
-if (!$pdo_if_start && file_exists(IA_ROOT . '/install.php') && !file_exists(ATTACHMENT_ROOT . '/install.lock')) {
+if ((!$pdo_if_start || ($pdo_if_start && !pdo_tableexists('account'))) && file_exists(IA_ROOT . '/install.php') && !file_exists(ATTACHMENT_ROOT . '/install.lock')) {
     header('Location:' . $_W['siteroot'] . 'install.php');
     exit();
 }
