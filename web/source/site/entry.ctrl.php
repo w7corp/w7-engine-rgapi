@@ -65,7 +65,7 @@ $_W['current_module'] = $module;
 $site = WeUtility::createModuleSite($entry['module']);
 
 if (!empty($_W['uniacid'])) {
-    $_W['account'] = uni_fetch();
+    $_W['uniaccount'] = $_W['account'] = uni_fetch();
 }
 define('IN_MODULE', $entry['module']);
 if (!is_error($site)) {
