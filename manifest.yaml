@@ -5,7 +5,7 @@ application:
   author: 微擎团队
 platform:
   container:
-    containerPort: 8081
+    containerPort: 80
     minNum: 1
     maxNum: 20
     cpu: 0.5
@@ -65,6 +65,13 @@ platform:
         type: text
         values_text: '%MYSQL_ROOT_PASSWORD%'
         module_name: w7_mysql
+      -
+        name: MYSQL_DATABASE
+        title: mysql数据库
+        required: true
+        type: text
+        values_text: dbname_%RANDOM%
+        module_name: 
     volumes:
       -
         mountPath: /home/WeEngine/attachment
