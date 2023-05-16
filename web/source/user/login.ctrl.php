@@ -35,6 +35,6 @@ $w7_user_token = authcode(json_encode(array(
     'hash' => $user_info['hash']
 )), 'encode');
 isetcookie('__session', $w7_user_token);
-$url = !empty($_GPC['referer']) ? safe_gpc_url($_GPC['referer']) : $_W['siteroot'];
+$url = !empty($_GPC['referer']) ? safe_gpc_url($_GPC['referer']) : url('module/display/switch_module', [], true);
 header('Location:' . $url);
 exit;

@@ -22,7 +22,7 @@ $w7_file_permission = [];
 $w7_file_permission = [
     'account' => [
         'default' => '',
-        'direct' => [],
+        'direct' => ['welcome'],
     ],
     'message' => [
         'default' => '',
@@ -38,9 +38,7 @@ $w7_file_permission = [
     ],
     'site' => [
         'default' => '',
-        'direct' => [
-            'entry',
-        ],
+        'direct' => ['entry'],
     ],
     'system' => [
         'default' => '',
@@ -54,11 +52,7 @@ $w7_file_permission = [
     ],
     'utility' => [
         'default' => '',
-        'direct' => [
-            'visit',
-            'bindcall',
-            'mp-verify',
-        ],
+        'direct' => ['visit', 'bindcall', 'mp-verify'],
     ],
 ];
 

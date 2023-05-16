@@ -12,6 +12,6 @@ if ($_W['os'] == 'mobile' && (!empty($_GPC['i']) || !empty($_SERVER['QUERY_STRIN
     if (!empty($_SERVER['QUERY_STRING'])) {
         header('Location: ' . $_W['siteroot'] . 'web/index.php?' . $_SERVER['QUERY_STRING']);
     } else {
-        header('Location: ' . $_W['siteroot'] . 'web/index.php?c=module&a=display');
+        header('Location: ' . $_W['siteroot'] . 'web/index.php?c=account&a=welcome');
     }
 }
