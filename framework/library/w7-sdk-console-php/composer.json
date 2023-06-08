@@ -1,0 +1,15 @@
+{
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        },
+        "1": {
+            "type" : "git",
+            "url" : "https://gitee.com/free-worker/console-sdk-php.git"
+        }
+    },
+    "require": {
+        "w7/sdk-console-php": "^1.0"
+    }
+}
