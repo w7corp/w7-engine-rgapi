@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS $tablename_paylog (
   `no` varchar(255) NOT NULL DEFAULT '' COMMENT '商户订单号',
   `code` varchar(255) NOT NULL DEFAULT '' COMMENT '二维码链接',
   `status` tinyint(1) NOT NULL DEFAULT 0 COMMENT '状态',
-  `type` tinyint(1) NOT NULL DEFAULT 1 COMMENT '支付类型 1:微信;2:支付宝;',
+  `type` tinyint(1) NOT NULL DEFAULT 1 COMMENT '支付类型 1:Native(微信扫码);2:ali(支付宝);3:Wechat(公众号jsapi);4:Wxapp(小程序jsapi);5:w7pay',
   `createtime` int(11) NOT NULL COMMENT '创建时间',
   `updatetime` int(11) NOT NULL DEFAULT 0 COMMENT '更新时间',
   `uid` varchar(255) NOT NULL DEFAULT '' COMMENT '用户标识',

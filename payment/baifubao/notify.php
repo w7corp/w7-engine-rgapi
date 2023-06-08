@@ -9,7 +9,6 @@ $_GPC['i'] = !empty($_GPC['i']) ? intval($_GPC['i']) : intval($_GET['extra']);
 require '../../app/common/bootstrap.app.inc.php';
 load()->app('template');
 load()->web('common');
-load()->classs('coupon');
 $_W['uniacid'] = $_W['weid'] = intval($_GPC['i']);
 $_W['uniaccount'] = $_W['account'] = uni_fetch($_W['uniacid']);
 $_W['acid'] = $_W['uniaccount']['acid'];

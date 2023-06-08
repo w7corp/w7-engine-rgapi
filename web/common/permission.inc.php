@@ -22,7 +22,7 @@ $w7_file_permission = [];
 $w7_file_permission = [
     'account' => [
         'default' => '',
-        'direct' => ['welcome'],
+        'direct' => [],
     ],
     'message' => [
         'default' => '',

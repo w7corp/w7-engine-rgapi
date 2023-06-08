@@ -7,7 +7,6 @@ $input = file_get_contents('php://input');
 if (!empty($input)) {
     WeUtility::logging('pay-alipay', var_export($input, true));
     load()->web('common');
-    load()->classs('coupon');
     $data = json_decode($input, true);
     if (!empty($data['trade_status']) && 'TRADE_SUCCESS' == $data['trade_status']) {
         $log = table('core_paylog')

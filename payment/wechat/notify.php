@@ -32,43 +32,14 @@ if (!empty($input) && empty($_GET['out_trade_no'])) {
     $get = $_GET;
 }
 load()->web('common');
-$_W['uniacid'] = $_W['weid'] = intval($get['attach']['uniacid']);
-$_W['uniaccount'] = $_W['account'] = uni_fetch($_W['uniacid']);
 WeUtility::logging('pay', var_export($get, true));
 $log = table('core_paylog')
     ->where(array('uniontid' => $get['out_trade_no']))
     ->get();
-
+$_W['uniacid'] = $_W['weid'] = intval($log['uniacid']);
+$_W['uniaccount'] = $_W['account'] = uni_fetch($_W['uniacid']);
 if (!empty($log) && $log['status'] == '0' && (($get['amount']['payer_total'] / 100) == $log['card_fee'])) {
-    $log['tag'] = iunserializer($log['tag']);
-    $log['tag']['transaction_id'] = $get['transaction_id'];
-    $log['uid'] = $log['tag']['uid'];
-    $record = array();
-    $record['status'] = '1';
-    $record['tag'] = iserializer($log['tag']);
-    table('core_paylog')
-        ->where(array('plid' => $log['plid']))
-        ->fill($record)
-        ->save();
-    $mix_pay_credit_log = table('core_paylog')
-        ->where(array(
-            'module' => $log['module'],
-            'tid' => $log['tid'],
-            'uniacid' => $log['uniacid'],
-            'type' => 'credit'
-        ))
-        ->get();
-    if (!empty($mix_pay_credit_log)) {
-        table('core_paylog')
-            ->where(array('plid' => $mix_pay_credit_log['plid']))
-            ->fill(array('status' => 1))
-            ->save();
-        $log['fee'] = $mix_pay_credit_log['fee'] + $log['fee'];
-        $log['card_fee'] = $mix_pay_credit_log['fee'] + $log['card_fee'];
-        $setting = uni_setting($_W['uniacid'], array('creditbehaviors'));
-        $credtis = mc_credit_fetch($log['uid']);
-        mc_credit_update($log['uid'], $setting['creditbehaviors']['currency'], -$mix_pay_credit_log['fee'], array($log['uid'], '消费' . $setting['creditbehaviors']['currency'] . ':' . $fee));
-    }
+    table('core_paylog')->where(array('plid' => $log['plid']))->fill(array('status' => 1))->save();
     if ($log['type'] == 'wxapp') {
         $site = WeUtility::createModuleWxapp($log['module']);
     } else {
