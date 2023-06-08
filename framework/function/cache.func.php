@@ -581,6 +581,10 @@ function cache_key_all() {
                 'key' => 'account_web_view_domain:%uniacid',
                 'group' => '',
             ),
+            'zhida_content' => array(
+                'key' => 'zhida_content',
+                'group' => '',
+            ),
         ),
         // 缓存键关联关系数组
         'groups' => array(
