@@ -24,6 +24,10 @@ $w7_file_permission = [
         'default' => '',
         'direct' => [],
     ],
+    'cloud' => [
+        'default' => '',
+        'direct' => [],
+    ],
     'message' => [
         'default' => '',
         'direct' => [],
@@ -53,6 +57,10 @@ $w7_file_permission = [
     'utility' => [
         'default' => '',
         'direct' => ['visit', 'bindcall', 'mp-verify'],
+    ],
+    'wxapp' => [
+        'default' => '',
+        'direct' => [],
     ],
 ];
 

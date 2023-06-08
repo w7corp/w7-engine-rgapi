@@ -3,6 +3,7 @@
  * [WeEngine System] Copyright (c) 2014 W7.CC.
  */
 load()->func('communication');
+load()->model('extension');
 
 $step = $_GPC['step'] ?? '';
 $steps = array('scripts', 'module_upgrade');

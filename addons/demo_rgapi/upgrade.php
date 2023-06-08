@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS $tablename_riji (
   `uniacid` int(11) NOT NULL DEFAULT '0',
   `image` varchar(255) NOT NULL DEFAULT '' COMMENT '图片路径',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS $tablename_paylog (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `no` varchar(255) NOT NULL DEFAULT '' COMMENT '商户订单号',
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS $tablename_paylog (
   `uid` varchar(255) NOT NULL DEFAULT '' COMMENT '用户标识',
   `uniacid` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB;
 EOT;
 
-pdo_query($sql);
+pdo_run($sql);

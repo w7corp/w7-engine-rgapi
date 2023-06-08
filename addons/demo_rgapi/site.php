@@ -174,6 +174,8 @@ class Demo_rgapiModuleSite extends WeModuleSite {
     //内购发起退款
     public function doWebW7refund() {
         global $_W, $_GPC;
+        ini_set('display_errors', '1');
+        error_reporting(E_ALL ^ E_NOTICE);
         try {
             load()->library('sdk-console');
             $no = safe_gpc_string($_GPC['no']);
