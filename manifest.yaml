@@ -70,7 +70,7 @@ platform:
         title: 数据库名
         required: true
         type: text
-        values_text: '%dbname_RANDOM%'
+        values_text: dbname_%RANDOM%
     volumes:
       -
         mountPath: /home/WeEngine/attachment
