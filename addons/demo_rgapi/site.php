@@ -345,8 +345,8 @@ class Demo_rgapiModuleSite extends WeModuleSite {
             );
             pdo_insert('demo_rgapi_paylog', $insert);
             iajax(0, array('type' => $type, 'code' => $code, 'no' => $out_trade_no));
-        } catch (Exception $e) {
-            iajax(-1, '支付失败！错误详情: ' . $e->getMessage());
+        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
+            return error(-1, '支付失败！错误详情: ' . $e->getResponse()->getBody()->getContents());
         }
     }
     //退款功能
@@ -387,8 +387,8 @@ class Demo_rgapiModuleSite extends WeModuleSite {
                 iajax(0, '退款成功!', referer());
             }
             iajax(0, '已发起退款申请，预计1分钟后退款成功！');
-        } catch (Exception $e) {
-            iajax(-1, '退款失败！错误详情: ' . $e->getMessage());
+        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
+            return error(-1, '退款失败！错误详情: ' . $e->getResponse()->getBody()->getContents());
         }
     }
     //微信、支付宝支付回调

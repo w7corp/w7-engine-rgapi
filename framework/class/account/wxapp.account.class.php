@@ -25,8 +25,8 @@ class WxappAccount extends WeAccount {
             load()->library('sdk-module');
             $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 2, V3_API_DOMAIN);
             return $api->app()->jsCode2Session($code);
-        } catch (Exception $e) {
-            return error(-1, '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $e->getMessage());
+        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
+            return error(-1, '获取微信小程序授权失败, 请稍后重试！错误详情: ' . $e->getResponse()->getBody()->getContents());
         }
     }
 
@@ -97,8 +97,8 @@ class WxappAccount extends WeAccount {
                 load()->library('sdk-module');
                 $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], "2", V3_API_DOMAIN);
                 $token = $api->app()->getAccessToken()->toArray();
-            } catch (Exception $e) {
-                return error(-1, '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $e['message']);
+            } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
+                return error(-1, '获取微信小程序授权失败, 请稍后重试！错误详情: ' . $e->getResponse()->getBody()->getContents());
             }
         }
 

@@ -439,8 +439,8 @@ function uni_init_accounts() {
             } else {
                 throw new \Exception('API授权获取平台失败，可能原因：1. 人为关闭了API授权；2. 平台被删除；');
             }
-        } catch (\Exception $e) {
-            return error(-1, $e->getMessage());
+        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
+            return error(-1, $e->getResponse()->getBody()->getContents());
         }
     }
     $uni_accounts = pdo_getall('uni_account', [], [], 'type');
