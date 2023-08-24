@@ -126,6 +126,7 @@ class WeAccount extends ArrayObject {
             return self::$accountObj[$uniacid];
         }
         $uniaccount = table('account')->getUniAccountByUniacid($uniacid);
+        $uniaccount['key'] = $uniaccount['app_id'];
         if (empty($uniaccount)) {
             return error('-1', '帐号不存在或是已经被删除');
         }

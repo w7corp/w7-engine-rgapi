@@ -272,7 +272,7 @@ function uni_modules_by_uniacid($uniacid) {
  * @return array 模块列表
  */
 function uni_modules() {
-    return pdo_getall('modules');
+    return pdo_getall('modules', [], [], 'name');
 }
 
 /**

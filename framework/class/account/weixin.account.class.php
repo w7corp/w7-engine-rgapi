@@ -544,7 +544,7 @@ class WeixinAccount extends WeAccount {
         $string1 = "jsapi_ticket={$jsapiTicket}&noncestr={$nonceStr}&timestamp={$timestamp}&url={$url}";
         $signature = sha1($string1);
         $config = array(
-            'appId' => $this->account['key'],
+            'appId' => $this->account['app_id'],
             'nonceStr' => $nonceStr,
             'timestamp' => "$timestamp",
             'signature' => $signature,
@@ -623,7 +623,7 @@ class WeixinAccount extends WeAccount {
      *  @param string $miniprogram['pagepath'] 所需跳转到小程序的具体页面路径，支持带参数,（示例index?foo=bar）
      */
     public function sendTplNotice($touser, $template_id, $postdata, $url = '', $topcolor = '#FF683F', $miniprogram = array('appid' => '', 'pagepath' => '')) {
-        if (empty($this->account['key']) || ACCOUNT_SERVICE_VERIFY != $this->account['level']) {
+        if (empty($this->account['app_id']) || ACCOUNT_SERVICE_VERIFY != $this->account['level']) {
             return error(-1, '你的公众号没有发送模板消息的权限');
         }
         if (empty($touser)) {
@@ -1045,7 +1045,7 @@ class WeixinAccount extends WeAccount {
             return false;
         }
         $package = array(
-            'appid' => $this->account['key'],
+            'appid' => $this->account['app_id'],
             'url' => $current_url,
             'timestamp' => strval(TIMESTAMP),
             'noncestr' => strval(random(8, true)),
@@ -1058,7 +1058,7 @@ class WeixinAccount extends WeAccount {
         }
         $signstring = strtolower(sha1(trim(implode('&', $signstring))));
         $shareaddress_config = array(
-            'appId' => $this->account['key'],
+            'appId' => $this->account['app_id'],
             'scope' => 'jsapi_address',
             'signType' => 'sha1',
             'addrSign' => $signstring,
@@ -1081,7 +1081,7 @@ class WeixinAccount extends WeAccount {
         if (!empty($extra['forceSnapShot'])) {
             $url_param .= '&forceSnapShot=true';
         }
-        return "https://open.weixin.qq.com/connect/oauth2/authorize?appid={$this->account['key']}&redirect_uri={$callback}&response_type=code&scope=snsapi_userinfo&state={$state}{$url_param}#wechat_redirect";
+        return "https://open.weixin.qq.com/connect/oauth2/authorize?appid={$this->account['app_id']}&redirect_uri={$callback}&response_type=code&scope=snsapi_userinfo&state={$state}{$url_param}#wechat_redirect";
     }
 
     /**

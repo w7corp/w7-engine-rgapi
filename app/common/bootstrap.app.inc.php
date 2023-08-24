@@ -95,7 +95,7 @@ if (empty($_W['openid']) && !empty($_SESSION['oauth_openid'])) {
 
 $_W['oauth_account'] = $_W['account']['oauth'] = array(
     'key' => $_W['account']['app_id'],
-    'secret' => '',
+    'secret' => $_W['account']['app_secret'],
     'acid' => $_W['acid'],
     'type' => $_W['account']['type'] ?? '',
     'level' => $_W['account']['level'] ?? 0,
@@ -121,7 +121,7 @@ if (!empty($_W['account']['oauth']) && $_W['account']['oauth']['support_oauthinf
         $oauth_url = uni_account_oauth_host();
         $url = $oauth_url . "app/index.php?i={$_W['uniacid']}&c=auth&a=oauth&scope=snsapi_userinfo";
         $callback = urlencode($url);
-        $oauth_account = WeAccount::create($_W['account']['oauth']);
+        $oauth_account = WeAccount::createByUniacid();
         $forward = $oauth_account->getOauthUserInfoUrl($callback, $state);
         template('auth/wx');
         exit();

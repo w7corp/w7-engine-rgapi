@@ -113,7 +113,7 @@ class WeixinPlatform extends WeixinAccount {
         if (is_error($component_accesstoken)) {
             return $component_accesstoken;
         }
-        $appid = !empty($appid) ? $appid : $this->account['key'];
+        $appid = !empty($appid) ? $appid : $this->account['app_id'];
         $post = array(
             'component_appid' => $this->appid,
             'authorizer_appid' => $appid,
@@ -138,7 +138,7 @@ class WeixinPlatform extends WeixinAccount {
     }
     
     public function getAccessToken() {
-        $cachekey = cache_system_key('account_auth_accesstoken', array('key' => $this->account['key']));
+        $cachekey = cache_system_key('account_auth_accesstoken', array('key' => $this->account['app_id']));
         $auth_accesstoken = cache_load($cachekey);
         if (empty($auth_accesstoken) || empty($auth_accesstoken['value'])) {
             $component_accesstoken = $this->getComponentAccesstoken();
@@ -148,7 +148,7 @@ class WeixinPlatform extends WeixinAccount {
             $this->refreshtoken = $this->getAuthRefreshToken();
             $data = array(
                 'component_appid' => $this->appid,
-                'authorizer_appid' => $this->account['key'],
+                'authorizer_appid' => $this->account['app_id'],
                 'authorizer_refresh_token' => $this->refreshtoken,
             );
             $response = $this->request(ACCOUNT_PLATFORM_API_REFRESH_AUTH_ACCESSTOKEN . $component_accesstoken, $data);
@@ -196,11 +196,11 @@ class WeixinPlatform extends WeixinAccount {
     }
 
     public function getOauthCodeUrl($callback, $state = '') {
-        return sprintf(ACCOUNT_PLATFORM_API_OAUTH_CODE, $this->account['key'], $this->appid, $callback, $state);
+        return sprintf(ACCOUNT_PLATFORM_API_OAUTH_CODE, $this->account['app_id'], $this->appid, $callback, $state);
     }
 
     public function getOauthUserInfoUrl($callback, $state = '', $extra = array()) {
-        return sprintf(ACCOUNT_PLATFORM_API_OAUTH_USERINFO, $this->account['key'], $callback, $state, $this->appid);
+        return sprintf(ACCOUNT_PLATFORM_API_OAUTH_USERINFO, $this->account['app_id'], $callback, $state, $this->appid);
     }
 
     public function getOauthInfo($code = '') {
@@ -208,12 +208,12 @@ class WeixinPlatform extends WeixinAccount {
         if (is_error($component_accesstoken)) {
             return $component_accesstoken;
         }
-        $apiurl = sprintf(ACCOUNT_PLATFORM_API_OAUTH_INFO . $component_accesstoken, $this->account['key'], $this->appid, $code);
+        $apiurl = sprintf(ACCOUNT_PLATFORM_API_OAUTH_INFO . $component_accesstoken, $this->account['app_id'], $this->appid, $code);
         $response = $this->request($apiurl);
         if (is_error($response)) {
             return $response;
         }
-        cache_write('account_oauth_refreshtoken' . $this->account['key'], $response['refresh_token']);
+        cache_write('account_oauth_refreshtoken' . $this->account['app_id'], $response['refresh_token']);
 
         return $response;
     }
@@ -254,7 +254,7 @@ class WeixinPlatform extends WeixinAccount {
         $string1 = "jsapi_ticket={$jsapiTicket}&noncestr={$nonceStr}&timestamp={$timestamp}&url={$url}";
         $signature = sha1($string1);
         $config = array(
-            'appId' => $this->account['key'],
+            'appId' => $this->account['app_id'],
             'nonceStr' => $nonceStr,
             'timestamp' => "$timestamp",
             'signature' => $signature,
@@ -320,7 +320,7 @@ class WeixinPlatform extends WeixinAccount {
             return $token;
         }
         $data = array(
-            'appid' => !empty($appid) ? $appid : $this->account['key'],
+            'appid' => !empty($appid) ? $appid : $this->account['app_id'],
         );
         $url = "https://api.weixin.qq.com/cgi-bin/open/get?access_token={$token}";
         return $this->request($url, $data);
@@ -333,7 +333,7 @@ class WeixinPlatform extends WeixinAccount {
             return $token;
         }
         $data = array(
-            'appid' => !empty($appid) ? $appid : $this->account['key'],
+            'appid' => !empty($appid) ? $appid : $this->account['app_id'],
             'open_appid' => $this->appid,
         );
         $url = "https://api.weixin.qq.com/cgi-bin/open/bind?access_token={$token}";

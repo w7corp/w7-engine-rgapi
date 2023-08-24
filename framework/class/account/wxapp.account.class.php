@@ -67,7 +67,7 @@ class WxappAccount extends WeAccount {
         if (empty($result)) {
             return error(1, '解密失败');
         }
-        if ($result['watermark']['appid'] != $this->account['key']) {
+        if ($result['watermark']['appid'] != $this->account['app_id']) {
             return error(1, '解密失败');
         }
         unset($result['watermark']);
@@ -77,7 +77,7 @@ class WxappAccount extends WeAccount {
 
     public function getAccessToken() {
         global $_W;
-        $cachekey = cache_system_key('accesstoken_key', array('key' => $this->account['key']));
+        $cachekey = cache_system_key('accesstoken_key', array('key' => $this->account['app_id']));
         $cache = cache_load($cachekey);
         if (!empty($cache) && !empty($cache['token'])) {
             $this->account['access_token'] = $cache;
