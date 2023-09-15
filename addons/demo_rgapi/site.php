@@ -129,7 +129,7 @@ class Demo_rgapiModuleSite extends WeModuleSite {
         }
         itoast('', referer());
     }
-    //内购支付
+    //内购js支付
     public function doWebW7pay() {
         global $_W, $_GPC;
         $good_id = intval($_GPC['good_id']);
@@ -171,11 +171,68 @@ class Demo_rgapiModuleSite extends WeModuleSite {
         pdo_insert('demo_rgapi_paylog', $insert);
         iajax(0, array('no' => $out_trade_no));
     }
+    //内购后端下单并返回ticket
+    public function doWebW7back_code_pay() {
+        global $_W;
+        load()->library('sdk-console');
+        $w7pay_setting = setting_load('w7pay_setting')['w7pay_setting'] ?: [];
+        $w7pay_setting['goods'] = $w7pay_setting['goods'] ?? [];
+        if (empty($w7pay_setting['goods'])) {
+            iajax(-1, '请先添加商品', $this->createWebUrl('w7pay_goods'));
+        }
+        if (empty($w7pay_setting['appid']) || empty($w7pay_setting['appsecret'])) {
+            iajax(-1, '请先配置内购参数', $this->createWebUrl('w7pay_setting'));
+        }
+        $pay_sn = date('YmdHis') . random(14, 1);
+        try {
+            $scanPay = new \W7\Sdk\Console\Api\Pay($w7pay_setting['appid'], $w7pay_setting['appsecret']);
+            $payinfo = $scanPay->pay(new \W7\Sdk\Console\Domain\Pay\PayRequestData(
+                $_W['user']['openid'],
+                $pay_sn,
+                '0.01',
+                '调试',
+                '调试扫码支付',
+                $_W['user']['component_appid']
+            ));
+            iajax(0, ['ticket' => $payinfo->getExt()['payinfo']['ticket'], 'pay_sn' => $pay_sn]);
+        } catch (\Exception $e) {
+            WeUtility::logging('W7BackCodePayLog', var_export($e->getMessage(), true), FILE_APPEND);
+            iajax(-1, '下单失败！错误详情: ' . $e->getMessage());
+        }
+    }
+    //内购后端下单后，前端根据凭证发起支付的回调
+    public function doWebW7back_code_pay_callback() {
+        global $_W, $_GPC;
+        $uniontid = safe_gpc_string($_GPC['pay_sn']);
+        $out_trade_no = 'w7pay' . date('YmdHis', time()) . time() . rand(11, 99);
+        $log = [
+            'type' => 'w7pay',
+            'uniacid' => $_W['uniacid'],
+            'acid' => $_W['uniacid'],
+            'openid' => $_W['uid'],
+            'module' => 'demo_rgapi',
+            'uniontid' => $uniontid,
+            'tid' => $out_trade_no,
+            'fee' => '0.01',
+            'status' => '0',
+        ];
+        pdo_insert('core_paylog', $log);
+        $insert = [
+            'no' => $out_trade_no,
+            'code' => '',
+            'status' => 0,
+            'type' => 5,
+            'createtime' => TIMESTAMP,
+            'updatetime' => TIMESTAMP,
+            'uid' => $_W['uid'],
+            'uniacid' => $_W['uniacid'],
+        ];
+        pdo_insert('demo_rgapi_paylog', $insert);
+        iajax(0, 'success');
+    }
     //内购发起退款
     public function doWebW7refund() {
         global $_W, $_GPC;
-        ini_set('display_errors', '1');
-        error_reporting(E_ALL ^ E_NOTICE);
         try {
             load()->library('sdk-console');
             $no = safe_gpc_string($_GPC['no']);
@@ -255,17 +312,18 @@ class Demo_rgapiModuleSite extends WeModuleSite {
             $w7pay_setting = setting_load('w7pay_setting')['w7pay_setting'] ?: [];
             $pay = new \W7\Sdk\Console\Api\Pay($w7pay_setting['appid'], $w7pay_setting['appsecret']);
             $paylog = $pay->verify($data);
-            WeUtility::logging('pay', var_export($paylog, true), FILE_APPEND);
             if ($paylog && $paylog->isPaid()) {
+                WeUtility::logging('paid', var_export($paylog, true), FILE_APPEND);
                 $log = table('core_paylog')
-                    ->where(['uniontid' => $data['paylog_biz_sn']])
+                    ->where('uniontid', $data['paylog_biz_sn'])
                     ->get();
+                WeUtility::logging('core_paylog', var_export($log, true), FILE_APPEND);
                 if (!empty($log) && $log['status'] == '0' && ($data['total_fee'] == $log['fee'])) {
+                    WeUtility::logging('paid_update', var_export($data, true), FILE_APPEND);
                     table('core_paylog')->where(['plid' => $log['plid']])->fill(['status' => 1])->save();
                     pdo_update('demo_rgapi_paylog', ['status' => 1, 'code' => $data['paylog_sn']], ['no' => $log['tid']]);
                     exit(json_encode(['data' => 'success']));
                 }
-
             }
         } catch (\Exception $e) {
             WeUtility::logging('W7pay_notify', var_export($e->getMessage(), true), FILE_APPEND);

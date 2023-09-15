@@ -106,7 +106,6 @@ if ((!$pdo_if_start || ($pdo_if_start && !pdo_tableexists('account'))) && file_e
     header('Location:' . $_W['siteroot'] . 'install.php');
     exit();
 }
-
 error_reporting(0);
 define('DEVELOPMENT', $_W['config']['setting']['development'] == 1);
 if (STATUS_ON == $_W['config']['setting']['development']) {

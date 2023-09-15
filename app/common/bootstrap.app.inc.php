@@ -95,6 +95,7 @@ if (empty($_W['openid']) && !empty($_SESSION['oauth_openid'])) {
 
 $_W['oauth_account'] = $_W['account']['oauth'] = array(
     'key' => $_W['account']['app_id'],
+    'app_id' => $_W['account']['app_id'],
     'secret' => $_W['account']['app_secret'],
     'acid' => $_W['acid'],
     'type' => $_W['account']['type'] ?? '',
