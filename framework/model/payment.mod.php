@@ -67,6 +67,9 @@ function wechat_build($params) {
     if (empty($data['appId'])) {
         return error(-1, '支付失败！');
     }
+    if (!empty($data['timeStamp'])) {
+        $data['timeStamp'] = (string)$data['timeStamp'];
+    }
     return $data;
 }
 
