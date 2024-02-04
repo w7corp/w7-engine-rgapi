@@ -1,0 +1,28 @@
+{
+    "name": "wechatpay/wechatpay-guzzle-middleware",
+    "version": "0.2.2",
+    "description": "WechatPay API V3 Guzzle Middleware",
+    "type": "library",
+    "keywords": [
+        "wechatpay"
+    ],
+    "homepage": "https://wechatpay-api.gitbook.io/wechatpay-api-v3/",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=5.5",
+        "ext-openssl": "*"
+    },
+    "require-dev": {
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "autoload": {
+        "psr-4": { "WechatPay\\GuzzleMiddleware\\" : "src/" }
+    },
+    "bin": [
+        "tool/CertificateDownloader.php"
+    ],
+    "suggest": {
+        "ext-bcmath": "Require bcmath in php 5.* version.",
+        "guzzlehttp/guzzle": "For using wechatpay guzzle middleware."
+    }
+}

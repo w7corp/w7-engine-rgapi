@@ -110,3 +110,29 @@ function cloud_oauth_accesstoken($code) {
 function cloud_oauth_user($access_token) {
     return cloud_api('we7/open/oauth/user/info', ['access_token' => $access_token]);
 }
+
+/**
+ * 微信小程序备案 获取下单ticket
+ */
+function cloud_wxapp_get_transactions_ticket($data) {
+	global $_W;
+	if (empty($data['body']) || empty($data['detail']) || empty($data['type'])) {
+		return error(-1, '参数错误！');
+	}
+	$api_url = CLOUD_PROSERVICE_DOMAIN . '/w7pay/transactions';
+	$params = [
+		'site_id' => intval($_SERVER['APP_ID']),
+		'openid' => $_W['user']['openid'],
+		'component_appid' => intval($_SERVER['APP_ID']),
+		'body' => $data['body'],
+		'detail' => $data['detail'],
+		'type' => $data['type'],
+	];
+	$response = ihttp_request($api_url, $params);
+	$result = json_decode($response['content'], true);
+	if (!empty($result['code'])) {
+		WeUtility::logging('cloud-api-error', array('method' => $api_url, 'data' => $params, 'response' => $response), true);
+		return error(-1, $result['message']);
+	}
+	return $result['data']['ticket'];
+}

@@ -94,7 +94,7 @@ function cache_build_frame_menu() {
     global $_W;
     load()->model('system');
     $system_menu = system_menu();
-    if (!empty($system_menu) && is_array($system_menu)) {
+    if (!empty($system_menu)) {
         $system_displayoder = 1;
         foreach ($system_menu as $menu_name => $menu) {
             $system_menu[$menu_name]['is_system'] = 1;

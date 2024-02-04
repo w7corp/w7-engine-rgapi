@@ -78,9 +78,6 @@ platform:
   supports:
     - notapp
   notify_url: ''
-  openapi:
-    require:
-      - w7_rangineapi
 bindings:
   -
     title: 创始人端
@@ -100,7 +97,6 @@ bindings:
         icon: apply
       -
         displayorder: 0
-        do: manage
+        do: /web/index.php?c=account&a=manage&do=display
         title: 平台管理
         icon: branch
-        module_name: w7_rangineapi

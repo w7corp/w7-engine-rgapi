@@ -17,14 +17,13 @@
 	<div class="panel we7-panel">
 		<div class="panel-heading"><h4>关联平台</h4></div>
 		<div class="panel-body">
-			<span class="hidden">{$server_setting['app_id']}</span>
 			<div class="alert we7-page-alert">
-				<p><i class="wi wi-info"></i>此处只展示应用所支持平台类型的平台。如关联了公众号、微信小程序，而应用只支持公众号，那么此处只显示公众号。</p>
+				<p><i class="wi wi-info"></i>此处只展示应用所支持平台类型的平台。</p>
 			</div>
 			<div class="account-list">
 				{if !empty($link_accounts)}
 				{loop $link_accounts $link_account}
-				<div class="account-item">
+				<div class="account-item" style="border: 1px solid #e8e9eb !important;">
 					<img src="{$link_account['logo']}" class="account-img logo" alt="">
 					<div class="info">
 						<div class="title">
@@ -38,59 +37,10 @@
 				</div>
 				{/loop}
 				{/if}
-				<div style="height: 102px;box-sizing: border-box;border: 1px solid #e8e9eb;border-radius: 4px;text-align: center;cursor: pointer">
-					<a href="javascript:;" style="font-size:50px;padding-top: 9px;padding-bottom: 24px;" onclick="card()" {if getenv('LOCAL_DEVELOP')}disabled="1"{/if}>
-					<span style="width: 100px;height: 100px;display: inline-block;padding-top: 20px;margin: 0 75px;color: #999;font-weight: 1">+</span>
-					</a>
-				</div>
 			</div>
 		</div>
 	</div>
 	{/if}
 	<!-- 关联账号end -->
 </div>
-
-<script>
-	window.addEventListener('message',(e) => {
-		if(e.data.type=='returnData') {
-			var finish = {
-				app_id: false,
-				redirect: '',
-			};
-			var app_id = e.data.data.app_id;
-			$.post("{php echo url('module/welcome/edit_link', ['module_name' => $module_name])}", {'link_app_id': app_id}, function (data) {
-				if (data.message.errno == 0) {
-					finish.app_id = true;
-					finish.redirect = data.redirect;
-				} else {
-					util.message(data.message.message, data.redirect, 'error');
-				}
-			}, 'json');
-			setTimeout(function() {
-				if (true === finish.app_id) {
-					util.message('关联软擎平台成功！', finish.redirect, 'success');
-				}
-			}, 900)
-		}
-	})
-	function card() {
-		window.w7.ready(()=>{
-			window.w7.navigate({
-				modulename: '{php echo CARD_NAVIGATE_MODULE_NAME}',
-				type: 'micro',
-				route: '{php echo $card_route}',
-				title: '关联平台',
-				style: {width:1000, height:700},
-				enable_api: true,
-			});
-		})
-	}
-</script>
-
-<style type="text/css">
-.account-list .account-item:nth-child(n+3) {
-	border-right: 1px solid #e8e9eb !important;
-}
-</style>
-
 {template 'common/footer'}

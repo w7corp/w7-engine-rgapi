@@ -163,6 +163,7 @@ function uni_fetch($uniacid = 0) {
         return $account_api;
     }
     $account_api->__toArray();
+    $account_api['accessurl'] = $account_api['manageurl'] = wurl('account/post', array('uniacid' => $uniacid, 'account_type' => $account_api['type']), true);
     return $account_api;
 }
 
@@ -281,9 +282,11 @@ function uni_modules() {
  * @param mixed $value
  * @return boolean
  */
-function uni_setting_save($name, $value) {
+function uni_setting_save($name, $value, $uniacid = 0) {
     global $_W;
-    $uniacid = !empty($_W['uniacid']) ? $_W['uniacid'] : $_W['account']['uniacid'];
+    if (empty($uniacid)) {
+        $uniacid = !empty($_W['uniacid']) ? $_W['uniacid'] : $_W['account']['uniacid'];
+    }
     if (empty($name)) {
         return false;
     }
@@ -416,32 +419,16 @@ function uni_delete_rule($rid, $relate_table_name) {
 }
 
 function uni_init_accounts() {
-    global $_W;
     $accounts = [];
-    if (getenv('LOCAL_DEVELOP')) {
-        $init_accounts = require IA_ROOT . '/data/init-accounts.php';
-        foreach ($init_accounts as $account) {
-            if (empty($account)) {
-                continue;
-            }
-            $accounts[] = $account;
+    $init_accounts = require IA_ROOT . '/data/init-accounts.php';
+    foreach ($init_accounts as $account) {
+        if (empty($account)) {
+            continue;
         }
-        if (empty($accounts)) {
-            return error(-1, '请先在“/data/init-accounts.php”文件下添加初始化数据');
-        }
-    } else {
-        load()->library('sdk-module');
-        try {
-            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 0, V3_API_DOMAIN);
-            $rgapi_accounts = $api->getAccountList()->toArray();
-            if (!empty($rgapi_accounts) && is_array($rgapi_accounts)) {
-                $accounts = $rgapi_accounts;
-            } else {
-                throw new \Exception('API授权获取平台失败，可能原因：1. 人为关闭了API授权；2. 平台被删除；');
-            }
-        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
-            return error(-1, $e->getResponse()->getBody()->getContents());
-        }
+        $accounts[] = $account;
+    }
+    if (empty($accounts)) {
+        return error(-1, '“/data/init-accounts.php”文件下数据缺失，请重新安装');
     }
     $uni_accounts = pdo_getall('uni_account', [], [], 'type');
     pdo_delete('account');

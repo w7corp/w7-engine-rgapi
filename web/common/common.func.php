@@ -227,6 +227,12 @@ function buildframes($framename = '') {
             'url' => url('platform/sync-member/display', ['module_name' => $modulename]),
             'is_display' => 1,
         ];
+        $frames['account']['section']['platform_module_common']['menu']['platform_module_member'] = [
+            'title' => '支付参数',
+            'icon' => 'wi wi-user',
+            'url' => url('profile/payment/display', ['module_name' => $modulename]),
+            'is_display' => 1,
+        ];
         if (MODULE_SUPPORT_WXAPP == $module['wxapp_support']) {
             $frames['account']['section']['platform_module_common']['menu']['platform_module_publish'] = [
                 'title' => '发布设置',
@@ -409,4 +415,8 @@ function url_params($url) {
     }
 
     return $result;
+}
+function home_url() {
+    global $_W;
+    return $_W['siteroot'] . 'web/index.php?c=account&a=manage&do=display';
 }

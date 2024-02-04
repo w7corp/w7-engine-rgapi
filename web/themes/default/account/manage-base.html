@@ -1,0 +1,783 @@
+{template 'common/header'}
+<ol class="breadcrumb we7-breadcrumb">
+	<a href="{php echo url('account/manage/display')}"><i class="wi wi-back-circle"></i> </a>
+	<li><a href="{php echo url('account/manage/display')}">平台管理</a></li>
+	<li>设置</li>
+</ol>
+<div class="we7-head-info">
+	<img src="{$account['logo']}" class="account-img logo">
+	<div class="info">
+		<div class="title">{$account['name']}</div>
+		<div class="type">
+			<i class="wi wi-{php echo 'account' == $account['type_sign'] ? 'wx-circle' : $account['type_sign']}"></i>
+			{ACCOUNT_TYPE_NAME}
+		</div>
+	</div>
+</div>
+<div class="btn-group we7-btn-group ">
+	{if $_W['role'] == ACCOUNT_MANAGE_NAME_FOUNDER || $_W['role'] == ACCOUNT_MANAGE_NAME_OWNER || $_W['role'] == ACCOUNT_MANAGE_NAME_VICE_FOUNDER}
+	<a href="{php echo url('account/post/base', array('uniacid' => $account['uniacid'], 'account_type' => ACCOUNT_TYPE))}" class="btn btn-default {if $do == 'base'} active{/if}">基础信息</a>
+	{/if}
+</div>
+
+<div id="js-account-manage-base" ng-controller="AccountManageBase" ng-cloak>
+	{if $account->typeSign == ACCOUNT_TYPE_SIGN}
+	<div class="alert alert-info we7-page-alert" ng-if="account.isconnect == 0">
+		<p><i class="wi wi-info-sign"></i>接入状态：未接入。</p>
+		<p><i class="wi wi-info-sign"></i>解决方案：进入微信公众平台，依次选择: 开发者中心 -> 修改配置，然后将对应公众号在平台的url和token复制到微信公众平台对应的选项，公众平台会自动进行检测</p>
+	</div>
+	{/if}
+	<table class="table we7-table table-hover table-form">
+		<col width="160px" />
+		<col />
+		<col width="100px" />
+		<tr>
+			<th class="text-left" colspan="3">{php echo $account->typeName}设置</th>
+		</tr>
+		<tr>
+			<td class="table-label">头像</td>
+			<td><img ng-src="{{account.logo}}" class="account-img" /></td>
+			<td class="text-right">
+				<div class="link-group">
+					<a href="javascript:;" ng-click="changeImage('headimgsrc','{$uniacid}')">修改</a>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">{php echo $account->typeName}名称</td>
+			<td>{php echo $account['name']}</td>
+			<td class="text-right"><div class="link-group">
+				<a href="javascript:;" data-toggle="modal" data-target="#name" ng-click="editInfo('name', account.name)">修改</a>
+			</div></td>
+
+		</tr>
+		{php $account_typesign = $account_param->typeSign}
+		{if $account->typeSign == ACCOUNT_TYPE_SIGN}
+		<tr>
+			<td class="table-label">类型</td>
+			<td ng-if="account.level == 1">普通订阅号</td>
+			<td ng-if="account.level == 2">普通服务号</td>
+			<td ng-if="account.level == 3">认证订阅号</td>
+			<td ng-if="account.level == 4">认证服务号/认证媒体/政府订阅号</td>
+			<td ng-if="account.level == 0">---</td>
+			<td class="text-right"><div class="link-group">
+				<a href="javascript:;" data-toggle="modal" data-target="#level" ng-click="editInfo('level', account.level)">修改</a>
+			</div></td>
+		</tr>
+		<tr>
+			<td class="table-label">接入方式</td>
+			<td ng-if="account.type == 1">普通接入</td>
+			<td ng-if="account.type == 3">授权接入</td>
+			<td class="text-right" >
+				<div class="link-group" ng-if="authstate && authurl">
+					<a href="javascript:;" data-toggle="modal" data-target="#jointype" ng-click="editInfo('type', account.type)">修改</a>
+				</div>
+			</td>
+		</tr>
+		{elseif !empty($account_typesign) && $account_typesign == WXAPP_TYPE_SIGN}
+		<tr>
+			<td class="table-label">接入方式</td>
+			<td ng-if="account.type == 4">普通接入</td>
+			<td ng-if="account.type == 7">授权接入</td>
+			<td ng-if="account.type == 14">第三方创建接入</td>
+			<td class="text-right">
+				<div class="link-group" ng-if="authstate && authurl">
+					<a href="javascript:;" data-toggle="modal" data-target="#jointype" ng-click="editInfo('type', account.type)" ng-if="account.type != 14">修改</a>
+				</div>
+			</td>
+		</tr>
+		{/if}
+		<tr ng-if="account.createtime">
+			<td class="table-label">创建时间</td>
+			<td><span ng-bind="account.createtime"></span></td>
+			<td></td>
+		</tr>
+	</table>
+	<div class="modal fade" id="name" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改{php echo $account->typeName}名称</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" ng-model="middleAccount.name" class="form-control" placeholder="公众号名称" />
+						<span class="help-block"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="httpChange('name')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{if $account->typeSign == ALIAPP_TYPE_SIGN}
+	<table class="table we7-table table-hover table-form wechat-menu">
+		<col width="140px " />
+		<col />
+		<col width="100px" />
+		<tr><th class="text-left" colspan="3">开发者ID</th></tr>
+		<tr>
+			<td class="table-label">AppId</td>
+			<td ng-bind="account.key"></td>
+			<td><div class="link-group">
+				<a href="javascript:;" data-toggle="modal" data-target="#key"  ng-click="editInfo('key', account.key)">修改</a>
+			</div></td>
+		</tr>
+	</table>
+	<div class="modal fade" id="key" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改AppId</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" ng-model="middleAccount.key" class="form-control" placeholder="AppId" />
+						<span class="help-block"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" ng-click="httpChange('key')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+	<div class="modal fade" id="account" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改{php echo $account->typeName}账号</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" ng-model="middleAccount.account" class="form-control" placeholder="{php echo $account->typeName}账号" />
+						<span class="help-block"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="httpChange('account')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN))}
+	<div class="modal fade" id="original" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改{php echo $account->typeName}原始ID</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" ng-model="middleAccount.original" class="form-control" placeholder="{php echo $account->typeName}原始ID" />
+						<span class="help-block"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="httpChange('original')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+	{if $account->typeSign == ACCOUNT_TYPE_SIGN}
+	<div class="modal fade" id="level" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改公众号类型</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<select class="we7-select" ng-model="middleAccount.level">
+							<option value="1" ng-selected="middleAccount.level == 1">普通订阅号</option>
+							<option value="2" ng-selected="middleAccount.level == 2">普通服务号</option>
+							<option value="3" ng-selected="middleAccount.level == 3">认证订阅号</option>
+							<option value="4" ng-selected="middleAccount.level == 4">认证服务号/认证媒体/政府订阅号</option>
+						</select>
+						<span class="help-block">注意：即使公众平台显示为“未认证”, 但只要【公众号设置】/【账号详情】下【认证情况】显示资质审核通过, 即可认定为认证号.</span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="httpChange('level')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN))}
+	<div class="modal fade" id="jointype" role="dialog">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改接入方式</div>
+				</div>
+				<div class="modal-body text-center">
+					{if $account->typeSign == ACCOUNT_TYPE_SIGN}
+					<input id="type-1" type="radio" name="jointype" value="1" ng-model="middleAccount.type" ng-checked="middleAccount.type == 1">
+					<label class="radio-inline" for="type-1">普通接入</label>
+					<input id="type-2" type="radio" name="jointype" value="3" ng-model="middleAccount.type" ng-checked="middleAccount.type == 3">
+					<label class="radio-inline" for="type-2">授权接入</label>
+					{elseif $account->typeSign == WXAPP_TYPE_SIGN}
+					<input id="type-1" type="radio" name="jointype" value="4" ng-model="middleAccount.type" ng-checked="middleAccount.type == 4">
+					<label class="radio-inline" for="type-1">普通接入</label>
+					<input id="type-2" type="radio" name="jointype" value="7" ng-model="middleAccount.type" ng-checked="middleAccount.type == 7">
+					<label class="radio-inline" for="type-2">授权接入</label>
+					{/if}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="httpChange('jointype')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN, BAIDUAPP_TYPE_SIGN, TOUTIAOAPP_TYPE_SIGN))}
+	<table class="table we7-table table-hover {if $account->typeSign == WXAPP_TYPE_SIGN}table-form wechat-menu{elseif $account->typeSign == BAIDUAPP_TYPE_SIGN}table-form{/if}">
+		<col width="140px " />
+		<col />
+		<col width="100px" />
+		<tr><th class="text-left" colspan="3">{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, BAIDUAPP_TYPE_SIGN, TOUTIAOAPP_TYPE_SIGN))}自定义菜单通讯设置{else}开发者ID{/if}</th></tr>
+		<tr>
+			<td class="table-label">{if in_array($account->typeSign, array(BAIDUAPP_TYPE_SIGN))}AppKey{else}AppId{/if}</td>
+			{if in_array($account->typeSign, array(TOUTIAOAPP_TYPE_SIGN))}
+			<td ng-bind="account.appid"></td>
+			{else}
+			<td ng-bind="account.key"></td>
+			{/if}
+			<td><div class="link-group">
+				<a href="javascript:;" data-toggle="modal" data-target="#appid"  ng-click="editInfo('appid', account.appid)">修改</a>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">AppSecret</td>
+			<td ng-bind="account.app_secret"></td>
+			<td><div class="link-group">
+				<a href="javascript:;" data-toggle="modal" data-target="#secret"  ng-click="editInfo('secret', account.secret)">修改</a>
+			</div></td>
+		</tr>
+	</table>
+	{/if}
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN, BAIDUAPP_TYPE_SIGN, TOUTIAOAPP_TYPE_SIGN))}
+	<div class="modal fade" id="key" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改{php echo $account->typeName}{if $account->typeSign == BAIDUAPP_TYPE_SIGN}AppKey{else}AppId{/if}</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" ng-model="middleAccount.key" class="form-control" placeholder="{php echo $account->typeName}AppId" />
+						<span class="help-block"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="httpChange('key')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="appid" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改AppId</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" ng-model="middleAccount.appid" class="form-control" placeholder="AppId" />
+						<span class="help-block"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" ng-click="httpChange('appid')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+	{if in_array($account->typeSign, array(BAIDUAPP_TYPE_SIGN))}
+	<table class="table we7-table table-hover table-form wechat-menu">
+		<col width="140px " />
+		<col />
+		<col width="100px" />
+		<tr><th class="text-left" colspan="3">开发者ID</th></tr>
+		<tr>
+			<td class="table-label">AppId</td>
+			<td ng-bind="account.appid"></td>
+			<td><div class="link-group">
+				<a href="javascript:;" data-toggle="modal" data-target="#appid"  ng-click="editInfo('appid', account.appid)">修改</a>
+			</div></td>
+		</tr>
+	</table>
+	{/if}
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN, BAIDUAPP_TYPE_SIGN, TOUTIAOAPP_TYPE_SIGN))}
+	<div class="modal fade" id="secret" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改{php echo $account->typeName}AppSecret</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" ng-model="middleAccount.secret" class="form-control" placeholder="{php echo $account->typeName}AppSecret" />
+						<span class="help-block"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="httpChange('secret')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN))}
+	<table class="table we7-table ">
+		<col width="160px" />
+		<col />
+		<col width="230px"/>
+		<tr><th class="text-left" colspan="3">{php echo $account->typeName}通信</th></tr>
+		<tr>
+			<td class="table-label">URL<p>(服务器地址)</p></td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="other.serviceUrl" clipboard text="other.serviceUrl" on-copied="success('0')"></a>
+			</td>
+			<td>
+				<div class="link-group"><a href="javascript:;" id="copy-0" clipboard supported="supported" text="other.serviceUrl" on-copied="success('0')">点击复制</a></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">Token<p>(令牌)</p></td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="account.token" clipboard text="account.token" on-copied="success('1')"></a>
+			</td>
+			<td>
+				<div class="link-group">
+					<a href="javascript:;" data-toggle="modal" data-target="#token">修改</a>
+					<a href="javascript:;" data-dismiss="modal" ng-click="httpChange('token')">生成新的</a>
+					<a href="javascript:;" id="copy-1" clipboard supported="supported" text="account.token" on-copied="success('1')">点击复制</a>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">EncodingAESKey<p>(消息加解密密钥)</p> </td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="account.encodingaeskey" clipboard text="account.encodingaeskey" on-copied="success('2')"></a>
+			</td>
+			<td>
+				<div class="link-group">
+					<a href="javascript:;" data-toggle="modal" data-target="#encodingaeskey">修改</a>
+					<a href="javascript:;" data-dismiss="modal" ng-click="httpChange('encodingaeskey')">生成新的</a>
+					<a href="javascript:;" id="copy-2" clipboard supported="supported" text="account.encodingaeskey" on-copied="success('2')">点击复制</a>
+				</div>
+			</td>
+		</tr>
+	</table>
+	{elseif $account->typeSign == WXAPP_TYPE_SIGN}
+	<table class="table wechat-communication">
+		<col width="160px " />
+		<col />
+		<col />
+		<tr><th class="text-left" colspan="3">服务器配置信息</th></tr>
+		<tr>
+			<td class="table-label">request合法域名</td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="other.siteurl" clipboard text="other.siteurl" on-copied="success('0')"></a>
+			</td>
+			<td>
+				<div class="link-group"><a href="javascript:;" id="copy-0" clipboard supported="supported" text="other.siteurl" on-copied="success('0')">点击复制</a></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">socket合法域名</td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="other.socketurl" clipboard text="other.socketurl" on-copied="success('1')"></a>
+			</td>
+			<td>
+				<div class="link-group"><a href="javascript:;" id="copy-1" clipboard supported="supported" text="other.socketurl" on-copied="success('1')">点击复制</a></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">uploadFile合法域名</td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="other.siteurl" clipboard text="other.siteurl" on-copied="success('2')"></a>
+			</td>
+			<td>
+				<div class="link-group"><a href="javascript:;" id="copy-2" clipboard supported="supported" text="other.siteurl" on-copied="success('2')">点击复制</a></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">downloadFile合法域名</td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="other.siteurl" clipboard text="other.siteurl" on-copied="success('3')"></a>
+			</td>
+			<td>
+				<div class="link-group"><a href="javascript:;" id="copy-3" clipboard supported="supported" text="other.siteurl" on-copied="success('3')">点击复制</a></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">udp合法域名</td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="other.udpurl" clipboard text="other.udpurl" on-copied="success('4')"></a>
+			</td>
+			<td>
+				<div class="link-group"><a href="javascript:;" id="copy-4" clipboard supported="supported" text="other.udpurl" on-copied="success('4')">点击复制</a></div>
+			</td>
+		</tr>
+	</table>
+	<table class="table wechat-communication">
+		<col width="160px" />
+		<col />
+		<col width="230px"/>
+		<tr><th class="text-left" colspan="3">消息推送配置</th></tr>
+		<tr>
+			<td class="table-label">URL<p>(服务器地址)</p></td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="other.serviceUrl" clipboard text="other.serviceUrl" on-copied="success('7')"></a>
+			</td>
+			<td>
+				<div class="link-group"><a href="javascript:;" id="copy-7" clipboard supported="supported" text="other.serviceUrl" on-copied="success('7')">点击复制</a></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">Token<p>(令牌)</p></td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="account.token" clipboard text="account.token" on-copied="success('5')"></a>
+			</td>
+			<td>
+				<div class="link-group">
+					<a href="javascript:;" data-toggle="modal" data-target="#token">修改</a>
+					<a href="javascript:;" data-dismiss="modal" ng-click="httpChange('token')">生成新的</a>
+					<a href="javascript:;" id="copy-5" clipboard supported="supported" text="account.token" on-copied="success('5')">点击复制</a>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="table-label">EncodingAESKey<p>(消息加解密密钥)</p> </td>
+			<td>
+				<a href="javascript:;" class="we7-padding-right" ng-bind="account.encodingaeskey" clipboard text="account.encodingaeskey" on-copied="success('6')"></a>
+			</td>
+			<td>
+				<div class="link-group">
+					<a href="javascript:;" data-toggle="modal" data-target="#encodingaeskey">修改</a>
+					<a href="javascript:;" data-dismiss="modal" ng-click="httpChange('encodingaeskey')">生成新的</a>
+					<a href="javascript:;" id="copy-6" clipboard supported="supported" text="account.encodingaeskey" on-copied="success('6')">点击复制</a>
+				</div>
+			</td>
+		</tr>
+	</table>
+	{/if}
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN))}
+	<div class="modal fade" id="token" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改token</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" id="newtoken" class="form-control" placeholder="请填写新的公众号消息校验Token" />
+						<span class="help-block">与{php echo $account->typeName}接入设置值一致，必须为英文或者数字，长度为3到32个字符. 请妥善保管, Token 泄露将可能被窃取或篡改平台的操作数据.</span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" ng-click="httpChange('token', 'edit')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+	{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN))}
+	<div class="modal fade" id="encodingaeskey" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog we7-form">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">修改EncodingAESKey</div>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input type="text" id="newencodingaeskey" class="form-control" placeholder="请填写新的公众号消息加解密Key" />
+						<span class="help-block">与{php echo $account->typeName}接入设置值一致，必须为英文或者数字，长度为43个字符. 请妥善保管, EncodingAESKey 泄露将可能被窃取或篡改平台的操作数据.</span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" ng-click="httpChange('encodingaeskey', 'edit')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{/if}
+</div>
+
+<script>
+	angular.module('accountApp', ['we7app', 'infinite-scroll']);
+	angular.module('accountApp').value('config', {
+		founder : {if $_W['isfounder']}true{else}false{/if},
+		owner : {if $state == 'owner'}true{else}false{/if},
+		account: {php echo !empty($account) ? json_encode($account) : 'null'},
+		uniaccount: {php echo !empty($uniaccount) ? json_encode($uniaccount) : 'null'},
+		headimgsrc: "{php echo empty($headimgsrc) ? '' : $headimgsrc}",
+		qrcodeimgsrc: "{php echo empty($qrcodeimgsrc) ? '' : $qrcodeimgsrc}",
+		{if in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN, WXAPP_TYPE_SIGN))}
+		authstate: "{php echo $_W['setting']['platform']['authstate']}",
+		authurl: {php echo !empty($authurl) ? json_encode($authurl) : 'null'},
+		{/if}
+		links: {
+			basePost: "{php echo url('account/post/base', array('uniacid' => $uniacid, 'account_type' => ACCOUNT_TYPE))}",
+			siteroot: "{php echo in_array($account->typeSign, array(ACCOUNT_TYPE_SIGN)) ? $_W['siteroot'] : str_replace('http://', 'https://', $_W['siteroot'])}",
+		},
+	});
+	angular.module('accountApp').service('AccountAppCommon', ['$rootScope', '$http', 'config', function($rootScope, $http, config) {
+			var AccountAppCommon = {};
+			AccountAppCommon.addPermission = function() {
+				var moduleshtml = '',templatehtml = '';
+				$('#jurisdiction-add #content-modules').find('.btn-primary').each(function(){
+					moduleshtml += '<span class="label label-info" style="margin-right:3px;">'+$(this).attr('data-title')+'</span><input type="hidden" name="extra[modules][]" value="'+$(this).attr('data-name')+'" />';
+				});
+				$('#jurisdiction-add #content-templates').find('.btn-primary').each(function(){
+					templatehtml += '<span class="label label-info" style="margin-right:3px;">'+$(this).attr('data-title')+'</span><input type="hidden" name="extra[templates][]" value="'+$(this).attr('data-name')+'" />';
+				});
+				if (moduleshtml || templatehtml) {
+					$('.account-package-extra').show();
+				} else {
+					$('.account-package-extra').hide();
+				}
+				$('.account-package-extra .js-extra-modules').html(moduleshtml);
+				$('.account-package-extra .js-extra-templates').html(templatehtml);
+				$('#jurisdiction-add').modal('hide');
+			};
+			AccountAppCommon.update_package_list = function(package) {
+				$('input[name="package[]"]').prop('checked', false);
+				$('input[name="package[]"]').prop('disabled', false);
+				for (i in package) {
+					$('input[name="package[]"][value="'+package[i]+'"]').prop('checked', true);
+					$('input[name="package[]"][value="'+package[i]+'"]').prop('disabled', true);
+				}
+			};
+			AccountAppCommon.selectOwner = function(callback){
+				var seletedUserIds = [];
+				require(['biz'], function(biz){
+					biz.user.browser(seletedUserIds, function(user){
+						$http.post(config.links.userinfo, {uid: user})
+								.success(function(data){
+									if (data.message.errno) {
+										util.message(data.message.message);
+									}
+									setTimeout(function() {
+										$('#manager').val(data.message.message.uid).trigger('change');
+										$('#showname').val(data.message.message.username).trigger('change');
+										$('#groupid').val(data.message.message.group.id || 0).trigger('change');
+										$('#groupid').niceSelect && $('#groupid').niceSelect('update');
+									},1)
+									$('.account-package-extra').show();
+									AccountAppCommon.update_package_list(data.message.message.package);
+									if(callback && typeof callback == 'function') {
+										callback(data.message.message);
+									}
+								});
+					},{mode:'invisible', direct : true});
+				});
+			};
+			AccountAppCommon.copySuccess = function(id, obj) {
+				var id = parseInt(id);
+				var obj = obj;
+				var enext = $('#copy-'+id).next().html();
+				if (!enext || enext.indexOf('<span class="label label-success" style="position:absolute;z-index:10"><i class="fa fa-check-circle"></i> 复制成功</span>')<0) {
+					$('#copy-'+id).after(obj);
+				}
+				setTimeout(function(){
+					obj.remove();
+				}, 2000);
+			};
+			AccountAppCommon.tokenGen = function() {
+				var letters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+				var token = '';
+				for(var i = 0; i < 32; i++) {
+					var j = parseInt(Math.random() * (31 + 1));
+					token += letters[j];
+				}
+				return token;
+			};
+			AccountAppCommon.encodingAESKeyGen = function() {
+				var letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+				var token = '';
+				for(var i = 0; i < 43; i++) {
+					var j = parseInt(Math.random() * 61 + 1);
+					token += letters[j];
+				}
+				return token;
+			};
+			return AccountAppCommon;
+		}]);
+	angular.module('accountApp').controller('AccountManageBase', [
+			'$scope',
+			'$http',
+			'config',
+			'AccountAppCommon',
+			function($scope, $http, config, AccountAppCommon) {
+				$scope.account = config.account;
+				$scope.uniaccount = config.uniaccount;
+				$scope.authstate = config.authstate;
+				$scope.authurl = config.authurl;
+				$scope.founder = config.founder;
+				$scope.owner = config.owner;
+				$scope.siteroot = config.links.siteroot.substring(0,config.links.siteroot.length-1);
+				$scope.other = {
+					headimgsrc: config.account.logo,
+					qrcodeimgsrc: config.account.qrcode,
+					serviceUrl: config.links.siteroot + "api.php?id=" + $scope.account.acid,
+					siteurl: $scope.siteroot,
+					socketurl:$scope.siteroot.replace(/(https|http)/, 'wss'),
+					udpurl:$scope.siteroot.replace(/(https|http)/, 'udp'),
+				};
+				$scope.changeImage = function(type, uniacid) {
+					if(type == 'headimgsrc' || type == 'qrcodeimgsrc') {
+						require(['fileUploader'], function(uploader){
+							uploader.init(function(imgs){
+								$scope.other[type] = imgs.url;
+								$scope.$apply($scope.other);
+								$scope.httpChange(type);
+							}, {'direct' : true, 'multiple' : false, 'uniacid': uniacid});
+						});
+					}
+				};
+				$scope.success = function(id) {
+					var id = parseInt(id);
+					var obj = $('<a href="javascript:;" class="btn btn-success btn-sm we7-margin-left-sm"><i class="fa fa-check-circle"></i> 复制成功</a>');
+					AccountAppCommon.copySuccess(id, obj);
+				};
+				$scope.editInfo = function(type, val) {
+					$scope.middleAccount = {};
+					$scope.middleAccount[type] = val;
+					$scope.middleAccountCopy = {};
+					$scope.middleAccountCopy[type] = val;
+				};
+				$scope.httpChange = function(type, newval) {
+					switch(type) {
+						case 'headimgsrc':
+							$http.post(config.links.basePost, {type: type, request_data: $scope.other[type]})
+									.success(function(data){
+										if(data.message.errno == 0) {
+											$('.wechat-img').attr('src', $scope.other[type])
+											util.message('修改成功！', data.redirect, 'success');
+										}else{
+											if(data.message.errno == -1) util.message(data.message.message, data.redirect, 'error');
+											if(data.message.errno == 1) util.message(data.message.message, '', 'error');
+											if(data.message.errno == 40035) util.message(data.message.message, '', 'error');
+										}
+									});
+							break;
+						case 'name':
+						case 'account':
+						case 'level':
+						case 'appid':
+						case 'secret':
+							$('#'+ type).modal('hide');
+							if($scope.middleAccount[type].length == 0 && type != 'attachment_limit') {
+								util.message('不可为空！', '', 'error');
+								return false;
+							}
+							$http.post(config.links.basePost, {type: type, request_data: $scope.middleAccount[type]})
+									.success(function(data){
+										if(data.message.errno == 0) {
+											$scope.account[type] = $scope.middleAccount[type];
+											util.message('修改成功！', data.redirect, 'success');
+										}else {
+											if(data.message.errno == 1) util.message(data.message.message, '', 'error');
+											if(data.message.errno == 40035) util.message(data.message.message, '', 'error');
+										}
+									})
+							break;
+						case 'token':
+							$('#token').modal('hide');
+							if ( typeof newval == 'undefined') {
+								if (!confirm('确定要生成新的吗？')) {
+									return false;
+								}
+								var token = AccountAppCommon.tokenGen();
+							} else {
+								var token = $('#newtoken').val();
+								if (token.length == 0) {
+									util.message('不可为空！');
+									return false;
+								}
+								var reg = new RegExp(/^[A-Za-z0-9]{3,32}$/);
+								if (!reg.test(token)) {
+									util.message('必须为英文或者数字，长度为3到32个字符！');
+									return false;
+								}
+							}
+							$http.post(config.links.basePost, {type: type, request_data: token})
+									.success(function(data){
+										if(data.message.errno == 0) {
+											$scope.account[type] = token;
+											util.message('修改成功！', data.redirect, 'success');
+										}else {
+											if(data.message.errno == -1) util.message(data.message.message, data.redirect, 'error');
+											if(data.message.errno == 1) util.message(data.message.message, '', 'error');
+											if(data.message.errno == 40035) util.message(data.message.message, '', 'error');
+										}
+									});
+							break;
+						case 'encodingaeskey':
+							$('#encodingaeskey').modal('hide');
+							if ( typeof newval == 'undefined') {
+								if (!confirm('确定要生成新的吗？')) {
+									return false;
+								}
+								var encoding = AccountAppCommon.encodingAESKeyGen();
+							} else {
+								var encoding = $('#newencodingaeskey').val();
+								if (encoding.length == 0) {
+									util.message('不可为空！');
+									return false;
+								}
+								var reg = new RegExp(/^[A-Za-z0-9]{43}$/);
+								if (!reg.test(encoding)) {
+									util.message('必须为英文或者数字，长度为43个字符！');
+									return false;
+								}
+							}
+							$http.post(config.links.basePost, {type: type, request_data: encoding})
+									.success(function(data){
+										if(data.message.errno == 0) {
+											$scope.account[type] = encoding;
+											util.message('修改成功！', data.redirect, 'success');
+										} else {
+											if(data.message.errno == -1) util.message(data.message.message, data.redirect, 'error');
+											if(data.message.errno == 1) util.message(data.message.message, '', 'error');
+											if(data.message.errno == 40035) util.message(data.message.message, '', 'error');
+										}
+									});
+							break;
+					}
+				};
+			}]);
+	angular.bootstrap($('#js-account-manage-base'), ['accountApp']);
+</script>
+{template 'common/footer'}

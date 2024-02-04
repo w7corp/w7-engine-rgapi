@@ -1,5 +1,3 @@
-<!-- <div class="menu-title"><i class="wi wi-white-collar"></i>{$_W['account']['type_name']}</div> -->
-
 <div class="account-info">
 	<!--logo-->
 	<img src="{$_W['account']['logo']}" class="head-logo account-img">
@@ -35,11 +33,6 @@
 		{/if}
 	</div>
 	<div class="account-operate">
-		{if $_W['account']->typeSign == 'account'}
-		<a href="{php echo url('utility/emulator');}" class="h">模拟测试</a>
-		{/if}
-		{if $_W['role'] != ACCOUNT_MANAGE_NAME_OPERATOR}
-		<a href="{php echo $_W['account']['manageurl'] . '&iscontroller=0'}" class="h">管理设置</a>
-		{/if}
+		<a href="{php echo $_W['account']['manageurl']}" class="h">管理设置</a>
 	</div>
 </div>

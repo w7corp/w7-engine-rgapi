@@ -64,6 +64,7 @@ class Loader {
         'cosv5' => 'cosv5/index',
         'sdk-module' => 'w7-engine-sdk-module/index',
         'sdk-console' => 'w7-sdk-console-php/index',
+        'wechatpay-v3' => 'wechatpay-guzzle-middleware/index',
     );
     private $loadTypeMap = array(
         'func' => '/framework/function/%s.func.php',

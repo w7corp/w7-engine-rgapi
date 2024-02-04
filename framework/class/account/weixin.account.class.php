@@ -441,32 +441,19 @@ class WeixinAccount extends WeAccount {
             $this->account['access_token'] = $cache;
             return $cache['token'];
         }
-        if (getenv('LOCAL_DEVELOP')) {
-            if (empty($this->account['app_id']) || empty($this->account['app_secret'])) {
-                return error('-1', '未填写公众号的 appid 或 appsecret！');
-            }
-            $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={$this->account['app_id']}&secret={$this->account['app_secret']}";
-            $token = $this->requestApi($url);
-        } else {
-            if (empty($_W['setting']['server_setting']['app_id'])) {
-                return error('-1', '请先到系统功能下进行“一键授权关联”。');
-            }
-            try {
-                load()->library('sdk-module');
-                $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 1, V3_API_DOMAIN);
-                $token = $api->app()->getAccessToken()->toArray();
-            } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
-                return error(-1, '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $e->getResponse()->getBody()->getContents());
-            }
+        if (empty($this->account['app_id']) || empty($this->account['app_secret'])) {
+            return error('-1', '未填写公众号的 appid 或 appsecret！');
         }
-
-        if (!empty($token['errno']) && '40164' == $token['errno']) {
-            return error(-1, $token['message']);
+        $token = $this->requestApi('https://api.weixin.qq.com/cgi-bin/stable_token', json_encode([
+            'grant_type' => 'client_credential',
+            'appid' => $this->account['app_id'],
+            'secret' => $this->account['app_secret'],
+            'force_refresh' => false,
+        ]));
+        if (is_error($token)) {
+            return $token;
         }
-        if (empty($token) || !is_array($token) || empty($token['access_token']) || empty($token['expires_in'])) {
-            return error('-1', '获取微信公众号授权失败！错误代码:' . $token['errno'] . '，错误信息:' . $this->errorCode($token['errno']));
-        }
-        $record = array();
+        $record = [];
         $record['token'] = $token['access_token'];
         $record_expire = $token['expires_in'] - 200;
         $this->account['access_token'] = $record;
@@ -991,26 +978,22 @@ class WeixinAccount extends WeAccount {
         return $response;
     }
 
-    public function getOauthInfo($code = '') {
-        global $_W, $_GPC;
-        if (!empty($_GPC['code'])) {
-            $code = $_GPC['code'];
-        }
-        if (empty($code)) {
-            $oauth_url = uni_account_oauth_host();
-            $url = $oauth_url . "app/index.php?{$_SERVER['QUERY_STRING']}";
-            $forward = $this->getOauthCodeUrl(urlencode($url));
-            header('Location: ' . $forward);
-            exit;
-        }
-        try {
-            load()->library('sdk-module');
-            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 1, V3_API_DOMAIN);
-            return $api->app()->snsOauthAccessToken($code);
-        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
-            return error(-1, '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $e->getResponse()->getBody()->getContents());
-        }
-    }
+	public function getOauthInfo($code = '') {
+		global $_W, $_GPC;
+		if (!empty($_GPC['code'])) {
+			$code = $_GPC['code'];
+		}
+		if (empty($code)) {
+			$oauth_url = uni_account_oauth_host();
+			$url = $oauth_url . "app/index.php?{$_SERVER['QUERY_STRING']}";
+			$forward = $this->getOauthCodeUrl(urlencode($url));
+			header('Location: ' . $forward);
+			exit;
+		}
+		$url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid={$this->account['key']}&secret={$this->account['secret']}&code={$code}&grant_type=authorization_code";
+
+		return $this->requestApi($url);
+	}
 
     public function getOauthAccessToken() {
         $cachekey = cache_system_key('oauthaccesstoken', array('acid' => $this->account['acid']));

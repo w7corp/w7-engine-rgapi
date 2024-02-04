@@ -7,26 +7,28 @@ define('IN_MOBILE', true);
 require '../../framework/bootstrap.inc.php';
 $input = file_get_contents('php://input');
 $isxml = true;
-
 if (!empty($input) && empty($_GET['out_trade_no'])) {
-    $data = json_decode($input, true);
-    if (empty($data)) {
-        $result = array(
-            'return_code' => 'FAIL',
-            'return_msg' => ''
-        );
-        echo array2xml($result);
+    $data_v3 = json_decode($input, true);
+    if (!empty($data_v3) && 'TRANSACTION.SUCCESS' != $data_v3['event_type']) {
+        echo json_encode(['code' => $data_v3['code'], 'message' => $data_v3['message']]);
         exit;
     }
-    if ($data['trade_state'] != 'SUCCESS') {
-        $result = array(
-            'return_code' => 'FAIL',
-            'return_msg' => empty($data['return_msg']) ? $data['err_code_des'] : $data['return_msg']
-        );
-        echo array2xml($result);
+    load()->library('wechatpay-v3');
+    $_W['uniacid'] = substr($_SERVER['REQUEST_URI'], strrpos($_SERVER['REQUEST_URI'], '/') + 1);
+    $setting = uni_setting_load('payment');
+    $key = $setting['payment']['wechat']['apikey'];
+    $decrypter = new \WechatPay\GuzzleMiddleware\Util\AesUtil($key);
+    $plain = $decrypter->decryptToString($data_v3['resource']['associated_data'], $data_v3['resource']['nonce'], $data_v3['resource']['ciphertext']);
+    $data_v3 = json_decode($plain, true);
+    if (empty($data_v3)) {
+        echo json_encode(['code' => 'FAIL', 'message' => '解密失败']);
         exit;
     }
-    $get = $data;
+    $isxml = false;
+    $data_v3['total_fee'] = $data_v3['amount']['total'];
+    $data_v3['openid'] = $data_v3['payer']['openid'];
+    $data_v3['time_end'] = $data_v3['success_time'];
+    $get = $data_v3;
 } else {
     $isxml = false;
     $get = $_GET;

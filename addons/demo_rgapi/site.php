@@ -282,14 +282,14 @@ class Demo_rgapiModuleSite extends WeModuleSite {
             if (!$refund->verifySign($data)) {
                 throw new \Exception('退款验签错误');
             }
-            $refund_log = table('core_refundlog')->where(['refund_uniontid' => $data['refund_order_sn']])->get();
+            $refund_log = pdo_get('core_refundlog', ['refund_uniontid' => $data['refund_order_sn']]);
             if (!empty($refund_log) && $refund_log['status'] == '0' && ($data['refund_fee'] == $refund_log['fee'])) {
-                table('core_refundlog')->where(['id' => $refund_log['id']])->fill(['status' => 1])->save();
+                pdo_update('core_refundlog', ['status' => 1], ['id' => $refund_log['id']]);
                 pdo_update('demo_rgapi_paylog', ['status' => 2], ['code' => $data['paylog_sn']]);
                 exit('success');
             }
         } catch (\Exception $e) {
-            WeUtility::logging('W7refund_notify', var_export($e->getMessage(), true), FILE_APPEND);
+            WeUtility::logging('W7refund_notify', var_export($e->getMessage(), true));
             throw new \Exception($e->getMessage());
         }
         exit('fail.table_log not exist');
@@ -313,20 +313,18 @@ class Demo_rgapiModuleSite extends WeModuleSite {
             $pay = new \W7\Sdk\Console\Api\Pay($w7pay_setting['appid'], $w7pay_setting['appsecret']);
             $paylog = $pay->verify($data);
             if ($paylog && $paylog->isPaid()) {
-                WeUtility::logging('paid', var_export($paylog, true), FILE_APPEND);
-                $log = table('core_paylog')
-                    ->where('uniontid', $data['paylog_biz_sn'])
-                    ->get();
-                WeUtility::logging('core_paylog', var_export($log, true), FILE_APPEND);
+                WeUtility::logging('paid', var_export($paylog, true));
+                $log = pdo_get('core_paylog', ['uniontid' => $data['paylog_biz_sn']]);
+                WeUtility::logging('core_paylog', var_export($log, true));
                 if (!empty($log) && $log['status'] == '0' && ($data['total_fee'] == $log['fee'])) {
-                    WeUtility::logging('paid_update', var_export($data, true), FILE_APPEND);
-                    table('core_paylog')->where(['plid' => $log['plid']])->fill(['status' => 1])->save();
+                    WeUtility::logging('paid_update', var_export($data, true));
+                    pdo_update('core_paylog', ['status' => 1], ['plid' => $log['plid']]);
                     pdo_update('demo_rgapi_paylog', ['status' => 1, 'code' => $data['paylog_sn']], ['no' => $log['tid']]);
                     exit(json_encode(['data' => 'success']));
                 }
             }
         } catch (\Exception $e) {
-            WeUtility::logging('W7pay_notify', var_export($e->getMessage(), true), FILE_APPEND);
+            WeUtility::logging('W7pay_notify', var_export($e->getMessage(), true));
             throw new \Exception($e->getMessage());
         }
         exit(json_encode(['data' => 'fail']));
@@ -352,29 +350,43 @@ class Demo_rgapiModuleSite extends WeModuleSite {
     //微信、支付宝支付处理
     public function doWebPay() {
         global $_W, $_GPC;
+        load()->model('payment');
         try {
             $type = safe_gpc_string($_GPC['type']);
             if (empty($type) || !in_array($type, array('wechat', 'ali'))) {
                 iajax(-1, '支付类型错误！');
             }
-            load()->library('sdk-module');
-            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 1, V3_API_DOMAIN);
+            $description = '测试支付';
             $uniontid = date('YmdHis') . random(14, 1);
+            $total = 0.01;
             $out_trade_no = $type . date('YmdHis', time()) . time() . rand(11, 99);
             if ('wechat' == $type) {
-                $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/notify.php');
-                $data = $pay->payTransactionsNative("测试支付", $uniontid, 1, array('attach' => json_encode(array('uniacid' => $_W['uniacid']))))->toArray();
+                $data = wechat_build_native([
+                    'description' => $description,
+                    'uniontid' => $uniontid,
+                    'fee' => $total,
+                ]);
+                if (is_error($data)) {
+                    iajax(-1, $data['message']);
+                }
                 if (empty($data['code_url'])) {
                     iajax(-1, '支付失败！');
                 }
                 $code = $data['code_url'];
             } else {
-                $pay = $api->aliPay($_W['siteroot'] . 'payment/alipay/notify.php');
-                $data = $pay->payForPc("测试支付", $uniontid, 0.01)->toArray();
-                if (empty($data['data'])) {
+                $params = array();
+                $params['tid'] = $out_trade_no;
+                $params['user'] = '测试用户';
+                $params['fee'] = '0.01';
+                $params['title'] = '测试支付接口';
+                $params['uniontid'] = $uniontid;
+                $setting = uni_setting_load('payment', $_W['uniacid']);
+                $alipay = $setting['payment']['alipay'];
+                $data = alipay_build($params, $alipay);
+                if (empty($data['url'])) {
                     iajax(-1, '支付失败！');
                 }
-                $code = $data['data'];
+                $code = $data['url'];
             }
 
             $log = array(
@@ -411,42 +423,43 @@ class Demo_rgapiModuleSite extends WeModuleSite {
     public function doWebRefund() {
         global $_W, $_GPC;
         try {
+            load()->model('refund');
             $type = safe_gpc_string($_GPC['type']);
             if (empty($type) || !in_array($type, array('wechat', 'ali'))) {
                 iajax(-1, '退款类型错误！');
             }
-            load()->library('sdk-module');
             $out_trade_no = safe_gpc_string($_GPC['__input']['no']);
             $paylog = pdo_get('core_paylog', array('tid' => $out_trade_no));
-            $account_type = 'wxapp' == $paylog['type'] ? 2 : 1;
-            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], $account_type, V3_API_DOMAIN);
             if ('wechat' == $type) {
-                $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/refund.php');
-                $data = $pay->refund($out_trade_no, 1, 1, '', $paylog['uniontid'])->toArray();
-                if (!empty($data['status']) && 'SUCCESS' == $data['status']) {
-                    iajax(0, '已申请退款!');
+                $refund_id = refund_create_order($paylog['tid'], $paylog['module'], $paylog['fee'], '测试退款');
+                if (is_error($refund_id)) {
+                    iajax(-1, $refund_id['message']);
+                }
+                $data = refund($refund_id);
+                if (!empty($data['status']) && in_array($data['status'], ['SUCCESS', 'PROCESSING'])) {
+                    iajax(0, '已发起退款申请，预计1分钟后退款成功，您可以尝试刷新页面查看结果！');
                 }
             } else {
                 $pay = $api->aliPay($_W['siteroot'] . 'payment/alipay/refund.php');
                 $data = $pay->refund($paylog['uniontid'], 0.01)->toArray();
+                $refund = array(
+                    'uniacid' => $_W['uniacid'],
+                    'uniontid' => $out_trade_no,
+                    'fee' => 0.01,
+                    'status' => 0,
+                    'refund_uniontid' => $out_trade_no,
+                    'reason' => '',
+                );
+                pdo_insert('core_refundlog', $refund);
+                if (!empty($data['alipay_trade_refund_response']) && 'Success' == $data['alipay_trade_refund_response']['msg']) {
+                    pdo_update('core_refundlog', array('status' => 1), array('refund_uniontid' => $out_trade_no));
+                    pdo_update('demo_rgapi_paylog', array('status' => 2), array('no' => $out_trade_no));
+                    iajax(0, '退款成功!', referer());
+                }
             }
-            $refund = array(
-                'uniacid' => $_W['uniacid'],
-                'uniontid' => $out_trade_no,
-                'fee' => 0.01,
-                'status' => 0,
-                'refund_uniontid' => $out_trade_no,
-                'reason' => '',
-            );
-            pdo_insert('core_refundlog', $refund);
-            if ('ali' == $type && !empty($data['alipay_trade_refund_response']) && 'Success' == $data['alipay_trade_refund_response']['msg']) {
-                pdo_update('core_refundlog', array('status' => 1), array('refund_uniontid' => $out_trade_no));
-                pdo_update('demo_rgapi_paylog', array('status' => 2), array('no' => $out_trade_no));
-                iajax(0, '退款成功!', referer());
-            }
-            iajax(0, '已发起退款申请，预计1分钟后退款成功！');
-        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
-            return error(-1, '退款失败！错误详情: ' . $e->getResponse()->getBody()->getContents());
+            throw new \Exception($data['message']);
+        } catch (\Exception $e) {
+            iajax(-1, '退款失败！错误详情: ' . $e->getMessage());
         }
     }
     //微信、支付宝支付回调
@@ -459,9 +472,11 @@ class Demo_rgapiModuleSite extends WeModuleSite {
     }
     //微信、支付宝退款回调
     public function refundResult($params) {
-        $paylog = pdo_get('core_refundlog', array('refund_uniontid' => $params['refund_uniontid']));
-        if (!empty($paylog['status'])) {
-            pdo_update('demo_rgapi_paylog', array('status' => 2), array('no' => $paylog['uniontid']));
+        $refundlog = pdo_get('core_refundlog', ['refund_uniontid' => $params['refund_uniontid']]);
+        if (!empty($refundlog['status'])) {
+            pdo_update('core_paylog', ['status'=> 2], ['uniontid' => $refundlog['uniontid']]);
+            $paylog = pdo_get('core_paylog', ['uniontid' => $refundlog['uniontid']]);
+            pdo_update('demo_rgapi_paylog', ['status' => 2], ['no' => $paylog['tid']]);
         }
         exit('success');
     }

@@ -137,7 +137,7 @@ function safe_gpc_string($value, $default = '', $rule = '') {
             break;
     }
 
-    return $value;
+    return trim($value);
 }
 
 /**

@@ -1,8 +1,8 @@
 {template 'common/header'}
 <div class="alert we7-page-alert">
-	<p><i class="wi wi-info"></i>支付功能需先配置支付参数：软擎授权系统->进入对应关联的号码->配置->支付参数</p>
+	<p><i class="wi wi-info"></i>支付功能需先配置支付参数：应用管理->支付参数</p>
 </div>
-<div id="bind" ng-controller="ctrl">
+<div id="bind" ng-controller="wechatPayCtrl" ng-cloak>
 	<a href="javascript:;" class="btn btn-primary" style="margin-bottom: 8px;" ng-click="pay(2)">创建微信支付</a>
 	<a href="javascript:location.reload();" class="btn btn-default pull-right">刷新</a>
 	<table class="table we7-table table-hover vertical-middle">
@@ -73,7 +73,7 @@
 			'payStatusUrl': "{php echo url('site/entry/paystatus', array('module_name' => 'demo_rgapi'))}",
 		}
 	});
-	angular.module('myApp').controller('ctrl', ['$scope', '$http', 'config', '$interval', function($scope, $http, config, $interval) {
+	angular.module('myApp').controller('wechatPayCtrl', ['$scope', '$http', 'config', '$interval', function($scope, $http, config, $interval) {
 		$scope.data = config.data;
 
 		$scope.pay = function(type, code = '', no = '') {

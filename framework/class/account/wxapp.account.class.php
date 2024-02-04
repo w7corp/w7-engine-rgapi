@@ -16,19 +16,15 @@ class WxappAccount extends WeAccount {
         return table('account')->getByUniacid($uniacid);
     }
 
-    public function getOauthInfo($code = '') {
-        global $_W, $_GPC;
-        if (!empty($_GPC['code'])) {
-            $code = $_GPC['code'];
-        }
-        try {
-            load()->library('sdk-module');
-            $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], 2, V3_API_DOMAIN);
-            return $api->app()->jsCode2Session($code);
-        } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
-            return error(-1, '获取微信小程序授权失败, 请稍后重试！错误详情: ' . $e->getResponse()->getBody()->getContents());
-        }
-    }
+	public function getOauthInfo($code = '') {
+		global $_W, $_GPC;
+		if (!empty($_GPC['code'])) {
+			$code = $_GPC['code'];
+		}
+		$url = "https://api.weixin.qq.com/sns/jscode2session?appid={$this->account['key']}&secret={$this->account['secret']}&js_code={$code}&grant_type=authorization_code";
+
+		return $this->requestApi($url);
+	}
 
     public function getOauthCodeUrl($callback, $state = '') {
         return "https://open.weixin.qq.com/connect/oauth2/authorize?appid={$this->account['app_id']}&redirect_uri={$callback}&response_type=code&scope=snsapi_base&state={$state}#wechat_redirect";
@@ -83,24 +79,11 @@ class WxappAccount extends WeAccount {
             $this->account['access_token'] = $cache;
             return $cache['token'];
         }
-        if (getenv('LOCAL_DEVELOP')) {
-            if (empty($this->account['app_id']) || empty($this->account['app_secret'])) {
-                return error('-1', '未填写小程序的 appid 或 appsecret！');
-            }
-            $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={$this->account['app_id']}&secret={$this->account['app_secret']}";
-            $token = $this->requestApi($url);
-        } else {
-            if (empty($_W['setting']['server_setting']['app_id'])) {
-                return error('-1', '请先到系统功能下进行“一键授权关联”。');
-            }
-            try {
-                load()->library('sdk-module');
-                $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], "2", V3_API_DOMAIN);
-                $token = $api->app()->getAccessToken()->toArray();
-            } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
-                return error(-1, '获取微信小程序授权失败, 请稍后重试！错误详情: ' . $e->getResponse()->getBody()->getContents());
-            }
+        if (empty($this->account['app_id']) || empty($this->account['app_secret'])) {
+            return error('-1', '未填写小程序的 appid 或 appsecret！');
         }
+        $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={$this->account['app_id']}&secret={$this->account['app_secret']}";
+        $token = $this->requestApi($url);
 
         if (!empty($token['errcode']) && '40164' == $token['errcode']) {
             return error(-1, $this->errorCode($token['errcode'], $token['errmsg']));

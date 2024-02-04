@@ -153,9 +153,6 @@ if ('display' == $do) {
 }
 
 if ('sync' == $do) {
-    if (!getenv('LOCAL_DEVELOP') && empty($_W['setting']['server_setting']['app_id'])) {
-        iajax(-1, '请先到系统功能下进行“一键授权关联”。', url('system/base-info'));
-    }
     load()->classs('weixin.account');
     $account_api = new WeixinAccount();
     $wechat_fans_list = $account_api->fansAll();

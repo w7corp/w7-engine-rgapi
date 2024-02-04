@@ -8,15 +8,12 @@ abstract class Pay {
     public static function create($type = 'wechat', $module = '') {
         if ('wechat' == $type) {
             load()->classs('pay/weixin.pay');
-
-            return new WeiXinPay($module);
+            return new WeiXinPay();
         }
         if ('alipay' == $type) {
             load()->classs('pay/ali.pay');
-
             return new AliPay($module);
         }
-
         return null;
     }
 

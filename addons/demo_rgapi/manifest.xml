@@ -36,7 +36,7 @@
 			<entry title="其他" do="other" />
 			<entry title="小程序-日记列表" do="list" />
 			<entry title="微信支付" do="wechatpay" />
-			<entry title="支付宝支付" do="alipay" />
+<!--			<entry title="支付宝支付" do="alipay" />-->
 			<entry title="内购-参数配置" do="w7pay_setting" />
 			<entry title="内购-商品管理" do="w7pay_goods" />
 			<entry title="内购-订单管理" do="w7pay_order" />

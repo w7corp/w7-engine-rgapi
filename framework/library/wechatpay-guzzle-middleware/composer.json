@@ -1,0 +1,6 @@
+{
+    "require": {
+        "wechatpay/wechatpay-guzzle-middleware": "^0.2.2",
+        "guzzlehttp/guzzle": "6.5.8"
+    }
+}

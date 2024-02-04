@@ -10,10 +10,9 @@ load()->model('reply');
 load()->model('miniapp');
 load()->model('cache');
 
-$dos = array('display', 'welcome_display', 'get_module_replies', 'get_module_covers', 'edit_link');
+$dos = array('display', 'welcome_display', 'get_module_replies', 'get_module_covers');
 $do = in_array($do, $dos) ? $do : 'display';
 
-$server_setting = $_W['setting']['server_setting'] ?? [];
 $module_name = safe_gpc_string($_GPC['module_name'] ?? $_GPC['m']);
 $module = $_W['current_module'] = module_fetch($module_name);
 if (empty($module)) {
@@ -21,38 +20,19 @@ if (empty($module)) {
 }
 
 if ('display' == $do) {
-    if (empty($server_setting)) {
-        $rgapi_link_token = random(32);
-        $server_setting = array(
-            'url' => $_W['siteroot'] . 'api.php?token=' . $rgapi_link_token,
-            'app_id' => '',
-        );
-        setting_save($server_setting, 'server_setting');
-        setting_save($rgapi_link_token, 'rgapi_link_token');
-    }
-    if (false === strpos($server_setting['url'], '?token=')) {
-        $rgapi_link_token = random(32);
-        $server_setting['url'] = $_W['siteroot'] . 'api.php?token=' . $rgapi_link_token;
-        setting_save($server_setting, 'server_setting');
-        setting_save($rgapi_link_token, 'rgapi_link_token');
-    }
     $support = [];
     $support_num = [];
-    $card_route_support_type = '';
     foreach (module_support_type() as $key => $type) {
         if ($module[$key] == $type['support']) {
             $support[] = $type['type'];
             $support_num[] = $type['type_num'];
-            $card_route_support_type .= '&support_type[]=' . $type['type_num'];
         }
     }
-    $card_route = '/card?url=' . urlencode($server_setting['url']) . '&app_id=' . $server_setting['app_id'] . '&site_id=' . getenv('APP_ID') . $card_route_support_type;
-    
-    if (empty($_W['uniacid']) && (getenv('LOCAL_DEVELOP') || !getenv('LOCAL_DEVELOP') && !empty($_W['setting']['server_setting']['app_id']))) {
+    if (empty($_W['uniacid'])) {
         itoast('', url('module/display/switch_uniacid', ['module_name' => $module_name]));
     }
     $link_accounts = [];
-    if (!empty($_W['uniacid']) && (getenv('LOCAL_DEVELOP') || !getenv('LOCAL_DEVELOP') && !empty($_W['setting']['server_setting']['app_id']))) {
+    if (!empty($_W['uniacid'])) {
         $module['welcome_display'] = false;
         // 模块默认入口
         $site = WeUtility::createModule($module_name);
@@ -131,20 +111,4 @@ if ('get_module_covers' == $do) {
         $cover_eid = $cover_eid['eid'];
     }
     iajax(0, array('covers' => $covers, 'cover_eid' => $cover_eid));
-}
-
-if ('edit_link' == $do) {
-    $link_app_id = empty($_GPC['link_app_id']) ? '' : safe_gpc_string($_GPC['link_app_id']);
-    $server_setting['app_id'] = $link_app_id;
-    
-    $result = setting_save($server_setting, 'server_setting');
-    if (is_error($result)) {
-        iajax(-1, $result['message']);
-    }
-    $_W['setting']['server_setting']['app_id'] = $link_app_id;
-    $init_accounts = uni_init_accounts();
-    if (is_error($init_accounts)) {
-        iajax(-1, $init_accounts['message']);
-    }
-    iajax(0, '修改成功！', referer());
 }

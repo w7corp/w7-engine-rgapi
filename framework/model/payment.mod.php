@@ -55,22 +55,65 @@ function wechat_build($params) {
     if (empty($params['uniontid']) || empty($params['fee']) || empty($params['user'])) {
         return error(-1, '参数错误！');
     }
-    load()->library('sdk-module');
-    $account_type = empty($params['account_type']) ? 1 : $params['account_type'];
-    $api = new \W7\Sdk\Module\Api(getenv('APP_ID'), getenv('APP_SECRET'), $_W['setting']['server_setting']['app_id'], $account_type, V3_API_DOMAIN);
-    $pay = $api->wechatPay($_W['siteroot'] . 'payment/wechat/notify.php');
-    if (!empty($params['user']) && is_numeric($params['user'])) {
-        $params['user'] = mc_uid2openid($params['user']);
+    load()->library('wechatpay-v3');
+    $account = pdo_get('account', ['uniacid' => $_W['uniacid']]);
+    $uniacid = $account['uniacid'];
+    $pay_setting = payment_setting();
+    $wechat = $pay_setting['wechat'];
+    if (empty($wechat['pay_switch'])) {
+        return error(-1, '未开启微信支付！');
     }
-    $params['title'] = empty($params['title']) ? '测试支付' : $params['title'];
-    $data = $pay->payTransactionsJsapi($params['title'], $params['uniontid'], $params['fee'] * 100, $params['user'], array('attach' => json_encode(array('uniacid' => $_W['uniacid']))))->toArray();
-    if (empty($data['appId'])) {
-        return error(-1, '支付失败！');
+    $merchantId = $wechat['mchid'];
+    $merchantSerialNumber = $wechat['ertificate_serial_number'];
+    $wechatpayCertificate = $wechat['wechat_platform_certificate'];
+    $merchantPrivateKey = $wechat['apiclient_key'];
+    $wechatpayMiddleware = WechatPay\GuzzleMiddleware\WechatPayMiddleware::builder()
+        ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
+        ->withWechatPay($wechatpayCertificate)
+        ->build();
+    $stack = GuzzleHttp\HandlerStack::create();
+    $stack->push($wechatpayMiddleware, 'wechatpay');
+    $client = new GuzzleHttp\Client(['handler' => $stack]);
+    try {
+        $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi', [
+            'json' => [
+                'appid' => $account['app_id'],
+                'mchid' => $wechat['mchid'],
+                'description' => cutstr($params['title'], 26),
+                'out_trade_no' => $params['uniontid'],
+                'notify_url' => $_W['siteroot'] . 'payment/wechat/notify.php/' . $uniacid,
+                'amount' => ['total' => $params['fee'] * 100, 'currency' => 'CNY'],
+                'payer' => ['openid' => empty($params['user']) ? $_W['fans']['from_user'] : $params['user']],
+                'attach' => (string) $uniacid,
+            ],
+            'headers' => [ 'Accept' => 'application/json' ],
+        ]);
+        if ($resp->getStatusCode() < 200 || $resp->getStatusCode() > 299) {
+            return error(-1, "支付失败： code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
+        }
+        $resp = json_decode($resp->getBody(), true);
+        $prepayid = $resp['prepay_id'];
+        $wOpt['appId'] = $account['app_id'];
+        $wOpt['timeStamp'] = strval(TIMESTAMP);
+        $wOpt['nonceStr'] = random(32);
+        $wOpt['package'] = 'prepay_id=' . $prepayid;
+        $wOpt['signType'] = 'RSA';
+        $rsa = $wOpt['appId'] . "\n" . $wOpt['timeStamp'] . "\n" . $wOpt['nonceStr'] . "\n" . $wOpt['package'] . "\n";
+        openssl_sign($rsa, $raw_sign, $merchantPrivateKey, 'sha256WithRSAEncryption');
+        $wOpt['paySign'] = base64_encode($raw_sign);
+        return $wOpt;
+    } catch (RequestException $e) {
+        return error(-1, $e->getMessage());
     }
-    if (!empty($data['timeStamp'])) {
-        $data['timeStamp'] = (string)$data['timeStamp'];
+}
+
+function wechat_build_native($params) {
+    if (empty($params['uniontid']) || empty($params['fee']) || empty($params['description'])) {
+        return error(-1, '参数错误！');
     }
-    return $data;
+    load()->classs('pay');
+    $wechat = Pay::create();
+    return $wechat->buildNative($params);
 }
 
 function payment_proxy_pay_account() {
@@ -90,4 +133,49 @@ function payment_proxy_pay_account() {
         return error(1);
     }
     return WeAccount::createByUniacid($uniacid);
+}
+
+function payment_setting() {
+    global $_W;
+    $setting = uni_setting_load('payment', $_W['uniacid']);
+    $pay_setting = is_array($setting['payment']) ? $setting['payment'] : [];
+    if (empty($pay_setting['alipay'])) {
+        $pay_setting['alipay'] = array(
+            'refund_switch' => STATUS_OFF,
+            'pay_switch' => STATUS_OFF,
+        );
+    }
+    if (empty($pay_setting['alipay']['pay_switch'])) {
+        $pay_setting['alipay']['pay_switch'] = STATUS_OFF;
+    }
+    if (empty($pay_setting['alipay']['refund_switch'])) {
+        $pay_setting['alipay']['refund_switch'] = STATUS_OFF;
+    }
+    if (empty($pay_setting['wechat'])) {
+        $pay_setting['wechat'] = array(
+            'refund_switch' => STATUS_OFF,
+            'pay_switch' => STATUS_OFF,
+        );
+    }
+    if (empty($pay_setting['wechat']['pay_switch'])) {
+        $pay_setting['wechat']['pay_switch'] = STATUS_OFF;
+    }
+    if (empty($pay_setting['wechat']['refund_switch'])) {
+        $pay_setting['wechat']['refund_switch'] = STATUS_OFF;
+    }
+    //废弃微信借用支付
+    $has_config_keys = array('pay_switch', 'refund_switch', 'has_config');
+    foreach ($pay_setting as &$value) {
+        if (empty($value) || !is_array($value)) {
+            continue;
+        }
+        $value['has_config'] = STATUS_OFF;
+        foreach ($value as $key => $val) {
+            if (!in_array($key, $has_config_keys) && !empty($val)) {
+                $value['has_config'] = STATUS_ON;
+            }
+        }
+    }
+    unset($value);
+    return $pay_setting;
 }

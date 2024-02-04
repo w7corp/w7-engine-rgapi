@@ -12,6 +12,7 @@
     "backgroundColor": "#f5f5f5",
     "enablePullDownRefresh": true
   },
+  "__usePrivacyCheck__": true,
   "tabBar": {
     "list": [
       {

@@ -1,0 +1,451 @@
+{template 'common/header'}
+{if $do == 'display'}
+<ul class="we7-page-tab">
+	<li {if $account['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL}class="active"{/if}>
+		<a href="{php echo url('profile/payment/display', ['module_name' => $module_name])}">公众号</a>
+	</li>
+	<li {if $account['type'] == ACCOUNT_TYPE_APP_NORMAL}class="active"{/if}>
+		<a href="{php echo url('profile/payment/display', ['module_name' => $module_name, 'account_type' => 2])}">小程序</a>
+	</li>
+</ul>
+<div class="js-profile-payment" ng-controller="paymentCtrl" ng-cloak>
+	<table class="table we7-table table-hover table-form">
+		<col width="240px"/>
+		<col />
+		<col />
+		<col />
+		<col width="130px"/>
+		<tr>
+			<th colspan="1" >支付参数</th>
+			<th colspan="1" >支付</th>
+			<th colspan="1" >退款</th>
+			<th colspan="1" >参数配置</th>
+			<th colspan="1" >操作</th>
+		</tr>
+		<tr class="{if $account['type'] == ACCOUNT_TYPE_APP_NORMAL}hidden{/if} hidden">
+			<td colspan="1">
+				支付宝支付<i class="wi wi-info color-red" data-trigger="click" data-title="支付宝支付说明" data-toggle="popover" data-placement="bottom" data-content="开启支付宝支付"></i>
+			</td>
+			<td>
+				<div ng-click="switchStatus('alipay', 'pay_switch')" ng-class="paysetting['alipay'].pay_switch === 1 ? 'switch switchOn' : 'switch'"></div>
+			</td>
+			<td>
+				<div ng-click="switchStatus('alipay', 'refund_switch')" ng-class="paysetting['alipay'].refund_switch === 1 ? 'switch switchOn' : 'switch'"></div>
+			</td>
+			<td>
+				<span ng-class="paysetting['alipay'].has_config === 1 ? 'we7-circle success' : 'we7-circle '"></span>{{  paysetting['alipay'].has_config === 1 ? '已配置' : '未配置'  }}
+			</td>
+			<td >
+				<div class="link-group">
+					<a href="javascript:;" data-toggle="modal" data-target="#zhifubao">
+						{{  paysetting.alipay.has_config === 1 ? '修改配置' : '去配置'  }}
+					</a>
+					<a class="hidden" href="javascript:;" ng-click="test_alipay()">测试</a>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="1">
+				微信支付<i class="wi wi-info color-red" data-trigger="click" data-title="微信支付说明" data-toggle="popover" data-placement="bottom" data-content="接口类型:新版(2014年9月之后申请的)。"></i>
+			</td>
+			<td>
+				<div ng-click="switchStatus('wechat', 'pay_switch')" ng-class="paysetting['wechat'].pay_switch === 1 ? 'switch switchOn' : 'switch'"></div>
+			</td>
+			<td>
+				<div ng-click="switchStatus('wechat', 'refund_switch')" ng-class="paysetting['wechat'].refund_switch === 1 ? 'switch switchOn' : 'switch'"></div>
+			</td>
+			<td>
+				<span ng-class="paysetting['wechat'].has_config === 1 ? 'we7-circle success' : 'we7-circle '"></span>{{  paysetting['wechat'].has_config === 1 ? '已配置' : '未配置'  }}
+			</td>
+			<td >
+				<div class="link-group">
+					<a style="cursor:pointer" data-toggle="modal" data-target="#weixin">
+						{{  paysetting.wechat.has_config === 1 ? '修改配置' : '去配置'  }}
+					</a>
+					<a class="hidden" href="javascript:;" ng-click="test_wechatpay()">测试</a>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<!--支付宝修改-->
+	<div class="modal fade" id="zhifubao" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">支付宝支付</div>
+				</div>
+				<div class="modal-body overflow-auto">
+					<div class="we7-form">
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">支付宝无线支付</label>
+							<div class="form-controls col-sm-10">
+								<div class="alert alert-warning">
+									您的支付宝账号必须支持手机网页即时到账接口, 才能使用手机支付功能,
+									<a href="javascript:openUrl('https://b.alipay.com/order/productDetail.htm?productId=2013080604609688')" class="color-default">申请及详情请查看这里</a>.
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">AppId</label>
+							<div class="form-controls col-sm-10">
+								<div class="input-group">
+									<input type="text" name="" class="form-control" placeholder="" ng-model="paysetting.alipay.app_id">
+									<a herf="#" ng-click="aliappidhelp = !aliappidhelp" class="input-group-addon"><i class="fa fa-exclamation-circle"></i></a>
+								</div>
+								<span class="help-block" ng-show="aliappidhelp">
+									AppId
+								</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">收款支付宝账号</label>
+							<div class="form-controls col-sm-10">
+								<div class="input-group">
+									<input type="text" name="" class="form-control" placeholder="" ng-model="paysetting.alipay.account">
+									<a herf="#" ng-click="aliaccounthelp = !aliaccounthelp" class="input-group-addon"><i class="fa fa-exclamation-circle"></i></a>
+								</div>
+								<span class="help-block" ng-show="aliaccounthelp">
+									如果开启兑换或交易功能，请填写真实有效的支付宝账号，用于收取用户以现金兑换交易积分的相关款项。如账号无效或安全码有误，将导致用户支付后无法正确对其积分账户自动充值，或进行正常的交易对其积分账户自动充值，或进行正常的交易。 如您没有支付宝帐号，
+									<a href="javascript:openUrl('https://memberprod.alipay.com/account/reg/enterpriseIndex.htm')">请点击这里注册</a>
+								</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">合作者身份</label>
+							<div class="form-controls col-sm-10">
+								<div class="input-group">
+									<input type="text" name="" class="form-control" placeholder="" ng-model="paysetting.alipay.partner">
+									<a herf="#" ng-click="alipartnerhelp = !alipartnerhelp" class="input-group-addon"><i class="fa fa-exclamation-circle"></i></a>
+								</div>
+								<span class="help-block" ng-show="alipartnerhelp">
+									支付宝签约用户请在此处填写支付宝分配给您的合作者身份，签约用户的手续费按照您与支付宝官方的签约协议为准。
+									<br>如果您还未签约，
+										<a href="javascript:openUrl('https://memberprod.alipay.com/account/reg/enterpriseIndex.htm')">
+											请点击这里签约
+										</a>；
+										如果已签约,
+										<a href="javascript:openUrl('https://openhome.alipay.com/platform/keyManage.htm?keyType=partner')">
+											请点击这里获取PID、Key
+										</a>;
+										如果在签约时出现合同模板冲突，请咨询0571-88158090
+								</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">校验密钥</label>
+							<div class="form-controls col-sm-10">
+								<div class="input-group">
+									<input type="text" name="" class="form-control" placeholder="" ng-model="paysetting.alipay.secret">
+									<a herf="#" ng-click="alisecrethelp = !alisecrethelp" class="input-group-addon"><i class="fa fa-exclamation-circle"></i></a>
+								</div>
+								<span class="help-block" ng-show="alisecrethelp">支付宝签约用户可以在此处填写支付宝分配给您的交易安全校验码，此校验码您可以到支付宝官方的商家服务功能处查看 </span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">支付宝私钥证书</label>
+							<div class="form-controls col-sm-10">
+								<span class="color-green we7-margin-right" ng-show="paysetting.alipay.private_key">已上传</span>
+								<input type="file" id="private_key" class="hidden" name="private_key" (change)="onFileSelected($event)">
+								<a class="color-default" href="javascript:;" onclick="private_key.click()">上传证书</a>
+								<span class="help-block">上传rsa_private_key.pem文件</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">模拟测试</label>
+							<div class="form-controls col-sm-10">
+								<a href="javascript:;" class="form-control-static color-default" ng-click="test_alipay()">模拟测试</a>
+								<span class="help-block">本测试将模拟提交 0.01 元人民币的订单进行测试，如果提交后成功出现付款界面，说明您站点的支付宝功能可以正常使用</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" ng-click="saveEdit('alipay')">确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 微信修改 -->
+	<div class="modal fade" id="weixin" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="we7-modal-dialog modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">微信支付</div>
+				</div>
+				<div class="modal-body overflow-auto">
+					<div class="we7-form ">
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">微信支付</label>
+							<div class="form-controls col-sm-10">
+								<div class="alert alert-warning">
+									你必须向微信公众平台提交企业信息以及银行账户资料，审核通过并签约后才能使用微信支付功能,
+									<a href="javascript:openUrl('https://pay.weixin.qq.com/guide/webbased_payment.shtml')" class="color-default">申请及详情请查看这里</a>
+								</div>
+								<div class="alert alert-warning" >
+									<p>微信支付的接口说明如下：</p>
+									<br>
+									<h4>JS API网页支付参数</h4>
+									<p>支付授权目录: {$_W['siteroot']}payment/wechat/ 和 {$_W['siteroot']}app/</p>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">支付账号</label>
+							<div class="form-controls col-sm-10">
+								<input type="text" name="" disabled class="form-control" value="{$account['name']}" placeholder="">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">身份标识<br>(appId)</label>
+							<div class="form-controls col-sm-10">
+								<input type="text" name="" disabled class="form-control" value="{$account['app_id']}" placeholder="">
+								<span class="help-block">公众号身份标识，请通过修改公众号信息来保存</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">身份密钥<br>(appSecret)</label>
+							<div class="form-controls col-sm-10">
+								<input type="text" disabled  value="{$account['app_secret']}" name="" class="form-control" placeholder="">
+								<span class="help-block">公众平台API(参考文档API 接口部分)的权限获取所需密钥Key, 请通过修改公众号信息来保存</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">微信支付商户号</label>
+							<div class="form-controls col-sm-10">
+								<input type="text" name="" ng-model="paysetting.wechat.mchid" class="form-control" placeholder="">
+								<span class="help-block">微信支付商户号</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">V3 API 秘钥</label>
+							<div class="form-controls col-sm-10">
+								<input type="text" name="" ng-model="paysetting.wechat.apikey" class="form-control" placeholder="">
+								<span class="help-block">微信支付商户平台APIv3密钥</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">平台证书序列号</label>
+							<div class="form-controls col-sm-10">
+								<input type="text" name="" ng-model="paysetting.wechat.ertificate_serial_number" class="form-control" placeholder="">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">微信平台证书</label>
+							<div class="form-controls col-sm-10">
+								<span class="color-green we7-margin-right" ng-show="paysetting.wechat.apiclient_cert">已上传</span>
+								<input type="file" id="cert" class="hidden" name="cert" (change)="onFileSelected($event)">
+								<a class="color-default" href="javascript:;" onclick="cert.click()">上传证书</a>
+								<span class="help-block">上传apiclient_cert.pem文件</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">微信商户私钥证书</label>
+							<div class="form-controls col-sm-10">
+								<span class="color-green we7-margin-right" ng-show="paysetting.wechat.apiclient_key">已上传</span>
+								<input type="file" id="key" class="hidden" name="key" (change)="onFileSelected($event)">
+								<a class="color-default" href="javascript:;" onclick="key.click()">上传证书</a>
+								<span class="help-block">上传apiclient_key.pem文件</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" ng-click='saveEdit("wechat")'>确定</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{/if}
+<script>
+	angular.module('profileApp', ['we7app']);
+	angular.module('profileApp').value('config', {
+		'paysetting' : {php echo json_encode($pay_setting)},
+		'links': {
+			'saveurl' : "{php echo url('profile/payment/save_setting', ['module_name' => $module_name, 'account_type' => $account_type])}",
+			'save_apiclient' : "{php echo url('profile/payment/save_apiclient', ['module_name' => $module_name, 'account_type' => $account_type])}",
+			'text_alipay_url' : "{php echo url('profile/payment/test_alipay', ['module_name' => $module_name, 'account_type' => $account_type])}",
+			'text_wechatpay_url' : "{php echo url('profile/payment/test_wechat', ['module_name' => $module_name, 'account_type' => $account_type])}",
+			'change_status': "{php echo url('profile/payment/change_status', ['module_name' => $module_name, 'account_type' => $account_type])}",
+			'get_setting_url' : "{php echo url('profile/payment/get_setting', ['module_name' => $module_name, 'account_type' => $account_type])}",
+		}
+	});
+	angular.module('profileApp').controller('paymentCtrl', ['$scope', '$http', 'config', function($scope, $http, config) {
+		$scope.config = config;
+		$scope.paysetting = config.paysetting;
+		$scope.aliappidhelp = false;
+		$scope.aliaccounthelp = false;
+		$scope.alipartnerhelp = false;
+		$scope.alisecrethelp = false;
+		$('#cert').change(function(event) {
+			$scope.paysetting.wechat.apiclient_cert = event.target.files[0]
+		});
+		$('#key').change(function(event) {
+			$scope.paysetting.wechat.apiclient_key = event.target.files[0]
+		});
+		$('#private_key').change(function(event) {
+			$scope.paysetting.alipay.private_key = event.target.files[0]
+		});
+		$scope.saveEdit = function (type) {
+			if (type == 'alipay') {
+				if ($scope.paysetting.alipay.pay_switch === true || $scope.paysetting.alipay.recharge_switch === true) {
+					if ($scope.paysetting.alipay.partner == '') {
+						util.message('请填写合作者身份', '', 'info');
+						return false;
+					}
+					if ($scope.paysetting.alipay.account == '') {
+						util.message('请填写收款支付宝账号', '', 'info');
+						return false;
+					}
+					if ($scope.paysetting.alipay.secret == '') {
+						util.message('请填写校验密钥', '', 'info');
+						return false;
+					}
+				}
+				$http({
+					method:'POST',
+					url: config.links.saveurl,
+					headers: {
+						'Content-Type': undefined
+					},
+					data: {
+						type: 'alipay',
+						account:$scope.paysetting.alipay.account,
+						partner:$scope.paysetting.alipay.partner,
+						secret:$scope.paysetting.alipay.secret,
+						app_id:$scope.paysetting.alipay.app_id,
+						private_key:$scope.paysetting.alipay.private_key
+					},
+					transformRequest: (data) => {
+						let formData = new FormData();
+						angular.forEach(data, function (value, key) {
+							formData.append(key, value);
+						});
+						return formData;
+					}
+				}).success(function(data) {
+					if (data.message.errno == 0) {
+						util.message(data.message.message, data.redirect, 'success');
+					} else {
+						util.message(data.message.message, '', 'info');
+					}
+				});
+			}
+			if (type == 'wechat') {
+				if ($scope.paysetting.wechat.mchid == '') {
+					util.message('请填写微信支付商户号', '', 'info');
+					return false;
+				}
+				if ($scope.paysetting.wechat.apikey == '') {
+					util.message('请填写V3 API 秘钥', '', 'info');
+					return false;
+				}
+				if ($scope.paysetting.wechat.ertificate_serial_number == '') {
+					util.message('请填写平台证书序列号', '', 'info');
+					return false;
+				}
+				if ($scope.paysetting.wechat.apiclient_cert == '') {
+					util.message('请填写微信平台证书', '', 'info');
+					return false;
+				}
+				if ($scope.paysetting.wechat.apiclient_key == '') {
+					util.message('请填写微信商户私钥证书', '', 'info');
+					return false;
+				}
+				$http({
+					method:'POST',
+					url: config.links.saveurl,
+					headers: {
+						'Content-Type': undefined
+					},
+					data: {
+						type: type,
+						mchid:$scope.paysetting.wechat.mchid,
+						apikey:$scope.paysetting.wechat.apikey,
+						ertificate_serial_number:$scope.paysetting.wechat.ertificate_serial_number,
+						apiclient_cert:$scope.paysetting.wechat.apiclient_cert,
+						apiclient_key:$scope.paysetting.wechat.apiclient_key
+					},
+					transformRequest: (data) => {
+						let formData = new FormData();
+						angular.forEach(data, function (value, key) {
+							formData.append(key, value);
+						});
+						return formData;
+					}
+				}).success(function(data) {
+					if (data.message.errno == 0) {
+						util.message(data.message.message, data.redirect, 'success');
+					} else {
+						util.message(data.message.message, '', 'info');
+					}
+				});
+			}
+
+		};
+
+		$scope.switchStatus = function(payType, switchType) {
+			$http.post(config.links.change_status, {'pay_type': payType, 'switch_type': switchType})
+				.success(function(data) {
+					if (data.message.errno == 0) {
+						util.message(data.message.message, data.redirect, 'success');
+					} else {
+						util.message(data.message.message);
+					}
+				});
+		};
+
+		$('.modal').on('hide.bs.modal', function() {
+			$http.post(config.links.get_setting_url, {}).success(function(data) {
+				$scope.paysetting = data.message.message;
+			});
+		});
+
+		$scope.test_alipay = function() {
+			$http.post(config.links.text_alipay_url, {'param' : $scope.paysetting.alipay}).success(function(data) {
+				if (data.message.errno === 0) {
+					window.open(data.message.message, '_blank');
+					return false;
+				} else {
+					util.message(data.message.message);
+				}
+			});
+		};
+		$scope.test_wechatpay = function() {
+			$http.post(config.links.text_wechatpay_url, {'param' : $scope.paysetting.wechat}).success(function(data) {
+				if (data.message.errno === 0) {
+					window.open(data.message.message, '_blank');
+					return false;
+				} else {
+					util.message(data.message.message);
+				}
+			});
+		};
+	}])
+	angular.bootstrap($('.js-profile-payment'), ['profileApp']);
+</script>
+<style  lang="scss">
+	.we7-select .list::-webkit-scrollbar
+	{
+			width: 16px;  /*滚动条宽度*/
+			height: 16px;  /*滚动条高度*/
+	}  
+	 
+	/*定义滚动条轨道*/
+	.we7-select .list::-webkit-scrollbar-track
+	{
+			background-color: #F1F1F1;/*滚动条的背景颜色*/
+	}  
+	 
+	/*定义滑块*/
+	.we7-select .list::-webkit-scrollbar-thumb
+	{
+			background-color: #C1C1C1;  /*滚动条的背景颜色*/
+	}  
+	</style>
+{template 'common/footer'}

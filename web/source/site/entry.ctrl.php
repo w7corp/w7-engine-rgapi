@@ -47,9 +47,6 @@ if (!$entry['direct']) {
         'module' == $referer['c'] && in_array($referer['a'], array('manage-account', 'permission')))) {
         itoast('', $_W['siteurl'] . '&version_id=' . $referer['version_id']);
     }
-    if (!getenv('LOCAL_DEVELOP') && empty($_W['setting']['server_setting']['app_id'])) {
-        message('请先在模块首页点击“+”关联至少一个平台！', url('module/display/switch_module'), 'error');
-    }
 
     $_W['page']['title'] = !empty($entry['title']) ? $entry['title'] : '';
 }

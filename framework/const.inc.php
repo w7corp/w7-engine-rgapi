@@ -6,8 +6,9 @@
 defined('IN_IA') or exit('Access Denied');
 
 !defined('CLOUD_API_DOMAIN') && define('CLOUD_API_DOMAIN', 'https://openapi.w7.cc');
-!defined('V3_API_DOMAIN') && define('V3_API_DOMAIN', 'https://api.w7.cc/w7api/mgw/w7_rangineapi/');
-!defined('CARD_NAVIGATE_MODULE_NAME') && define('CARD_NAVIGATE_MODULE_NAME', 'w7_rangineapi');
+!defined('V3_API_DOMAIN') && define('V3_API_DOMAIN', 'https://api.w7.cc/w7api/mgw/w7_engine_server30/');
+!defined('CLOUD_PROSERVICE_DOMAIN') && define('CLOUD_PROSERVICE_DOMAIN', 'https://proservice.api.w7.com');
+!defined('CLOUD_MINIAPP_DOMAIN_PRE') && define('CLOUD_MINIAPP_DOMAIN_PRE', 'http://miniupload.rgapi.w7.cc');
 define('REGULAR_EMAIL', '/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/i');
 define('REGULAR_MOBILE', '/1[3456789][0-9]{9}/');
 define('REGULAR_USERNAME', '/^[\x{4e00}-\x{9fa5}a-z\d_\.]{1,30}$/iu');

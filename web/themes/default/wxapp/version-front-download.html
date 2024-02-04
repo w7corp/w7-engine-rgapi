@@ -1,79 +1,971 @@
 {template 'common/header'}
-{if $if_link_wxapp}
+{if MODULE_SUPPORT_WXAPP == $module['wxapp_support']}
+<div id="wxapp-upload" id="wxapp-upload" ng-controller="wxapp_upload_ctrl" ng-cloak>
 	<div class="media media-wechat-setting">
 		<div class="media-left color-default">
 			<span class="wi wi-wxapp-webpack" style="font-size: 55px;"></span>
 		</div>
 		<div class="media-body media-middle ">
-			<h4 class="media-heading color-dark">{$module['title']}</h4>
+			<h4 class="media-heading color-dark">{$account_all_type_sign[WXAPP_TYPE_SIGN]['title']}</h4>
 			<div class="color-gray">版本: v{$version_info['version']}</div>
 		</div>
-		{if getenv('LOCAL_DEVELOP')}
 		<div class="media-right media-middle">
-			<span class="color-gray">授权上传功能在本地开发模式下不支持；在 <a href="javascript:openUrl('https://dev.w7.cc')" class="color-default">开发者中心</a> 发布后可用。</span>
+			<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'type' => 'wxapp'])}" class="btn btn-primary">立即下载</a>
+			<a href="javascript:;" class="btn btn-primary" data-toggle="modal" data-target="#wxapp-modal">参数配置</a>
+			<a href="javascript:;" class="btn btn-primary" data-toggle="modal" data-target="#upload-wxapp-modal" ng-click="resetUpload()">授权上传</a>
 		</div>
-		{/if}
-		<div class="media-right media-middle">
-			<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'version_id' => $version_id])}" class="btn btn-primary">立即下载</a>
-			{if !empty($_W['setting']['server_setting']['app_id'])}
-			<a href="javascript:;" class="btn btn-primary" onclick="authorizationUpload()" {if getenv('LOCAL_DEVELOP')}disabled="1"{/if}>授权上传</a>
-			{/if}
+	</div>
+	<div class="modal fade " tabindex="-1" role="dialog" id="wxapp-modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header clearfix">
+					微信小程序上传配置
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				</div>
+				<form action="{php echo url('wxapp/front-download/save_setting')}" method="post" enctype="multipart/form-data">
+				<div class="modal-body we7-form">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">小程序URL</label>
+						<div class="col-sm-10">
+							<input type="text" name="appurl" value="{$config['wxapp']['app_url']}" class="form-control">
+							<span class="help-block">示例：https://域名/app/index.php</span>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">上传校验文件</label>
+						<div class="col-sm-10">
+							<label for="fileInput" class="custom-file-upload">
+								<input type="file" name="file" id="fileInput" accept=".txt">
+								<i class="wi wi-upload"></i> &nbsp;&nbsp;上传文件
+							</label>
+							<span class="help-block txt-file"></span>
+							<span class="help-block">用于在【微信公众平台-开发管理-开发设置-业务域名】页面配置业务域名时上传校验文件</span>
+							<script>
+								$(".custom-file-upload").on("change","input[type='file']",function(){
+									$('.txt-file').text($(this).val());
+								})
+							</script>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">上传秘钥</label>
+						<div class="col-sm-10">
+							<textarea name="privatekey" class="form-control" placeholder="">{$config['wxapp']['upload_private_key']}</textarea>
+							<span class="help-block">一定要关闭“IP白名单”或配置“IP白名单”，否则无效。</span>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<input type="hidden" name="token" value="{$_W['token']}" />
+					<input type="hidden" name="type" value="wxapp" />
+					<input type="submit" class="btn btn-primary" name="submit" value="保存">
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade " tabindex="-1" role="dialog" id="upload-wxapp-modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">小程序上传</div>
+				</div>
+				<div class="modal-body overflow-auto">
+					<div class="modal-body we7-form wxapp-examine-self">
+						<div class="panel-body">
+							<div class="step we7-flex" style="padding: 0px;">
+								<div class="one active">
+									<span class="wi wi-one"></span>设置参数
+								</div>
+								<div class="arrow">
+									<span class="wi wi-step-arrows"></span>
+								</div>
+								<div class="two" ng-class="{true:'active',false:''}[step>=2]">
+									<span class="wi wi-two"></span>上传
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div ng-show="show_step1">
+						<form action="" class="we7-form" id="codeform" ng-init="user_version = '{$user_version}'; user_desc = '{$version_info['description']}'">
+							<input type="hidden" name="ticket" id="ticket">
+							<input type="hidden" id="version_id" value="{$version_id}">
+							<div class="form-group">
+								<label class="control-label col-sm-2">版本号</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" id="user_version" ng-model="user_version" value="" placeholder="如：1.2.3">
+									<span class="help-block">版本号仅限数字</span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-2">版本描述</label>
+								<div class="col-sm-10">
+									<textarea rows="3" class="form-control" id="user_desc" ng-model="user_desc"></textarea>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">通用插件<a href="javascript:;" data-toggle="tooltip" data-placement="bottom" title="确认当前上传小程序在微信公众平台是否启用插件，启用请勾选是，默认不启用">
+									<i class="wi wi-bangzhu"></i>
+								</a></label>
+								<div class="col-sm-10" style="margin-top: 6px;">
+									<label class="radio-inline"><input type="radio" name="type" ng-model="usePlugin" value="1"/> 启用</label>
+									<label class="radio-inline"><input type="radio" name="type" ng-model="usePlugin" value="0"/> 不启用</label>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">直播插件<a href="javascript:;" data-toggle="tooltip" data-placement="bottom" title="请确认当前小程序是否申请直播插件，已申请可启用该插件，默认不启用">
+									<i class="wi wi-bangzhu"></i>
+								</a></label>
+								<div class="col-sm-10" style="margin-top: 6px;">
+									<label class="radio-inline"><input type="radio" name="livePlugin" ng-model="livePlugin" value="1"/> 启用</label>
+									<label class="radio-inline"><input type="radio" name="livePlugin" ng-model="livePlugin" value="0"/> 不启用</label>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">地理位置相关接口<a href="javascript:;" data-toggle="tooltip" data-placement="bottom" title="确认当前上传小程序是否在微信公众平台开通地理位置相关接口权限，开通请勾选是，默认不开通">
+									<i class="wi wi-bangzhu"></i>
+								</a></label>
+								<div class="col-sm-10" style="margin-top: 6px;">
+									<label class="radio-inline"><input type="radio" name="usePrivateInfo" ng-model="usePrivateInfo" value="1"/> 启用</label>
+									<label class="radio-inline"><input type="radio" name="usePrivateInfo" ng-model="usePrivateInfo" value="0"/> 不启用</label>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">隐私保护指引<a href="javascript:;" data-toggle="tooltip" data-placement="bottom" title="仅当开发者未支持“用户隐私保护指引”时使用，重复使用会导致冲突">
+									<i class="wi wi-bangzhu"></i>
+								</a></label>
+								<div class="col-sm-10" style="margin-top: 6px;">
+									<label class="radio-inline"><input type="radio" name="privacyWindows" ng-disabled="0 == pay_status" ng-model="privacyWindows" value="1"/> 启用</label>
+									<label class="radio-inline"><input type="radio" name="privacyWindows" ng-disabled="0 == pay_status" ng-model="privacyWindows" value="0"/> 不启用</label>
+									<button class="btn btn-primary" type="button" ng-click="buy()" style="float: right;" ng-if="0 == pay_status">购买</button>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">编译配置</label>
+								<div class="1col-sm-10" style="margin-top: 6px;">
+									<div style="color: #3296fa;padding-left: 121px;">
+										<div ng-click="showAdvance = !showAdvance" style="width: 100px;cursor: pointer;">
+											<i ng-class="{'wi wi-angle-down': !showAdvance, 'wi wi-angle-up': showAdvance}"></i>
+											<span>{{showAdvance ? '收起' : '展开'}}配置</span>
+										</div>
+									</div>
+									<div class="compileItems" ng-if="showAdvance" style="margin-left: 121px;">
+										<label ng-repeat="item in minifyList" style="display:block;"><input type="checkbox" value="item.key" ng-checked="checkedMinify.indexOf(item.key) > -1" ng-click="checkeMinify(item, $index)" style="display: inline-block;margin-right: 10px;position: relative;top: 2px;" />{{item.label}}</label>
+									</div>
+								</div>
+							</div>
+							<!--
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">主题样式</label>
+                                <div class="col-sm-10">
+                                    <div class="form-control" id="theme" style="background-color: #eee">
+                                        <i class="wi wi-warning-sign color-red"></i>
+                                        <span class="color-gray">如果您的应用支持定制主题，您可以在这步设置主题</span>
+                                        <a class="text-right pull-right link-item" href="{php echo url('wxapp/front-download/custom', array('version_id' => $version_id));}" style="color: #45a2f3;">前往设置</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">可跳转小程序数量</label>
+                                <div class="col-sm-10">
+                                    <div class="form-control" id="theme">
+                                        <span class="color-gray">{php echo count($version_info['tominiprogram'])}个</span>
+                                        <a class="text-right pull-right link-item" href="{php echo url('wxapp/front-download/tominiprogram', array('version_id' => $version_id));}" style="color: #45a2f3;">去添加</a>
+                                    </div>
+                                </div>
+                            </div>
+                            -->
+						</form>
+					</div>
+					<div class="wxapp-examine-self" ng-show="show_step2">
+						<script type="text/javascript" src="../../../web/resource/js/lib/jquery.qrcode.min.js"></script>
+						<div class="success text-center step3">
+							<div ng-show="uploadState == 0">
+								<span class="help-block text-center"><img src="./resource/images/loading.gif" alt="" width="45px"></span>
+								<div class="status-state" style="margin-top: 10px">小程序正在上传中</div>
+								<div class="help-block" style="margin-top: 30px">{{progress}}</div>
+								<div class="help-block">上传过程中请勿关闭弹框</div>
+							</div>
+							<div ng-show="uploadState == 1">
+								<div id="qrcode"></div>
+								<div class="help-block">请扫描二维码进行预览</div>
+								<div class="status-state">上传代码成功，请到微信开发小程序后台提交审核</div>
+								<a href="javascript:openUrl('https://mp.weixin.qq.com');" style="color: #3296fa;">微信开发小程序后台：https://mp.weixin.qq.com</a>
+								<div class="btns">
+									{if ACCOUNT_TYPE_APP_AUTH == $_W['account']['type']}
+									<a class="btn btn-primary" href="{php echo url('wxapp/front-download/platform_version_manage', array('version_id' => $version_id));}">去提交审核</a>
+									{else}
+									<a class="btn btn-primary" href="javascript:openUrl('https://mp.weixin.qq.com');">去提交审核</a>
+									{/if}
+								</div>
+							</div>
+							<div ng-show="uploadState == 2">
+								<i class="wi wi-warning-cricle" style="color: #c7254e;"></i>
+								<div class="tip">小程序上传失败</div>
+								<div class="we7-help-block" style="margin-top: 30px">{{reason}}</div>
+								<div class="btns">
+									<button type="button" class="btn btn-default" data-dismiss="modal">关 闭</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					{if ACCOUNT_TYPE_APP_AUTH == $_W['account']['type']}
+					<div ng-show="show_step1">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+						<button class="btn btn-primary" type="button" ng-click="beforeUpload({$version_info['support_live']}, 'develop')">提交开发版本</button>
+						<button class="btn btn btn-info we7-margin-left-sm" type="button" ng-click="beforeUpload({$version_info['support_live']}, 'audit')">提交审核版本</button>
+					</div>
+					{else}
+					<div ng-show="show_step1">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+						<button class="btn btn-primary" type="button" id="begin-upload" ng-click="beforeUpload('wxapp', '')">确定并继续</button>
+					</div>
+					{/if}
+				</div>
+			</div>
 		</div>
 	</div>
 	<script>
-		function authorizationUpload() {
-			window.w7.ready(()=>{
-				window.w7.navigate({
-					modulename: '{php echo CARD_NAVIGATE_MODULE_NAME}',
-					type: 'micro',
-					route: '{php echo $upload_route}',
-					title: '上传小程序',
-					style: {width:1000, height:700},
+		angular.module('moduleApp').value('config',{
+			canUpload: "{$account['type']}",
+			appUrl: "{$appurl}",
+			verifyTxtFile: "{$verify_txt_file}",
+			accountType: "{$account['type']}",
+			version_id: "{$version_id}",
+			pay_status: "{$pay_status}",
+			upgrade_url: "{php echo url('wxapp/front-download/upgrade_module')}",
+			links: {
+				saveSettingUrl: "{php echo url('wxapp/front-download/save_setting')}",
+				setPrivateKey: "{php echo url('wxapp/front-download/upload_private_key')}",
+				commitCode: "{php echo url('miniapp/platform-version/commit')}",
+				publishBuy: "{php echo url('wxapp/front-download/publish_buy')}",
+			}
+		});
+
+		angular.module('moduleApp').controller('wxapp_upload_ctrl', ['$scope', 'config','$q', '$http', function ($scope, config, $q, $http) {
+			$scope.qrcode_src = '';//开发者工具登录二维码
+			$scope.preview_qrcode = '';//预览二维码
+			$scope.show_wait = false;
+			$scope.support_plugins = true;
+			$scope.plugins = [];
+			$scope.step = 1;
+			$scope.show_step1 = true;
+			$scope.show_step2 = false;
+			$scope.show_step3 = false;
+
+			$scope.wait_sec = 15;
+			$scope.user_desc = '';
+			$scope.user_version = config.user_version;
+			$scope.uploadType = ''; // 上传类型
+			$scope.commitType = '';
+			$scope.uuid = '';
+			$scope.ticket = '';
+			$scope.showAdvance = false;
+			$scope.usePlugin = '0';
+			$scope.livePlugin = '0';
+			$scope.usePrivateInfo = '0';
+			$scope.privacyWindows = '0';
+			$scope.checkedMinify = ['es6', 'minify', 'minifyWXSS', 'minifyWXML', 'minifyJS', 'autoPrefixWXSS'];
+			$scope.minifyList = [
+				{
+					label: '将JS编译成ES5',
+					key: 'es6',
+					value: '1'
+				},{
+					label: '上传代码时样式自动补全',
+					key: 'autoPrefixWXSS',
+					value: '1'
+				},{
+					label: '上传代码时自动压缩样式文件',
+					key: 'minifyWXSS',
+					value: '1'
+				},{
+					label: '上传代码时自动压缩脚本文件',
+					key: 'minifyJS',
+					value: '1'
+				},{
+					label: '上传代码时自动压缩wxml文件',
+					key: 'minifyWXML',
+					value: '1'
+				},{
+					label: '上传时进行代码保护',
+					key: 'codeProtect',
+					value: '0'
+				},{
+					label: '上传时压缩所有代码',
+					key: 'minify',
+					value: '1'
+				}
+			];
+			var setting = {};
+			$scope.progress = '';
+			var checkStepTime = null;
+			$scope.reason = '';
+			var uuid = null;//提交代码凭据
+			var ticket = null;
+			var pathInfo = null;
+			$scope.uploadState = 0;
+
+			$scope.canUpload = config.canUpload;
+			$scope.appUrl = config.appUrl;
+			$scope.verifyTxtFile = config.verifyTxtFile ? config.verifyTxtFile : '未上传';
+			$scope.pay_status = config.pay_status;
+
+			var sec = 15;
+			var interval = setInterval(function(){
+				sec--;
+				if (sec<=0) {
+					sec = 0;
+					clearInterval(interval);
+				}
+				$scope.$apply(function() {
+					//wrapped this within $apply
+					$scope.wait_sec = sec;
 				});
+			},1000);
+			$(".custom-file-upload").on("change","input[type='file']",function(){
+				$('.txt-file').text($(this).val());
 			})
-		}
+
+			$scope.saveWxapp = function () {
+				$http.post(config.links.saveSettingUrl, {appUrl: $scope.appUrl, verifyTxtFile: $scope.verifyTxtFile, privatekey: $scope.privatekey}).success(function(data) {
+					if (data.message.errno == 0) {
+						util.message(data.message.message);
+					} else {
+						util.message(data.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.buy = function () {
+				$http.post(config.links.publishBuy).success(function(data) {
+					if (data.message.errno == 0) {
+						window.w7.ready(function() {
+							window.w7.pay(data, function() {
+								$scope.pay_status = 1;
+							})
+						})
+					} else {
+						util.message(data.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.resetUpload = function () {
+				$scope.show_step1 = true;
+				$scope.show_step2 = false;
+				$scope.show_step3 = false;
+				$scope.uploadState = 0;
+			}
+			$scope.updateAppUrl = function() {
+				$http.post(config.links.setAppUrl, {version_id: config.versionId, appurl: $scope.appUrl})
+						.success(function(data) {
+							if (data.message.errno == 0) {
+								$('#appurl-modal').modal('hide');
+								util.message(data.message.message, '', 'success');
+							} else {
+								util.message(data.message.message, '', 'error');
+							}
+						})
+			}
+			$scope.updatePrivateKey = function() {
+				$http.post(config.links.setPrivateKey, {version_id: config.version_id, upload_private_key: $scope.privatekey})
+						.success(function(data) {
+							if (data.message.errno == 0) {
+								$('#privatekey-modal').modal('hide');
+								util.message(data.message.message, data.redirect, 'success');
+							} else {
+								util.message(data.message.message, '', 'error');
+							}
+						})
+			}
+			$scope.checkeMinify = function(item, index) {
+				$scope.minifyList[index].value = item.value === '0' ? '1' : '0';
+				$scope.checkedMinify = [];
+				for(var i in $scope.minifyList) {
+					if($scope.minifyList[i].value === '1') {
+						$scope.checkedMinify.push($scope.minifyList[i].key)
+					}
+				}
+			};
+			$scope.beforeUpload = function (uploadType, commitType) {
+				$scope.uploadType = uploadType || '';
+				$scope.commitType = commitType || '';
+				$scope.confirm();
+			}
+			$scope.confirm = function() {
+				if (!$scope.user_version || !/^[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$/.test($scope.user_version)) {
+					util.message('版本号错误，只能是数字、点，数字最多2位，例如 1.1.1 或1.2');
+					return false;
+				}
+				if (!$scope.user_desc || $scope.user_desc == 0) {
+					util.message('版本描述不能为空');
+					return false;
+				}
+				for (var i in $scope.minifyList) {
+					setting[$scope.minifyList[i].key] = $scope.minifyList[i].value
+				}
+				$http.post('./index.php?c=wxapp&a=front-download&do=rgapi_publish', {
+					type : 2,
+					version_id : config.version_id,
+					version : $scope.user_version,
+					description : $scope.user_desc,
+					usePlugin : $scope.usePlugin,
+					livePlugin : $scope.livePlugin,
+					usePrivateInfo : $scope.usePrivateInfo,
+					privacyWindows : $scope.privacyWindows,
+					setting : setting
+				}).success(function(res) {
+					if(res.message && res.message.errno === 0) {
+						$scope.step = 2
+						$scope.show_step1 = false
+						$scope.show_step2 = true
+						$scope.getUploadState()
+					} else if(res.message && res.message.errno === -1 && res.message.message == '未设置开放平台绑定的开发小程序或代码上传秘钥' && window.sysinfo.isadmin === true) {
+						pathInfo = 'https://console.w7.cc/app/' + window.sysinfo.site_id + '/founder/micro/account/platform';
+						util.confirm(function(){
+							window.open(pathInfo)
+						}, function(){
+							return false
+						}, res.message.message)
+					} else {
+						util.message(res.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.getUploadState = function() {
+				$http.post('./index.php?c=wxapp&a=front-download&do=rgapi_publish_status', {type: 2}).success(function(res) {
+					if(res.message.errno === 0) {
+						if (res.message && res.message.message && res.message.message.status) {
+							if (Number(res.message.message.status) === -1 || Number(res.message.message.status) === 2) {
+								$scope.uploadState = 0
+								$scope.progress = res.message.message.progress
+								checkStepTime = setTimeout(function() {
+									$scope.getUploadState()
+								}, 1000)
+							} else if (Number(res.message.message.status) === 1) {
+								if($scope.commitType !== '') {
+									$http.post(config.links.commitCode, {
+										version_id: config.version_id,
+										commit_type: $scope.commitType
+									}).success(function(data) {
+										if (data.message.errno == 0) {
+											$scope.uploadState = 1
+											$scope.preview_qrcode = res.message.message.qr_code;
+											jQuery('#qrcode').qrcode({width: 150, height: 150,text: $scope.preview_qrcode});
+										} else {
+											$scope.uploadState = 2
+											$scope.reason = data.message.message;
+											return false;
+										}
+									})
+								} else {
+									$scope.uploadState = 1
+									$scope.preview_qrcode = res.message.message.qr_code;
+									jQuery('#qrcode').qrcode({width: 150, height: 150,text: $scope.preview_qrcode});
+								}
+								$http.post('./index.php?c=wxapp&a=front-download&do=upgrade_module', {
+									version_id: config.version_id,
+									version: $scope.user_version,
+									description: $scope.user_desc,
+								}).success(function(data) {
+									if (data.message.errno != 0) {
+										util.message(data.message.message)
+									}
+								})
+							} else {
+								$scope.uploadState = 2
+								$scope.reason = res.message.message.reason;
+							}
+						}
+					} else {
+						util.message(res.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.beginUpload = function (support_plugins) {
+				$scope.support_plugins = support_plugins;
+				$("input:checkbox[name=plugins]:not(:checked)").each(function(i){
+					$scope.plugins.push($(this).val());
+				})
+				if (!$scope.user_version || !/^[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$/.test($scope.user_version)) {
+					util.message('版本号错误，只能是数字、点，数字最多2位，例如 1.1.1 或1.2');
+					return false;
+				}
+				if (!$scope.user_desc || $scope.user_desc == 0) {
+					util.message('版本描述不能为空');
+					return false;
+				}
+				init(support_plugins);
+			}
+			// 初始化获取提交代码ticket 和 云服务返回的UUID
+			var init = function (support_plugins) {
+
+			}
+			// 预览小程序
+			$scope.preview = function () {
+
+			}
+			//提交代码
+			$scope.commit = function () {
+				if (!$scope.user_version || !/^[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$/.test($scope.user_version)) {
+					util.message('版本号错误，只能是数字、点，数字最多2位，例如 1.1.1 或1.2');
+					return false;
+				}
+
+			}
+		}]);
+
+		angular.bootstrap($('#wxapp-upload'), ['moduleApp']);
 	</script>
 	<style>
-		.img img{width: 250px;height: auto;}
+		#fileInput {visibility: hidden;position: absolute;}
+		.custom-file-upload {display: inline-block;padding: 6px 12px;cursor: pointer;border: 1px solid #e2e3e3;}
 	</style>
-	<div class="wxapp-download-procedure">
-		<div class="title color-gray">小程序前端下载后操作流程说明：</div>
-		<div class="step">1.进入微信小程序后台（mp.weixin.qq.com），添加小程序开发者（如已经是管理员或开发者则不需要添加）</div>
-		<div class="img">
-			<img src="./resource/images/wxapp/01.png" alt=""/>
-			<img src="./resource/images/wxapp/02.png" alt=""/>
+</div>
+{/if}
+{if MODULE_SUPPORT_ALIAPP == $module['aliapp_support']}
+<div id="aliapp-upload" ng-controller="aliapp_upload_ctrl" ng-cloak>
+	<div class="media media-wechat-setting">
+		<div class="media-left color-default">
+			<span class="wi wi-wxapp-webpack" style="font-size: 55px;"></span>
 		</div>
-		<div class="step">2.进入小程序后台。点击开发管理/开发设置，修改服务器域名（设置自己的微擎域名，<span class="color-red">必须是https</span>）</div>
-		<div class="img">
-			<img src="./resource/images/wxapp/03.png" alt=""/>
-			<img src="./resource/images/wxapp/04.png" alt=""/>
+		<div class="media-body media-middle ">
+			<h4 class="media-heading color-dark">{$account_all_type_sign[ALIAPP_TYPE_SIGN]['title']}</h4>
 		</div>
-		<div class="step">3.下载 <a href="javascript:openUrl('https://developers.weixin.qq.com/miniprogram/dev/devtools/stable.html')" class="color-default">微信开发者工具</a>，更新到最新版后（切记），将<span class="color-red">下载解压后的小程序导入</span>，填写小程序appid
+		<div class="media-right media-middle">
+			<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'type' => 'aliapp'])}" class="btn btn-primary">立即下载</a>
+			<a href="javascript:;" class="btn btn-primary" data-toggle="modal" data-target="#aliapp-modal">参数配置</a>
+			<a href="javascript:;" class="btn btn-primary" data-toggle="modal" data-target="#upload-otherapp-modal" ng-click="resetUpload()">授权上传</a>
 		</div>
-		<div class="img">
-			<img src="./resource/images/wxapp/05.png" alt=""/>
-			<img src="./resource/images/wxapp/06.png" alt=""/>
-		</div>
-		<div class="step">4.点击上传，并设置更新类型和版本号</div>
-		<div class="img">
-			<img src="./resource/images/wxapp/07.png" alt=""/>
-			<img src="./resource/images/wxapp/08.png" alt=""/>
-		</div>
-		<div class="step">5.进入小程序后台（mp.weixin.qq.com），点击版本管理，提交审核，小程序<span class="color-red">管理员</span>（必须需要管理员扫描，小程序开发者不可）扫描即可
-		</div>
-		<div class="img">
-			<img src="./resource/images/wxapp/09.png" alt=""/>
-			<img src="./resource/images/wxapp/10.png" alt=""/>
-		</div>
-		<div class="step">6.微信官方审核通过即可使用</div>
 	</div>
-{else}
-<div class="panel we7-panel panel-body">
-	{if getenv('LOCAL_DEVELOP')}
-	检测到未关联微信小程序，请先在 <span class="color-gray">data/init.accounts.php</span> 文件内配置微信小程序的初始化数据后重新安装。
-	{else}
-	检测到未关联微信小程序，请先在 <a class="color-default" href="{php echo $frames['section']['platform_module_common']['menu']['platform_module_welcome']['url']}">模块首页</a> 关联一个微信小程序类型的平台。
-	{/if}
+	<div class="modal fade " tabindex="-1" role="dialog" id="aliapp-modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header clearfix">
+					微信小程序上传配置
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				</div>
+				<form action="{php echo url('wxapp/front-download/save_setting')}" method="post" enctype="multipart/form-data">
+					<div class="modal-body we7-form">
+						<div class="form-group">
+							<label class="col-sm-2 control-label">工具ID</label>
+							<div class="col-sm-10">
+								<input type="text" name="tool_id" value="{$config['aliapp']['tool_id']}" class="form-control">
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">上传秘钥</label>
+							<div class="col-sm-10">
+								<textarea name="privatekey" class="form-control" placeholder="">{$config['aliapp']['upload_private_key']}</textarea>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<input type="hidden" name="token" value="{$_W['token']}" />
+						<input type="hidden" name="type" value="aliapp" />
+						<input type="submit" class="btn btn-primary" name="submit" value="保存">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade " tabindex="-1" role="dialog" id="upload-otherapp-modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="modal-title">小程序上传</div>
+				</div>
+				<div class="modal-body overflow-auto">
+					<div class="modal-body we7-form wxapp-examine-self">
+						<div class="panel-body">
+							<div class="step we7-flex" style="padding: 0px;">
+								<div class="one active">
+									<span class="wi wi-one"></span>设置参数
+								</div>
+								<div class="arrow">
+									<span class="wi wi-step-arrows"></span>
+								</div>
+								<div class="two" ng-class="{true:'active',false:''}[step>=2]">
+									<span class="wi wi-two"></span>上传
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div ng-show="show_step1">
+						<form action="" class="we7-form" id="codeform" ng-init="user_version = '{$user_version}'; user_desc = '{$version_info['description']}'">
+							<input type="hidden" name="ticket" id="ticket">
+							<input type="hidden" id="version_id" value="{$version_id}">
+							<div class="form-group">
+								<label class="control-label col-sm-2">版本号</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" id="user_version" ng-model="user_version" value="" placeholder="如：1.2.3">
+									<span class="help-block">版本号仅限数字</span>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="wxapp-examine-self" ng-show="show_step2">
+						<script type="text/javascript" src="../../../web/resource/js/lib/jquery.qrcode.min.js "></script>
+						<div class="success text-center step3">
+							<div ng-show="uploadState == 0">
+								<span class="help-block text-center"><img src="./resource/images/loading.gif" alt="" width="45px"></span>
+								<div class="status-state" style="margin-top: 10px">小程序正在上传中</div>
+								<div class="help-block" style="margin-top: 30px">{{progress}}</div>
+								<div class="help-block">上传过程中请勿关闭弹框</div>
+							</div>
+							<div ng-show="uploadState == 1">
+								<div id="qrcode"></div>
+								<div class="help-block">请扫描二维码进行预览</div>
+								<div class="status-state">上传代码成功，请到支付宝小程序后台提交审核</div>
+								<a href="javascript:openUrl('https://open.alipay.com');" style="color: #3296fa;">支付宝小程序后台：https://open.alipay.com</a>
+								<div class="btns">
+									<a class="btn btn-primary" href="javascript:openUrl('https://open.alipay.com');">去提交审核</a>
+								</div>
+							</div>
+							<div ng-show="uploadState == 2">
+								<i class="wi wi-warning-cricle" style="color: #c7254e;"></i>
+								<div class="tip">小程序上传失败</div>
+								<div class="we7-help-block" style="margin-top: 30px">{{reason}}</div>
+								<div class="btns">
+									<button type="button" class="btn btn-default" data-dismiss="modal">关 闭</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<div ng-show="show_step1">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+						<button class="btn btn-primary" type="button" id="begin-upload" ng-click="beforeUpload({$version_info['support_live']})">确定并继续</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		angular.module('moduleApp').value('config',{
+			canUpload: "{$account['type']}",
+			appUrl: "{$appurl}",
+			verifyTxtFile: "{$verify_txt_file}",
+			accountType: "{$account['type']}",
+			version_id: "{$version_id}",
+			pay_status: "{$pay_status}",
+			upgrade_url: "{php echo url('wxapp/front-download/upgrade_module')}",
+			links: {
+				saveSettingUrl: "{php echo url('wxapp/front-download/save_setting')}",
+				setPrivateKey: "{php echo url('wxapp/front-download/upload_private_key')}",
+				commitCode: "{php echo url('miniapp/platform-version/commit')}",
+				publishBuy: "{php echo url('wxapp/front-download/publish_buy')}",
+		}
+		});
+
+		angular.module('moduleApp').controller('aliapp_upload_ctrl', ['$scope', 'config','$q', '$http', function ($scope, config, $q, $http) {
+			$scope.qrcode_src = '';//开发者工具登录二维码
+			$scope.preview_qrcode = '';//预览二维码
+			$scope.show_wait = false;
+			$scope.support_plugins = true;
+			$scope.plugins = [];
+			$scope.step = 1;
+			$scope.show_step1 = true;
+			$scope.show_step2 = false;
+			$scope.show_step3 = false;
+
+			$scope.wait_sec = 15;
+			$scope.user_desc = '';
+			$scope.user_version = config.user_version;
+			$scope.uploadType = ''; // 上传类型
+			$scope.commitType = '';
+			$scope.uuid = '';
+			$scope.ticket = '';
+			$scope.showAdvance = false;
+			$scope.usePlugin = '0';
+			$scope.livePlugin = '0';
+			$scope.usePrivateInfo = '0';
+			$scope.privacyWindows = '0';
+			$scope.checkedMinify = ['es6', 'minify', 'minifyWXSS', 'minifyWXML', 'minifyJS', 'autoPrefixWXSS'];
+			$scope.minifyList = [
+				{
+					label: '将JS编译成ES5',
+					key: 'es6',
+					value: '1'
+				},{
+					label: '上传代码时样式自动补全',
+					key: 'autoPrefixWXSS',
+					value: '1'
+				},{
+					label: '上传代码时自动压缩样式文件',
+					key: 'minifyWXSS',
+					value: '1'
+				},{
+					label: '上传代码时自动压缩脚本文件',
+					key: 'minifyJS',
+					value: '1'
+				},{
+					label: '上传代码时自动压缩wxml文件',
+					key: 'minifyWXML',
+					value: '1'
+				},{
+					label: '上传时进行代码保护',
+					key: 'codeProtect',
+					value: '0'
+				},{
+					label: '上传时压缩所有代码',
+					key: 'minify',
+					value: '1'
+				}
+			];
+			var setting = {};
+			$scope.progress = '';
+			var checkStepTime = null;
+			$scope.reason = '';
+			var uuid = null;//提交代码凭据
+			var ticket = null;
+			var pathInfo = null;
+			$scope.uploadState = 0;
+
+			$scope.canUpload = config.canUpload;
+			$scope.appUrl = config.appUrl;
+			$scope.verifyTxtFile = config.verifyTxtFile ? config.verifyTxtFile : '未上传';
+			$scope.pay_status = config.pay_status;
+
+			var sec = 15;
+			var interval = setInterval(function(){
+				sec--;
+				if (sec<=0) {
+					sec = 0;
+					clearInterval(interval);
+				}
+				$scope.$apply(function() {
+					//wrapped this within $apply
+					$scope.wait_sec = sec;
+				});
+			},1000);
+			$(".custom-file-upload").on("change","input[type='file']",function(){
+				$('.txt-file').text($(this).val());
+			})
+
+			$scope.saveWxapp = function () {
+				$http.post(config.links.saveSettingUrl, {appUrl: $scope.appUrl, verifyTxtFile: $scope.verifyTxtFile, privatekey: $scope.privatekey}).success(function(data) {
+					if (data.message.errno == 0) {
+						util.message(data.message.message);
+					} else {
+						util.message(data.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.buy = function () {
+				$http.post(config.links.publishBuy).success(function(data) {
+					if (data.message.errno == 0) {
+						window.w7.ready(function() {
+							window.w7.pay(data, function() {
+								$scope.pay_status = 1;
+							})
+						})
+					} else {
+						util.message(data.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.resetUpload = function () {
+				$scope.show_step1 = true;
+				$scope.show_step2 = false;
+				$scope.show_step3 = false;
+				$scope.uploadState = 0;
+			}
+			$scope.updateAppUrl = function() {
+				$http.post(config.links.setAppUrl, {version_id: config.versionId, appurl: $scope.appUrl})
+						.success(function(data) {
+							if (data.message.errno == 0) {
+								$('#appurl-modal').modal('hide');
+								util.message(data.message.message, '', 'success');
+							} else {
+								util.message(data.message.message, '', 'error');
+							}
+						})
+			}
+			$scope.updatePrivateKey = function() {
+				$http.post(config.links.setPrivateKey, {version_id: config.version_id, upload_private_key: $scope.privatekey})
+						.success(function(data) {
+							if (data.message.errno == 0) {
+								$('#privatekey-modal').modal('hide');
+								util.message(data.message.message, data.redirect, 'success');
+							} else {
+								util.message(data.message.message, '', 'error');
+							}
+						})
+			}
+			$scope.checkeMinify = function(item, index) {
+				$scope.minifyList[index].value = item.value === '0' ? '1' : '0';
+				$scope.checkedMinify = [];
+				for(var i in $scope.minifyList) {
+					if($scope.minifyList[i].value === '1') {
+						$scope.checkedMinify.push($scope.minifyList[i].key)
+					}
+				}
+			};
+			$scope.beforeUpload = function (uploadType, commitType) {
+				$scope.uploadType = uploadType || '';
+				$scope.commitType = commitType || '';
+				$scope.confirm();
+			}
+			$scope.confirm = function() {
+				if (!$scope.user_version || !/^[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$/.test($scope.user_version)) {
+					util.message('版本号错误，只能是数字、点，数字最多2位，例如 1.1.1 或1.2');
+					return false;
+				}
+				if (!$scope.user_desc || $scope.user_desc == 0) {
+					util.message('版本描述不能为空');
+					return false;
+				}
+				for (var i in $scope.minifyList) {
+					setting[$scope.minifyList[i].key] = $scope.minifyList[i].value
+				}
+				$http.post('./index.php?c=wxapp&a=front-download&do=rgapi_publish', {
+					type : 5,
+					version_id : config.version_id,
+					version : $scope.user_version,
+					description : $scope.user_desc,
+					usePlugin : $scope.usePlugin,
+					livePlugin : $scope.livePlugin,
+					usePrivateInfo : $scope.usePrivateInfo,
+					privacyWindows : $scope.privacyWindows,
+					setting : setting
+				}).success(function(res) {
+					if(res.message && res.message.errno === 0) {
+						$scope.step = 2
+						$scope.show_step1 = false
+						$scope.show_step2 = true
+						$scope.getUploadState()
+					} else if(res.message && res.message.errno === -1 && res.message.message == '未设置开放平台绑定的开发小程序或代码上传秘钥' && window.sysinfo.isadmin === true) {
+						pathInfo = 'https://console.w7.cc/app/' + window.sysinfo.site_id + '/founder/micro/account/platform';
+						util.confirm(function(){
+							window.open(pathInfo)
+						}, function(){
+							return false
+						}, res.message.message)
+					} else {
+						util.message(res.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.getUploadState = function() {
+				$http.post('./index.php?c=wxapp&a=front-download&do=rgapi_publish_status', {type: 5}).success(function(res) {
+					if(res.message.errno === 0) {
+						if (res.message && res.message.message && res.message.message.status) {
+							if (Number(res.message.message.status) === -1 || Number(res.message.message.status) === 2) {
+								$scope.uploadState = 0
+								$scope.progress = res.message.message.progress
+								checkStepTime = setTimeout(function() {
+									$scope.getUploadState()
+								}, 1000)
+							} else if (Number(res.message.message.status) === 1) {
+								if($scope.commitType !== '') {
+									$http.post(config.links.commitCode, {
+										version_id: config.version_id,
+										commit_type: $scope.commitType
+									}).success(function(data) {
+										if (data.message.errno == 0) {
+											$scope.uploadState = 1
+											$scope.preview_qrcode = res.message.message.qr_code;
+											jQuery('#qrcode').qrcode({width: 150, height: 150,text: $scope.preview_qrcode});
+										} else {
+											$scope.uploadState = 2
+											$scope.reason = data.message.message;
+											return false;
+										}
+									})
+								} else {
+									$scope.uploadState = 1
+									$scope.preview_qrcode = res.message.message.qr_code;
+									jQuery('#qrcode').qrcode({width: 150, height: 150,text: $scope.preview_qrcode});
+								}
+								$http.post('./index.php?c=wxapp&a=front-download&do=upgrade_module', {
+									version_id: config.version_id,
+									version: $scope.user_version,
+									description: $scope.user_desc,
+								}).success(function(data) {
+									if (data.message.errno != 0) {
+										util.message(data.message.message)
+									}
+								})
+							} else {
+								$scope.uploadState = 2
+								$scope.reason = res.message.message.reason;
+							}
+						}
+					} else {
+						util.message(res.message.message, '', 'error');
+					}
+				})
+			}
+			$scope.beginUpload = function (support_plugins) {
+				$scope.support_plugins = support_plugins;
+				$("input:checkbox[name=plugins]:not(:checked)").each(function(i){
+					$scope.plugins.push($(this).val());
+				})
+				if (!$scope.user_version || !/^[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$/.test($scope.user_version)) {
+					util.message('版本号错误，只能是数字、点，数字最多2位，例如 1.1.1 或1.2');
+					return false;
+				}
+				if (!$scope.user_desc || $scope.user_desc == 0) {
+					util.message('版本描述不能为空');
+					return false;
+				}
+				init(support_plugins);
+			}
+			// 初始化获取提交代码ticket 和 云服务返回的UUID
+			var init = function (support_plugins) {
+
+			}
+			// 预览小程序
+			$scope.preview = function () {
+
+			}
+			//提交代码
+			$scope.commit = function () {
+				if (!$scope.user_version || !/^[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$/.test($scope.user_version)) {
+					util.message('版本号错误，只能是数字、点，数字最多2位，例如 1.1.1 或1.2');
+					return false;
+				}
+
+			}
+		}]);
+
+		angular.bootstrap($('#aliapp-upload'), ['moduleApp']);
+	</script>
+</div>
+{/if}
+{if MODULE_SUPPORT_TOUTIAOAPP == $module['toutiaoapp_support']}
+<div class="media media-wechat-setting">
+	<div class="media-left color-default">
+		<span class="wi wi-wxapp-webpack" style="font-size: 55px;"></span>
+	</div>
+	<div class="media-body media-middle ">
+		<h4 class="media-heading color-dark">{$account_all_type_sign[TOUTIAOAPP_TYPE_SIGN]['title']}</h4>
+	</div>
+	<div class="media-right media-middle">
+		<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'type' => 'toutiaoapp'])}" class="btn btn-primary">立即下载</a>
+	</div>
+</div>
+{/if}
+{if MODULE_SUPPORT_BAIDUAPP == $module['baiduapp_support']}
+<div class="media media-wechat-setting">
+	<div class="media-left color-default">
+		<span class="wi wi-wxapp-webpack" style="font-size: 55px;"></span>
+	</div>
+	<div class="media-body media-middle ">
+		<h4 class="media-heading color-dark">{$account_all_type_sign[BAIDUAPP_TYPE_SIGN]['title']}</h4>
+	</div>
+	<div class="media-right media-middle">
+		<a href="{php echo url('wxapp/front-download/getpackage', ['module_name' => $module_name, 'type' => 'baiduapp'])}" class="btn btn-primary">立即下载</a>
+	</div>
 </div>
 {/if}
 {template 'common/footer'}
