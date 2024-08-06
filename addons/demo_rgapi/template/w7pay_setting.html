@@ -1,0 +1,52 @@
+{template 'common/header'}
+<div class="alert we7-page-alert">
+	<i class="wi wi-info"></i>内购功能开发文档，请点击以下链接：
+	<a href="javascript:;" onclick="openUrl('https://wiki.w7.com/document/1621/7656')" class="color-red">如何做内购</a>、
+	<a href="javascript:;" onclick="openUrl('https://wiki.w7.com/document/1621/5921')" class="color-red">如何使用支付</a>、
+	<a href="javascript:;" onclick="openUrl('https://wiki.w7.com/document/1621/5963')" class="color-red">支付接口</a>
+</div>
+<div>
+	<table class="table we7-table" style="margin-bottom: -15px">
+		<tr><th class="text-left" colspan="1">参数配置（下列各值见<a class="color-default" href="javascript:;" onclick="openUrl('https://console.w7.cc/api/deploy/thirdparty_pay/redirect')">支付应用</a>->应用接口）</th></tr>
+		<tr>
+			<td class="table-label text-left">
+				<form class="we7-form form" action="{php echo $this->createWebUrl('w7pay_setting');}" method="post" enctype="multipart/form-data">
+					<div class="form-group">
+						<label class="col-sm-1 control-label">支付通知地址：</label>
+						<div class="col-sm-11">{$pay_notify_url}</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-1 control-label">退款通知地址：</label>
+						<div class="col-sm-11">{$refund_notify_url}</div>
+					</div>
+					<div class="form-group required">
+						<label class="col-sm-1 control-label">支付appid：</label>
+						<div class="col-sm-11">
+							<input type="text" class="form-control" name="w7pay_appid" value="{$w7pay_setting['appid']}">
+						</div>
+					</div>
+					<div class="form-group required">
+						<label class="col-sm-1 control-label">支付密钥：</label>
+						<div class="col-sm-11">
+							<input type="text" class="form-control" name="w7pay_appsecret" value="{$w7pay_setting['appsecret']}">
+						</div>
+					</div>
+					<div class="form-group required">
+						<label class="col-sm-1 control-label">商户号：</label>
+						<div class="col-sm-11">
+							<input type="text" class="form-control" name="w7pay_id" value="{$w7pay_setting['id']}">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-1 control-label"></label>
+						<div class="col-sm-11">
+							<input type="submit" class="btn btn-primary" name="submit" value="保存" />
+							<input type="hidden" name="token" value="{$_W['token']}" />
+						</div>
+					</div>
+				</form>
+			</td>
+		</tr>
+	</table>
+</div>
+{template 'common/footer'}

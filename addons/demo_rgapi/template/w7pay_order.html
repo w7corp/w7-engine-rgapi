@@ -1,0 +1,113 @@
+{template 'common/header'}
+<div>
+	<div class="alert we7-page-alert">
+		<p><i class="wi wi-info"></i>参数配置完成后选择测试支付</p>
+	</div>
+	<table class="table we7-table">
+		<tr><th class="text-left" colspan="2"></th></tr>
+		<tr>
+			<td class="table-label text-left">
+				<strong style="font-size: 14px">js发起支付：</strong>
+				<select onchange="jsPay()" id="fuwufei">
+					<option value="0">请选择商品&nbsp;&nbsp;</option>
+					{loop $w7pay_setting['goods'] $item}
+					<option value="{$item['id']}">{$item['name']}</option>
+					{/loop}
+				</select>
+				<span class="help-block">选择任一商品发起js支付</span>
+			</td>
+			<td class="table-label text-left">
+				<strong style="font-size: 14px">后端发起支付：</strong>
+				<a href="javascript:;" class="color-default" onclick="backCodePay()">点我发起</a>
+				<span class="help-block">从商品中选取第一个发起后端支付，若需实现选取任一商品，开发者可自行实现</span>
+			</td>
+		</tr>
+	</table>
+	<table class="table we7-table table-hover vertical-middle">
+		<col width="200px"/>
+		<col width="200px" />
+		<col width="250px" />
+		<col width="100px" />
+		<col width="50px" />
+		<tr>
+			<th>订单号（可 <a href="" class="color-default">刷新</a> 查看支付及退款状态）</th>
+			<th>外部订单号（支付应用）</th>
+			<th>创建时间</th>
+			<th>状态</th>
+			<th class="text-center"onclick='refund(1,2)'>操作</th>
+		</tr>
+		{loop $order $item}
+		<tr>
+			<td>{$item['no']}</td>
+			<td>{$item['code']}</td>
+			<td>{$item['createtime']}</td>
+			<td>
+				{if 1 == $item['status']}<span>已支付</span>{/if}
+				{if 2 == $item['status']}<span>已退款</span>{/if}
+				{if 0 == $item['status']}<span>未支付</span>{/if}
+			</td>
+			<td class="text-center">
+				<div class="link-group">
+					{if 1 == $item['status']}<a href="javascript:;" onclick='refund("{$item[no]}", "{$item[code]}")'>退款</a>{/if}
+					{if 2 == $item['status']}<a href="javascript:;">-</a>{/if}
+				</div>
+			</td>
+		</tr>
+		{/loop}
+	</table>
+</div>
+<script>
+	var links = {
+		'can_pay': "{php echo $can_pay}",
+		'pay_url': "{php echo $this->createWebUrl('w7pay')}",
+		'refund_url': "{php echo $this->createWebUrl('w7refund')}",
+		'back_code_pay_url': "{php echo $this->createWebUrl('w7back_code_pay')}",
+		'back_code_pay_callback_url': "{php echo $this->createWebUrl('w7back_code_pay_callback')}",
+	};
+	function backCodePay() {
+		window.w7.ready(function() {
+			$.post(links.back_code_pay_url, {}, function (data) {
+				if (data.message.errno == -1) {
+					util.message(data.message.message, data.redirect, 'error');
+				}
+				$.post(links.back_code_pay_callback_url, {'pay_sn': data.message.message.pay_sn}, function (callback) {});
+				window.w7.pay(data.message.message.ticket, (res) => {
+					window.location.reload();
+				});
+			}, 'json');
+		})
+	}
+	function jsPay(id = 0) {
+		if (!links.can_pay) {
+			util.message('请先确认是否设置好参数配置及添加好商品！');
+		}
+		window.w7.ready(function(){
+			goodId = document.getElementById('fuwufei').value;
+			if(0 == goodId) {
+				return true;
+			}
+			var data = {
+				goods_ids: [goodId],  //支付应用　商品id
+				account_id: "{php echo $w7pay_setting['id']}", //支付　应用接口id
+				version: 2,
+				pay_sn: "{php echo date('YmdHis') . random(14, 1)}",
+			};
+			$.post(links.pay_url, {'pay_sn': data.pay_sn, 'good_id': goodId}, function () {});
+			//js 支付
+			window.w7.payment(data,function() {
+				window.location.reload();
+			})
+		})
+	}
+
+	function refund(no, code) {
+		$.post(links.refund_url, {'no': no, 'code': code}, function (data) {
+			if (data.message.errno == 0) {
+				util.message(data.message.message, '', 'success');
+			} else {
+				util.message(data.message.message, '', 'error');
+			}
+		}, 'json');
+	}
+</script>
+{template 'common/footer'}

@@ -1,0 +1,35 @@
+{template 'common/header'}
+<table class="table we7-table" style="margin-bottom: -15px">
+		<tr><th class="text-left" colspan="1">商品管理（请添加<a class="color-default" href="javascript:;" onclick="openUrl('https://console.w7.cc/api/deploy/thirdparty_pay/redirect')">支付应用</a>->商品管理列表下的商品）</th></tr>
+		{loop $w7pay_setting['goods'] $item}
+		<tr>
+			<td class="table-label text-left">
+					<div class="form-group">
+						<div class="col-sm-1">商品ID：{$item['id']}</div>
+						<div class="col-sm-1">金额：{$item['fee']}</div>
+						<div class="col-sm-9">商品名称：{$item['name']}</div>
+						<div class="col-sm-1"><a class="color-default" href="{php echo $this->createWebUrl('delete_good', ['id' => $item['id']])}">删除</a></div>
+					</div>
+			</td>
+		</tr>
+		{/loop}
+		<tr>
+			<td class="table-label">
+				<form class="we7-form form" action="{php echo $this->createWebUrl('w7pay_goods');}" method="post" enctype="multipart/form-data">
+					<div class="form-group">
+						<label class="col-sm-1 control-label">商品ID：</label>
+						<div class="col-sm-1"><input type="number" class="form-control" name="goods_id"></div>
+						<label class="col-sm-1 control-label">商品名称：</label>
+						<div class="col-sm-3"><input type="text" class="form-control" name="goods_name"></div>
+						<label class="col-sm-1 control-label">金额：</label>
+						<div class="col-sm-1"><input type="number" class="form-control" min="0.01" step="0.01" name="goods_fee"></div>
+						<div class="col-sm-1">
+							<input type="submit" class="btn btn-primary" name="goods" value="添加" />
+							<input type="hidden" name="token" value="{$_W['token']}" />
+						</div>
+					</div>
+				</form>
+			</td>
+		</tr>
+	</table>
+{template 'common/footer'}

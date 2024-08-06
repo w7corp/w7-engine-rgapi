@@ -1,8 +1,9 @@
 .idea/**/*
-data/**/*
 !data/config.php
 attachment/**/*
 !attachment/images/global/**/*
-addons/**/*
 !addons/index.html
 /.php_cs.cache
+data/logs/
+data/tpl/
+data/install.lock
