@@ -6,7 +6,6 @@
 defined('IN_IA') or exit('Access Denied');
 
 !defined('CLOUD_API_DOMAIN') && define('CLOUD_API_DOMAIN', 'https://openapi.w7.cc');
-!defined('V3_API_DOMAIN') && define('V3_API_DOMAIN', 'https://api.w7.cc/w7api/mgw/w7_engine_server30/');
 !defined('CLOUD_PROSERVICE_DOMAIN') && define('CLOUD_PROSERVICE_DOMAIN', 'https://proservice.api.w7.com');
 !defined('CLOUD_MINIAPP_DOMAIN_PRE') && define('CLOUD_MINIAPP_DOMAIN_PRE', 'http://miniupload.rgapi.w7.cc');
 define('REGULAR_EMAIL', '/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/i');

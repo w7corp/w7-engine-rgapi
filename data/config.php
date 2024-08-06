@@ -67,6 +67,3 @@ $config['setting']['proxy']['auth'] = '';
 
 $config['config']['setting']['allow_origin'] = getenv('ALLOW_ORIGIN');
 $config['setting']['local_develop'] = getenv('LOCAL_DEVELOP');
-if (getenv('V3_API_DOMAIN')) {
-    define('V3_API_DOMAIN', getenv('V3_API_DOMAIN'));
-}

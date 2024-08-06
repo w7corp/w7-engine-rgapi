@@ -24,6 +24,9 @@ class Up {
         if (pdo_tableexists('account') && pdo_fieldexists('account', 'type')) {
             pdo_run("ALTER TABLE `ims_account` ADD UNIQUE(`type`);");
         }
+        /*
+        TODO 废弃软擎授权系统
+        
         $uni_accounts = pdo_getall('uni_account', [], [], 'type');
         if (empty($uni_accounts)) {
             return true;
@@ -45,6 +48,7 @@ class Up {
         } catch (\W7\Sdk\Module\Exceptions\ApiException $e) {
             return error(-1, $e->getResponse()->getBody()->getContents());
         }
+        */
         return true;
     }
 
