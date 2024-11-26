@@ -157,6 +157,8 @@ define('PAYMENT_WECHAT_TYPE_CLOSE', 4);
 define('MATERIAL_LOCAL', 'local'); //服务器素材类型
 define('MATERIAL_WEXIN', 'perm'); //微信素材类型
 
-//模块获取用户授权方式 1.静默授权 2.用户有感知授权
-define('OAUTH_TYPE_BASE', 1);
-define('OAUTH_TYPE_USERINFO', 2);
+//模块获取用户授权方式 1.系统默认授权流程 2.静默授权流程 3.用户有感知授权流程 4.自定义授权流程
+define('OAUTH_TYPE_SYSTEM', 1);
+define('OAUTH_TYPE_BASE', 2);
+define('OAUTH_TYPE_USERINFO', 3);
+define('OAUTH_TYPE_IGNORE', 4);

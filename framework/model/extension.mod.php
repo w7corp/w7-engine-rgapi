@@ -132,7 +132,7 @@ function ext_module_manifest_parse($xml) {
             'isrulefields' => false,
             'iscard' => false,
             'supports' => array(),
-            'oauth_type' => OAUTH_TYPE_BASE,
+            'oauth_type' => OAUTH_TYPE_SYSTEM,
         );
         //订阅信息
         $subscribes = $platform->getElementsByTagName('subscribes')->item(0);
@@ -167,9 +167,9 @@ function ext_module_manifest_parse($xml) {
             $manifest['platform']['iscard'] = true;
         }
         $oauth_type = $platform->getElementsByTagName('oauth')->item(0);
-        if (!empty($oauth_type) && $oauth_type->getAttribute('type') == OAUTH_TYPE_USERINFO) {
-            $manifest['platform']['oauth_type'] = OAUTH_TYPE_USERINFO;
-        }
+        if (!empty($oauth_type) && in_array($oauth_type->getAttribute('type'), [OAUTH_TYPE_SYSTEM, OAUTH_TYPE_BASE, OAUTH_TYPE_USERINFO, OAUTH_TYPE_IGNORE])) {
+			$manifest['platform']['oauth_type'] = $oauth_type->getAttribute('type');
+		}
         $supports = $platform->getElementsByTagName('supports')->item(0);
         if (!empty($supports)) {
             $support_type = $supports->getElementsByTagName('item');
@@ -254,7 +254,7 @@ function ext_module_manifest_format($manifest) {
         'isrulefields' => !('false' == $manifest['platform']['rule']),
         'iscard' => !('false' == $manifest['platform']['card']),
         'supports' => $manifest['platform']['supports'],
-        'oauth_type' => OAUTH_TYPE_USERINFO == $manifest['platform']['oauth'] ? OAUTH_TYPE_USERINFO : OAUTH_TYPE_BASE,
+		'oauth_type' => !empty($manifest['platform']['oauth']) ? $manifest['platform']['oauth'] : OAUTH_TYPE_SYSTEM,
         'plugin_list' => $manifest['platform']['plugins'],
         'main_module' => $manifest['platform']['plugin-main'],
     );

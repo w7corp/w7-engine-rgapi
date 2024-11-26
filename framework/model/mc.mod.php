@@ -346,7 +346,7 @@ function mc_oauth_account_userinfo($url = '') {
         $_SESSION['dest_url'] = urlencode($url);
     }
     $oauth_url = uni_account_oauth_host();
-    $url = $oauth_url . "app/index.php?i={$_W['uniacid']}&c=auth&a=oauth&scope=userinfo";
+	$url = $oauth_url . "app/index.php?i={$_W['uniacid']}&c=auth&a=oauth&scope=userinfo&oauth_type=1";
     $callback = urlencode($url);
 
     $oauth_account = WeAccount::create($_W['account']['oauth']);

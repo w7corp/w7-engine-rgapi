@@ -7,6 +7,7 @@ load()->func('communication');
 
 $code = safe_gpc_string($_GPC['code']);
 $scope = safe_gpc_string($_GPC['scope']);
+$oauth_type = safe_gpc_int($_GPC['oauth_type']);
 if (!empty($_SESSION['pay_params'])) {
     //借用微信支付或服务商支付，授权公众号信息改成借用公众号信息
     $setting = uni_setting($_W['uniacid'], array('payment'));
@@ -34,7 +35,7 @@ if (is_error($oauth) || empty($oauth['openid'])) {
     if (isset($_GPC['state']) && !empty($_GPC['state']) && strexists($_GPC['state'], 'we7sid-')) {
         $state = safe_gpc_string($_GPC['state']);
     }
-    $url = "{$_W['siteroot']}app/index.php?i={$_W['uniacid']}&c=auth&a=oauth&scope=snsapi_base";
+	$url = "{$_W['siteroot']}app/index.php?i={$_W['uniacid']}&c=auth&a=oauth&scope=snsapi_base&oauth_type={$oauth_type}";
     $callback = urlencode($url);
     $forward = $oauth_account->getOauthCodeUrl($callback, $state);
     header('Location: ' . $forward);
@@ -43,6 +44,15 @@ if (is_error($oauth) || empty($oauth['openid'])) {
 
 $forward = urldecode($_SESSION['dest_url']);
 $forward = strexists($forward, 'i=') ? $forward : "{$forward}&i={$_W['uniacid']}";
+
+if ('snsapi_base' == $scope && (empty($oauth_type) || OAUTH_TYPE_SYSTEM == $oauth_type)) {
+	$fan = mc_fansinfo($oauth['openid'], 0, $_W['uniacid']);
+	if (empty($fan)) {
+		header('Location: ' . $forward . '&scope=snsapi_userinfo');
+		exit;
+	}
+}
+
 //部分开发者链接内有‘&wxref=mp.weixin.qq.com’，而没有‘#wechat_redirect’会导致判断错误，故不能直接判断‘&wxref=mp.weixin.qq.com#wechat_redirect’
 if (strpos($forward, '&wxref=mp.weixin.qq.com')) {
     //部分开发者链接形如： i=1&c=enrey&do=detail&wxref=mp.weixin.qq.com&m=we7_mall&id=2,此时使用strstr会丢失&wxref=mp.weixin.qq.com后的值

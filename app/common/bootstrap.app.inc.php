@@ -110,22 +110,43 @@ if ($controller != 'utility') {
     $_W['token'] = token();
 }
 
-if (!empty($_W['account']['oauth']) && $_W['account']['oauth']['support_oauthinfo'] && empty($_W['isajax']) &&
-    (($_W['container'] == 'baidu' && $_W['account']->typeSign != 'account') || $_W['container'] != 'baidu')) {
-    $_W['platform'] = empty($_W['platform']) ? '' : $_W['platform'];
-    if (($_W['platform'] == 'account' && !$_GPC['logout'] && empty($_W['openid']) && ($controller != 'auth' || ($controller == 'auth' && !in_array($action, array('forward', 'oauth'))))) ||
-        ($_W['platform'] == 'account' && !$_GPC['logout'] && empty($_SESSION['oauth_openid']) && ($controller != 'auth'))) {
-        $state = 'we7sid-' . $_W['session_id'];
-        if (empty($_SESSION['dest_url'])) {
-            $_SESSION['dest_url'] = urlencode($_W['siteurl']);
+$oauth_type = OAUTH_TYPE_SYSTEM;
+$oauth_close = STATUS_OFF;
+if (!empty($_GPC['m'])) {
+	$module = module_fetch($_GPC['m']);
+    if (!empty($module['oauth_type'])) {
+		$oauth_type = $module['oauth_type'];
+	}
+	if (OAUTH_TYPE_IGNORE == $module['oauth_type']) {
+		$oauth_close = STATUS_ON;
+	}
+}
+
+if (empty($oauth_close)) {
+    if (!empty($_W['account']['oauth']) && $_W['account']['oauth']['support_oauthinfo'] && empty($_W['isajax']) &&
+        (($_W['container'] == 'baidu' && $_W['account']->typeSign != 'account') || $_W['container'] != 'baidu')) {
+        $_W['platform'] = empty($_W['platform']) ? '' : $_W['platform'];
+        if (($_W['platform'] == 'account' && !$_GPC['logout'] && empty($_W['openid']) && ($controller != 'auth' || ($controller == 'auth' && !in_array($action, array('forward', 'oauth'))))) ||
+            ($_W['platform'] == 'account' && !$_GPC['logout'] && empty($_SESSION['oauth_openid']) && ($controller != 'auth'))) {
+            $state = 'we7sid-' . $_W['session_id'];
+            if (empty($_SESSION['dest_url'])) {
+                $_SESSION['dest_url'] = urlencode($_W['siteurl']);
+            }
+            $oauth_url = uni_account_oauth_host();
+            $module_scope = OAUTH_TYPE_USERINFO == $oauth_type ? 'snsapi_userinfo' : 'snsapi_base';
+			$scope = !empty($_GPC['scope']) && in_array($_GPC['scope'], array('snsapi_base', 'snsapi_userinfo', 'userinfo')) ? $_GPC['scope'] : $module_scope;
+			$url = $oauth_url . "app/index.php?i={$_W['uniacid']}&c=auth&a=oauth&scope={$scope}&oauth_type={$oauth_type}";
+            $callback = urlencode($url);
+            $oauth_account = WeAccount::createByUniacid();
+            if ('snsapi_userinfo' == $scope) {
+				$forward = $oauth_account->getOauthUserInfoUrl($callback, $state);
+				template('auth/wx');
+			} else {
+				$forward = $oauth_account->getOauthCodeUrl($callback, $state);
+				header('Location: ' . $forward);
+			}
+            exit();
         }
-        $oauth_url = uni_account_oauth_host();
-        $url = $oauth_url . "app/index.php?i={$_W['uniacid']}&c=auth&a=oauth&scope=snsapi_userinfo";
-        $callback = urlencode($url);
-        $oauth_account = WeAccount::createByUniacid();
-        $forward = $oauth_account->getOauthUserInfoUrl($callback, $state);
-        template('auth/wx');
-        exit();
     }
 }
 
