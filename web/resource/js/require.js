@@ -35,13 +35,13 @@ b.xhtml?document.createElementNS("http://www.w3.org/1999/xhtml","html:script"):d
 Q),q=q.replace(R,""),h.jsExtRegExp.test(q)&&(q=K),r.deps=r.deps?r.deps.concat(q):[q],!0});define=function(b,c,d){var g,h;"string"!==typeof b&&(d=c,c=b,b=null);H(c)||(d=c,c=null);!c&&G(d)&&(c=[],d.length&&(d.toString().replace(la,"").replace(ma,function(b,d){c.push(d)}),c=(1===d.length?["require"]:["require","exports","module"]).concat(c)));if(O){if(!(g=L))P&&"interactive"===P.readyState||U(document.getElementsByTagName("script"),function(b){if("interactive"===b.readyState)return P=b}),g=P;g&&(b||
 (b=g.getAttribute("data-requiremodule")),h=F[g.getAttribute("data-requirecontext")])}(h?h.defQueue:S).push([b,c,d])};define.amd={jQuery:!0};h.exec=function(b){return eval(b)};h(r)}})(this);if(window.sysinfo.family == "v"){try{if(window.console&&window.console.log){console.log("\x25\x63\u6b22\u8fce\u4f7f\u7528\u5fae\u64ce\u516c\u4f17\u5e73\u53f0\u7ba1\u7406\u7cfb\u7edf\x20\x5e\x5f\x5e\x20\uff1a","\x68\x65\x69\x67\x68\x74\x3a\x32\x35\x70\x78\x3b\x20\x6c\x69\x6e\x65\x2d\x68\x65\x69\x67\x68\x74\x3a\x32\x35\x70\x78\x3b");console.log("\x25\x63\x31\uff0c\u4e00\u6b3e\u514d\u8d39\u5f00\u6e90\u7684\u516c\u4f17\u5e73\u53f0\u7ba1\u7406\u7cfb\u7edf\n\x32\uff0c\u57fa\u4e8e\u76ee\u524d\u6d41\u884c\u7684\x57\x45\x42\x32\x2e\x30\u7684\u67b6\u6784\uff08\x70\x68\x70\x2b\x6d\x79\x73\x71\x6c\uff09\n\x33\uff0c\u6e90\u7801\u900f\u660e\u3001\u5f00\u653e\uff0c\u4fdd\u8bc1\u72ec\u7acb\u6027\u3001\u5b89\u5168\u6027\u53ca\u53ef\u63a7\u6027\n\x34\uff0c\u62e5\u6709\u8d85\u5f3a\u7684\u6269\u5c55\u6027\u80fd\u548c\u6d3b\u8dc3\u7684\u7b2c\u4e09\u65b9\u5f00\u53d1\u8005\n\x35\uff0c\u826f\u597d\u7684\u5f00\u53d1\u6846\u67b6\u3001\u6587\u6863\uff0c\u8f7b\u677e\u6269\u5c55\u3001\u5b9a\u5236\u79c1\u6709\u529f\u80fd\n","\x63\x6f\x6c\x6f\x72\x3a\x67\x72\x65\x65\x6e\x3b\x6c\x69\x6e\x65\x2d\x68\x65\x69\x67\x68\x74\x3a\x32\x35\x70\x78\x3b");console.log("\x25\x63\u5fae\u64ce\u5b98\u65b9\u7f51\u7ad9\uff1a\x68\x74\x74\x70\x3a\x2f\x2f\x77\x77\x77\x2e\x77\x37\x2e\x63\x63","\x63\x6f\x6c\x6f\x72\x3a\x72\x65\x64")}}catch(e){};
 }
+
 var requireConfig = {
 	baseUrl: 'resource/js/app',
 	paths: {
 		'datetimepicker': '../../components/datetimepicker/jquery.datetimepicker',
 		'daterangepicker': '../../components/daterangepicker/daterangepicker',
 		'colorpicker': '../../components/colorpicker/spectrum',
-		'map': 'https://api.map.baidu.com/getscript?v=2.0&ak=F51571495f717ff1194de02366bb8da9&services=&t=20140530104353',
 		'qqmap': 'https://map.qq.com/api/js?v=2.exp&key=V7HBZ-VYZ6S-7DBO2-6FPV2-NTQCO-3JBSB',
 		'webuploader' : '../../components/webuploader/webuploader.min',
 		'fileUploader' : '../../components/fileuploader/fileuploader.min',

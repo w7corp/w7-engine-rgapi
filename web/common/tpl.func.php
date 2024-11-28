@@ -64,6 +64,7 @@ function tpl_form_field_link($name, $value = '', $options = array()) {
     if (!defined('TPL_INIT_LINK')) {
         $multiid = empty($_GPC['multiid']) ? 0 : intval($_GPC['multiid']);
         $s .= '
+		<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=F51571495f717ff1194de02366bb8da9&s=1"></script>
         <script type="text/javascript">
             window.HOST_TYPE = "2";
             window.BMap_loadScriptTime = (new Date).getTime();
