@@ -2,7 +2,8 @@
 <ul class="we7-page-tab">
 	<li {if $action == 'setting'} class="active"{/if}><a href="{php echo url('system/setting/basic');}">基本信息</a></li>
 	<li {if $action == 'common'}class="active"{/if}><a href="{url 'system/common'}">公众平台验证文件</a></li>
-	<li {if $action == 'attachment'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">附件设置</a></li>
+	<li {if $action == 'attachment' && $do == 'global'} class="active"{/if}><a href="{php echo url('system/attachment');}">本地附件</a></li>
+	<li {if $action == 'attachment' && $do == 'remote'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">远程附件</a></li>
 </ul>
 <div class="main">
 	<form id="form21" action="{php echo url('system/common/upload_file')}" method="post" class="we7-form form" enctype="multipart/form-data">

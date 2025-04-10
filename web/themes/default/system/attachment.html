@@ -2,9 +2,167 @@
 <ul class="we7-page-tab">
 	<li {if $action == 'setting'} class="active"{/if}><a href="{php echo url('system/setting/basic');}">基本信息</a></li>
 	<li {if $action == 'common'}class="active"{/if}><a href="{url 'system/common'}">公众平台验证文件</a></li>
-	<li {if $action == 'attachment'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">附件设置</a></li>
+	<li {if $action == 'attachment' && $do == 'global'} class="active"{/if}><a href="{php echo url('system/attachment');}">本地附件</a></li>
+	<li {if $action == 'attachment' && $do == 'remote'} class="active"{/if}><a href="{php echo url('system/attachment/remote');}">远程附件</a></li>
 </ul>
 
+{if $do == 'global'}
+<div class="clearfix" id="js-global-attachment" ng-controller="globalAttachmentCtrl" ng-cloak>
+	{if !empty($upload_max_filesize) && !empty($post_max_size)}
+	<div class="row">
+		<label class="col-sm-2 control-label">PHP 环境说明</label>
+		<div class="col-sm-10">
+			<div class="form-control-static">1. 当前 PHP 环境允许最大单个上传文件大小为: {$upload_max_filesize}</div>
+			<div class="form-control-static">2. 当前 PHP 环境允许最大 POST 表单大小为: {$post_max_size}</div>
+		</div>
+	</div>
+	{/if}
+	<div class="form-files-box">
+		<div class="form-files we7-margin-bottom">
+			<div class="form-file header">本地附件空间设置</div>
+			<div class="form-file">
+				<div class="form-label">空间容量</div>
+				<div class="form-value" ng-if="upload.attachment_limit">{{upload.attachment_limit}}M</div>
+				<div class="form-value" ng-if="!upload.attachment_limit">容量单位为M, 设置为 0 时不限制空间</div>
+				<div class="form-edit">
+					<we7-modal-form type="'text'" label="'空间容量'" value="upload.attachment_limit" on-confirm="saveSetting(formValue, 'attachment_limit')" help="'请输入单位为M的容量值, 设置为 0 时不限制空间'"></we7-modal-form>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-files we7-margin-bottom">
+			<div class="form-file header">附件缩略设置</div>
+			<div class="form-file">
+				<div class="form-label">缩略设置</div>
+				<div class="form-value">是否启用缩略</div>
+				<div class="form-edit">
+					<div ng-class="!upload.image.thumb ? 'switch' : 'switch switchOn'"  ng-click="saveSetting(upload.image.thumb ? 0 : 1, 'image_thumb')"></div>
+				</div>
+			</div>
+			<div class="form-file" ng-if="upload.image.thumb">
+				<div class="form-label">缩略图最大宽度</div>
+				<div class="form-value" ng-if="upload.image.width">{{upload.image.width}}px</div>
+				<div class="form-value" ng-if="!upload.image.width">缩略后图片的最大宽度</div>
+				<div class="form-edit">
+					<we7-modal-form
+							type="'text'" label="'缩略图最大宽度'" value="upload.image.width"
+							on-confirm="saveSetting(formValue, 'image_width')"
+							help="'请输入单位px的图片宽度'">
+					</we7-modal-form>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-files we7-margin-bottom">
+			<div class="form-file header">图片附件设置</div>
+			<div class="form-file">
+				<div class="form-label">支持文件后缀</div>
+				<div class="form-value" ng-if="upload.image.extentions" ng-bind="upload.image.extentions"></div>
+				<div class="form-value" ng-if="!upload.image.extentions">填写图片后缀名称, 如: jpg 换行输入 一行一个后缀 (如果为空，则采用系统默认设置).</div>
+				<div class="form-edit">
+					<we7-modal-form
+							type="'textarea'" label="'支持文件后缀'" value="upload.image.extentions"
+							on-confirm="saveSetting(formValue, 'image_extentions')"
+							help="'填写图片后缀名称, 如: jpg 换行输入 一行一个后缀 (如果为空，则采用系统默认设置).'">
+					</we7-modal-form>
+				</div>
+			</div>
+			<div class="form-file">
+				<div class="form-label">支持文件大小</div>
+				<div class="form-value" ng-if="upload.image.limit">{{upload.image.limit}}KB</div>
+				<div class="form-edit">
+					<we7-modal-form
+							type="'text'" label="'支持文件大小'" value="upload.image.limit"
+							on-confirm="saveSetting(formValue, 'image_limit')"
+							help="'请输入单位为kb的值'">
+					</we7-modal-form>
+				</div>
+			</div>
+			<div class="form-file">
+				<div class="form-label">图片压缩</div>
+				<div class="form-value" ng-if="upload.image.zip_percentage">{{upload.image.zip_percentage}}%</div>
+				<div class="form-value" ng-if="!upload.image.zip_percentage">100不压缩 值越大越清晰</div>
+				<div class="form-edit">
+					<we7-modal-form
+							type="'text'" label="'压缩比率'" value="upload.image.zip_percentage"
+							on-confirm="saveSetting(formValue, 'image_zip_percentage')"
+							help="'请输入1到100的整数, 100为不压缩, 值越大越清晰'">
+					</we7-modal-form>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-files we7-margin-bottom">
+			<div class="form-file header">音频视频附件设置</div>
+			<div class="form-file">
+				<div class="form-label">支持文件后缀</div>
+				<div class="form-value" ng-if="upload.audio.extentions" ng-bind="upload.audio.extentions"></div>
+				<div class="form-value" ng-if="!upload.audio.extentions">填写音频视频后缀名称, 如: mp3 换行输入 一行一个后缀 (如果为空，则采用系统默认设置).</div>
+				<div class="form-edit">
+					<we7-modal-form
+							type="'textarea'" label="'支持文件后缀'" value="upload.audio.extentions"
+							on-confirm="saveSetting(formValue, 'audio_extentions')"
+							help="'填写音频视频后缀名称, 如: mp3 换行输入 一行一个后缀 (如果为空，则采用系统默认设置).'">
+					</we7-modal-form>
+				</div>
+			</div>
+			<div class="form-file">
+				<div class="form-label">支持文件大小</div>
+				<div class="form-value" ng-if="upload.audio.limit">{{upload.audio.limit}}KB</div>
+				<div class="form-edit">
+					<we7-modal-form
+							type="'text'" label="'支持文件大小'" value="upload.audio.limit"
+							on-confirm="saveSetting(formValue, 'audio_limit')"
+							help="'请输入单位为kb的值'">
+					</we7-modal-form>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-files we7-margin-bottom">
+			<div class="form-file header">附件展示设置</div>
+			<div class="form-file">
+				<div class="form-label">展示设置</div>
+				<div class="form-value">开启后，平台账号下的附件会根据角色进行展示，即非当前角色上传的附件不展示，(副)创始人、主管理员除外</div>
+				<div class="form-edit">
+					<div ng-class="!upload.attachment_by_uid ? 'switch' : 'switch switchOn'"  ng-click="saveSetting(upload.attachment_by_uid ? 0 : 1, 'attachment_by_uid')"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	angular.module('systemApp').value('config', {
+		'upload' : {php echo json_encode($upload)},
+		'token' : "{$_W['token']}",
+		'saveSettingUrl' : "{php echo url('system/attachment/global')}",
+	});
+	angular.module('systemApp').controller('globalAttachmentCtrl', ['$scope', '$http', 'config', function($scope, $http, config) {
+		$scope.upload = config.upload;
+		$scope.saveSetting = function (formValue, key) {
+			if (key == 'image_thumb' || key == 'attachment_by_uid') {
+				var value = formValue;
+			} else {
+				var value = formValue.value;
+			}
+			var post_value = {
+				'token': config.token,
+				'submit': 1,
+				'key': key,
+				'value': value,
+			};
+			$http.post(config.saveSettingUrl, post_value).success(function (data) {
+				if (data.message.errno == 0) {
+					util.message(data.message.message, data.redirect, 'success');
+				} else {
+					util.message(data.message.message, '', 'error');
+				}
+			});
+		};
+	}]);
+	angular.bootstrap($('#js-global-attachment'), ['systemApp']);
+</script>
+{elseif $do == 'remote'}
 <form action="" method="post" class="we7-form form" id="form">
 	<div class="form-group">
 		<div class="col-sm-12">
@@ -414,5 +572,5 @@
 		}
 	});
 </script>
-
+{/if}
 {template 'common/footer'}

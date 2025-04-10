@@ -9,7 +9,7 @@ load()->model('attachment');
 load()->func('file');
 
 $dos = array('attachment', 'remote', 'buckets', 'oss', 'cos', 'qiniu', 'upload_remote');
-$do = in_array($do, $dos) ? $do : 'remote';
+$do = in_array($do, $dos) ? $do : 'global';
 
 if ('upload_remote' == $do) {
     if (!empty($_W['setting']['remote_complete_info']['type'])) {
@@ -27,6 +27,94 @@ if ('upload_remote' == $do) {
     } else {
         iajax(-1, '请先填写并开启远程附件设置');
     }
+}
+
+if ('global' == $do) {
+	if (empty($_W['setting']['upload'])) {
+		$upload = $_W['config']['upload'];
+	} else {
+		$upload = $_W['setting']['upload'];
+	}
+	$post_max_size = ini_get('post_max_size');
+	$post_max_size = $post_max_size > 0 ? bytecount($post_max_size) / 1024 : 0;
+	$upload_max_filesize = ini_get('upload_max_filesize');
+	if ($_W['ispost']) {
+		$harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
+
+		switch ($_GPC['key']) {
+			case 'attachment_limit':
+				$upload['attachment_limit'] = max(0, intval($_GPC['value'])); 				break;
+			case 'image_thumb':
+				$upload['image']['thumb'] = empty($_GPC['value']) ? 0 : 1;
+				break;
+			case 'image_width':
+				$upload['image']['width'] = intval($_GPC['value']); 				break;
+			case 'image_extentions':
+				$upload['image']['extentions'] = array();
+				$image_extentions = explode("\n", safe_gpc_string($_GPC['value']));
+				foreach ($image_extentions as $item) {
+					$item = safe_gpc_string(trim($item));
+					if (!empty($item) && !in_array($item, $harmtype) && !in_array($item, $upload['image']['extentions'])) {
+						$upload['image']['extentions'][] = $item;
+					}
+				}
+				break;
+			case 'image_limit':
+				$upload['image']['limit'] = max(0, min(intval($_GPC['value']), $post_max_size)); 				break;
+			case 'image_zip_percentage':
+				$zip_percentage = intval($_GPC['value']);
+				$upload['image']['zip_percentage'] = $zip_percentage;
+				if ($zip_percentage <= 0 || $zip_percentage > 100) {
+					$upload['image']['zip_percentage'] = 100; 				}
+				break;
+			case 'audio_extentions':
+				$upload['audio']['extentions'] = array();
+				$audio_extentions = explode("\n", safe_gpc_string($_GPC['value']));
+				foreach ($audio_extentions as $item) {
+					$item = safe_gpc_string(trim($item));
+					if (!empty($item) && !in_array($item, $harmtype) && !in_array($item, $upload['audio']['extentions'])) {
+						$upload['audio']['extentions'][] = $item;
+					}
+				}
+				break;
+			case 'audio_limit':
+				$upload['audio']['limit'] = max(0, min(intval($_GPC['value']), $post_max_size)); 				break;
+			case 'attachment_by_uid':
+				$upload['attachment_by_uid'] = max(0, intval($_GPC['value']));
+				break;
+		}
+		setting_save($upload, 'upload');
+		iajax(0, '更新设置成功', url('system/attachment'));
+	}
+
+	if (empty($upload['image']['thumb'])) {
+		$upload['image']['thumb'] = 0;
+	} else {
+		$upload['image']['thumb'] = 1;
+	}
+	$upload['image']['width'] = empty($upload['image']['width']) ? 0 : intval($upload['image']['width']);
+	if (empty($upload['image']['width'])) {
+		$upload['image']['width'] = 800;
+	}
+	if (!empty($upload['image']['extentions']) && is_array($upload['image']['extentions'])) {
+		$upload['image']['extentions'] = implode("\n", $upload['image']['extentions']);
+	}
+	if (!empty($upload['audio']['extentions']) && is_array($upload['audio']['extentions'])) {
+		$upload['audio']['extentions'] = implode("\n", $upload['audio']['extentions']);
+	}
+	if (empty($upload['image']['zip_percentage'])) {
+		$upload['image']['zip_percentage'] = 100;
+	}
+
+	if ($_W['isajax']) {
+		$message = array(
+			'upload_max_filesize' => $upload_max_filesize,
+			'post_max_size' => $post_max_size,
+			'upload' => $upload
+		);
+		iajax(0, $message);
+	}
+    template('system/attachment');
 }
 
 //远程附件
