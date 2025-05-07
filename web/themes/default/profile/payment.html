@@ -228,27 +228,36 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="" class="control-label col-sm-2">平台证书序列号</label>
+							<label for="" class="control-label col-sm-2">平台证书序列号/商户API证书序列号</label>
 							<div class="form-controls col-sm-10">
 								<input type="text" name="" ng-model="paysetting.wechat.ertificate_serial_number" class="form-control" placeholder="">
+								<span class="help-block">
+									微信支付商户平台新注册用户填写商户API证书序列号
+								</span>
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="" class="control-label col-sm-2">微信平台证书</label>
+							<label for="" class="control-label col-sm-2">商户私钥</label>
 							<div class="form-controls col-sm-10">
-								<span class="color-green we7-margin-right" ng-show="paysetting.wechat.apiclient_cert">已上传</span>
-								<input type="file" id="cert" class="hidden" name="cert" (change)="onFileSelected($event)">
-								<a class="color-default" href="javascript:;" onclick="cert.click()">上传证书</a>
-								<span class="help-block">上传apiclient_cert.pem文件</span>
+								<textarea name="" rows="5" ng-model="paysetting.wechat.apiclient_key" class="form-control" placeholder=""></textarea>
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="" class="control-label col-sm-2">微信商户私钥证书</label>
+							<label for="" class="control-label col-sm-2">微信支付公钥ID</label>
 							<div class="form-controls col-sm-10">
-								<span class="color-green we7-margin-right" ng-show="paysetting.wechat.apiclient_key">已上传</span>
-								<input type="file" id="key" class="hidden" name="key" (change)="onFileSelected($event)">
-								<a class="color-default" href="javascript:;" onclick="key.click()">上传证书</a>
-								<span class="help-block">上传apiclient_key.pem文件</span>
+								<input type="text" name="" ng-model="paysetting.wechat.platform_public_key_id" class="form-control" placeholder="">
+								<span class="help-block">
+									微信支付商户平台新注册用户填写微信支付公钥ID
+								</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="" class="control-label col-sm-2">微信支付公钥</label>
+							<div class="form-controls col-sm-10">
+								<textarea name="" rows="5" ng-model="paysetting.wechat.platform_public_key" class="form-control" placeholder=""></textarea>
+								<span class="help-block">
+									微信支付商户平台新注册用户填写微信支付公钥
+								</span>
 							</div>
 						</div>
 					</div>
@@ -345,40 +354,8 @@
 					util.message('请填写V3 API 秘钥', '', 'info');
 					return false;
 				}
-				if ($scope.paysetting.wechat.ertificate_serial_number == '') {
-					util.message('请填写平台证书序列号', '', 'info');
-					return false;
-				}
-				if ($scope.paysetting.wechat.apiclient_cert == '') {
-					util.message('请填写微信平台证书', '', 'info');
-					return false;
-				}
-				if ($scope.paysetting.wechat.apiclient_key == '') {
-					util.message('请填写微信商户私钥证书', '', 'info');
-					return false;
-				}
-				$http({
-					method:'POST',
-					url: config.links.saveurl,
-					headers: {
-						'Content-Type': undefined
-					},
-					data: {
-						type: type,
-						mchid:$scope.paysetting.wechat.mchid,
-						apikey:$scope.paysetting.wechat.apikey,
-						ertificate_serial_number:$scope.paysetting.wechat.ertificate_serial_number,
-						apiclient_cert:$scope.paysetting.wechat.apiclient_cert,
-						apiclient_key:$scope.paysetting.wechat.apiclient_key
-					},
-					transformRequest: (data) => {
-						let formData = new FormData();
-						angular.forEach(data, function (value, key) {
-							formData.append(key, value);
-						});
-						return formData;
-					}
-				}).success(function(data) {
+				$http.post(config.links.saveurl, {'type' : type, 'param' : $scope.paysetting[type]})
+				.success(function(data) {
 					if (data.message.errno == 0) {
 						util.message(data.message.message, data.redirect, 'success');
 					} else {
@@ -390,14 +367,14 @@
 		};
 
 		$scope.switchStatus = function(payType, switchType) {
-			$http.post(config.links.change_status, {'pay_type': payType, 'switch_type': switchType})
-				.success(function(data) {
-					if (data.message.errno == 0) {
-						util.message(data.message.message, data.redirect, 'success');
-					} else {
-						util.message(data.message.message);
-					}
-				});
+			$http.post(config.links.change_status, {'type': payType, 'switch_type': switchType, 'param': $scope.paysetting[payType]})
+			.success(function(data) {
+				if (data.message.errno == 0) {
+					util.message(data.message.message, data.redirect, 'success');
+				} else {
+					util.message(data.message.message);
+				}
+			});
 		};
 
 		$('.modal').on('hide.bs.modal', function() {

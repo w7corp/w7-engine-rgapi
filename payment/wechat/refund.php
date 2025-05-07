@@ -5,7 +5,6 @@
  */
 
 require '../../framework/bootstrap.inc.php';
-load()->library('wechatpay-v3');
 $input = file_get_contents('php://input');
 WeUtility::logging('refund-input', var_export($input, true));
 if (!empty($input)) {
@@ -34,13 +33,41 @@ WeUtility::logging('refund', var_export($wechat_data, true));
 $_W['uniacid'] = substr($_SERVER['REQUEST_URI'], strrpos($_SERVER['REQUEST_URI'], '/') + 1);
 $setting = uni_setting($_W['uniacid'], array('payment'));
 $key = $setting['payment']['wechat']['apikey'];
-$decrypter = new WechatPay\GuzzleMiddleware\Util\AesUtil($key);
-$plain = $decrypter->decryptToString(
-    $wechat_data['resource']['associated_data'],
-    $wechat_data['resource']['nonce'],
-    $wechat_data['resource']['ciphertext']
-);
-$wechat_data = json_decode($plain, true);
+$v3Verify = STATUS_OFF;
+if (!empty($setting['payment']['wechat']['platform_public_key'])) {
+    load()->library('wechatpayv3');
+    $inWechatpaySignature = $_SERVER['HTTP_WECHATPAY_SIGNATURE'];
+    $inWechatpayTimestamp = $_SERVER['HTTP_WECHATPAY_TIMESTAMP'];
+    $inWechatpaySerial = $_SERVER['HTTP_WECHATPAY_SERIAL'];
+    $inWechatpayNonce = $_SERVER['HTTP_WECHATPAY_NONCE'];
+    $thing = strpos($_SERVER['HTTP_WECHATPAY_SERIAL'], 'PUB_KEY_ID_') ? $setting['payment']['wechat']['platform_public_key'] : $setting['payment']['wechat']['wechat_platform_certificate_expired'][0];
+    $verifiedStatus = WeChatPay\Crypto\Rsa::verify(
+        WeChatPay\Formatter::joinedByLineFeed($inWechatpayTimestamp, $inWechatpayNonce, $input),
+        $inWechatpaySignature,
+        WeChatPay\Crypto\Rsa::from($thing, WeChatPay\Crypto\Rsa::KEY_TYPE_PUBLIC)
+    );
+    if ($verifiedStatus) {
+        $v3Verify = STATUS_ON;
+    }
+
+    ['resource' => [
+        'ciphertext'      => $ciphertext,
+        'nonce'           => $nonce,
+        'associated_data' => $aad
+    ]] = $wechat_data;
+    $inBodyResource = WeChatPay\Crypto\AesGcm::decrypt($ciphertext, $key, $nonce, $aad);
+    $wechat_data = json_decode($inBodyResource, true);
+} else {
+    load()->library('wechatpay-v3');
+    $decrypter = new WechatPay\GuzzleMiddleware\Util\AesUtil($key);
+    $plain = $decrypter->decryptToString(
+        $wechat_data['resource']['associated_data'],
+        $wechat_data['resource']['nonce'],
+        $wechat_data['resource']['ciphertext']
+    );
+    $wechat_data = json_decode($plain, true);
+}
+
 if (empty($wechat_data)) {
     WeUtility::logging('refund-fail', var_export($wechat_data, true));
     echo json_encode(['code' => 'FAIL', 'message' => '解密失败']);

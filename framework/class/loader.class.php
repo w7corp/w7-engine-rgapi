@@ -63,6 +63,7 @@ class Loader {
         'qiniu' => 'qiniu/autoload',
         'cosv5' => 'cosv5/index',
         'wechatpay-v3' => 'wechatpay-guzzle-middleware/index',
+        'wechatpayv3' => 'wechatpay/index',
     );
     private $loadTypeMap = array(
         'func' => '/framework/function/%s.func.php',

@@ -80,7 +80,7 @@ function safe_rule_alpha_dash($value) {
  * @return bool
  */
 function safe_rule_chs_alpha_dash($value) {
-    return is_scalar($value) && 1 === preg_match('/^[\x{4e00}-\x{9fa5}a-zA-Z0-9\(\)（）\/\-\_\.\s\*,，。;；—:：#!！@$+]+$/u', (string)$value);
+    return is_scalar($value) && 1 === preg_match('/^[\x{4e00}-\x{9fa5}a-zA-Z0-9\(\)（）\/\-\_\.\s\*,，。;；—:：#!！@$+～=]+$/u', (string)$value);
 }
 
 function safe_rule_url($value) {

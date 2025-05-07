@@ -55,7 +55,6 @@ function wechat_build($params) {
     if (empty($params['uniontid']) || empty($params['fee']) || empty($params['user'])) {
         return error(-1, '参数错误！');
     }
-    load()->library('wechatpay-v3');
     $account = pdo_get('account', ['uniacid' => $_W['uniacid']]);
     $uniacid = $account['uniacid'];
     $pay_setting = payment_setting();
@@ -63,48 +62,81 @@ function wechat_build($params) {
     if (empty($wechat['pay_switch'])) {
         return error(-1, '未开启微信支付！');
     }
-    $merchantId = $wechat['mchid'];
-    $merchantSerialNumber = $wechat['ertificate_serial_number'];
-    $wechatpayCertificate = $wechat['wechat_platform_certificate'];
-    $merchantPrivateKey = $wechat['apiclient_key'];
-    $wechatpayMiddleware = WechatPay\GuzzleMiddleware\WechatPayMiddleware::builder()
-        ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
-        ->withWechatPay($wechatpayCertificate)
-        ->build();
-    $stack = GuzzleHttp\HandlerStack::create();
-    $stack->push($wechatpayMiddleware, 'wechatpay');
-    $client = new GuzzleHttp\Client(['handler' => $stack]);
-    try {
-        $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi', [
-            'json' => [
-                'appid' => $account['app_id'],
-                'mchid' => $wechat['mchid'],
-                'description' => cutstr($params['title'], 26),
-                'out_trade_no' => $params['uniontid'],
-                'notify_url' => $_W['siteroot'] . 'payment/wechat/notify.php/' . $uniacid,
-                'amount' => ['total' => $params['fee'] * 100, 'currency' => 'CNY'],
-                'payer' => ['openid' => empty($params['user']) ? $_W['fans']['from_user'] : $params['user']],
-                'attach' => (string) $uniacid,
+
+    if (!empty($wechat['platform_public_key'])) {
+        load()->library('wechatpayv3');
+        $wechatpayConfig = [
+            'mchid' => $wechat['mchid'],
+            'serial' => $wechat['ertificate_serial_number'],
+            'privateKey' => WeChatPay\Crypto\Rsa::from($wechat['apiclient_key'], WeChatPay\Crypto\Rsa::KEY_TYPE_PRIVATE),
+            'certs' => [
+                $wechat['platform_public_key_id'] => WeChatPay\Crypto\Rsa::from($wechat['platform_public_key'], WeChatPay\Crypto\Rsa::KEY_TYPE_PUBLIC),
             ],
-            'headers' => [ 'Accept' => 'application/json' ],
-        ]);
-        if ($resp->getStatusCode() < 200 || $resp->getStatusCode() > 299) {
-            return error(-1, "支付失败： code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
+        ];
+        if (!empty($wechat['ertificate_serial_number_expired']) && !empty($wechat['wechat_platform_certificate_expired'])) {
+            $wechatpayConfig['certs'][$wechat['ertificate_serial_number_expired']] = $wechat['wechat_platform_certificate_expired'][0];
         }
-        $resp = json_decode($resp->getBody(), true);
-        $prepayid = $resp['prepay_id'];
-        $wOpt['appId'] = $account['app_id'];
-        $wOpt['timeStamp'] = strval(TIMESTAMP);
-        $wOpt['nonceStr'] = random(32);
-        $wOpt['package'] = 'prepay_id=' . $prepayid;
-        $wOpt['signType'] = 'RSA';
-        $rsa = $wOpt['appId'] . "\n" . $wOpt['timeStamp'] . "\n" . $wOpt['nonceStr'] . "\n" . $wOpt['package'] . "\n";
-        openssl_sign($rsa, $raw_sign, $merchantPrivateKey, 'sha256WithRSAEncryption');
-        $wOpt['paySign'] = base64_encode($raw_sign);
-        return $wOpt;
-    } catch (RequestException $e) {
-        return error(-1, $e->getMessage());
+        $instance = WeChatPay\Builder::factory($wechatpayConfig);
+        $wechatpayPost = ['json' => [
+            'mchid'        => $wechat['mchid'],
+            'out_trade_no' => $params['uniontid'],
+            'appid'        => $account['app_id'],
+            'description'  => cutstr($params['title'], 26),
+            'notify_url'   => $_W['siteroot'] . 'payment/wechat/notify.php/' . $_W['uniacid'],
+            'amount'       => ['total'    => $params['fee'] * 100,'currency' => 'CNY'],
+            'payer' => ['openid' => empty($params['user']) ? $_W['fans']['from_user'] : $params['user']],
+            'attach' => (string) $_W['uniacid']
+        ]];
+        try {
+            $resp = $instance->chain('v3/pay/transactions/jsapi')->post($wechatpayPost);
+        } catch (RequestException $e) {
+            return error(-1, $e->getMessage());
+        }
+    } else {
+        load()->library('wechatpay-v3');
+        $merchantId = $wechat['mchid'];
+        $merchantSerialNumber = $wechat['ertificate_serial_number'];
+        $wechatpayCertificate = $wechat['wechat_platform_certificate'];
+        $merchantPrivateKey = $wechat['apiclient_key'];
+        $wechatpayMiddleware = WechatPay\GuzzleMiddleware\WechatPayMiddleware::builder()
+            ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
+            ->withWechatPay($wechatpayCertificate)
+            ->build();
+        $stack = GuzzleHttp\HandlerStack::create();
+        $stack->push($wechatpayMiddleware, 'wechatpay');
+        $client = new GuzzleHttp\Client(['handler' => $stack]);
+        try {
+            $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi', [
+                'json' => [
+                    'appid' => $account['app_id'],
+                    'mchid' => $wechat['mchid'],
+                    'description' => cutstr($params['title'], 26),
+                    'out_trade_no' => $params['uniontid'],
+                    'notify_url' => $_W['siteroot'] . 'payment/wechat/notify.php/' . $uniacid,
+                    'amount' => ['total' => $params['fee'] * 100, 'currency' => 'CNY'],
+                    'payer' => ['openid' => empty($params['user']) ? $_W['fans']['from_user'] : $params['user']],
+                    'attach' => (string) $uniacid,
+                ],
+                'headers' => [ 'Accept' => 'application/json' ],
+            ]);
+        } catch (RequestException $e) {
+            return error(-1, $e->getMessage());
+        }
     }
+    if ($resp->getStatusCode() < 200 || $resp->getStatusCode() > 299) {
+        return error(-1, "支付失败： code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
+    }
+    $resp = json_decode($resp->getBody(), true);
+    $prepayid = $resp['prepay_id'];
+    $wOpt['appId'] = $account['app_id'];
+    $wOpt['timeStamp'] = strval(TIMESTAMP);
+    $wOpt['nonceStr'] = random(32);
+    $wOpt['package'] = 'prepay_id=' . $prepayid;
+    $wOpt['signType'] = 'RSA';
+    $rsa = $wOpt['appId'] . "\n" . $wOpt['timeStamp'] . "\n" . $wOpt['nonceStr'] . "\n" . $wOpt['package'] . "\n";
+    openssl_sign($rsa, $raw_sign, $wechat['apiclient_key'], 'sha256WithRSAEncryption');
+    $wOpt['paySign'] = base64_encode($raw_sign);
+    return $wOpt;
 }
 
 function wechat_build_native($params) {

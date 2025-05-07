@@ -8,18 +8,48 @@ require '../../framework/bootstrap.inc.php';
 $input = file_get_contents('php://input');
 $isxml = true;
 if (!empty($input) && empty($_GET['out_trade_no'])) {
+    $v3Verify = STATUS_OFF;
     $data_v3 = json_decode($input, true);
     if (!empty($data_v3) && 'TRANSACTION.SUCCESS' != $data_v3['event_type']) {
         echo json_encode(['code' => $data_v3['code'], 'message' => $data_v3['message']]);
         exit;
     }
-    load()->library('wechatpay-v3');
-    $_W['uniacid'] = substr($_SERVER['REQUEST_URI'], strrpos($_SERVER['REQUEST_URI'], '/') + 1);
-    $setting = uni_setting_load('payment');
-    $key = $setting['payment']['wechat']['apikey'];
-    $decrypter = new \WechatPay\GuzzleMiddleware\Util\AesUtil($key);
-    $plain = $decrypter->decryptToString($data_v3['resource']['associated_data'], $data_v3['resource']['nonce'], $data_v3['resource']['ciphertext']);
-    $data_v3 = json_decode($plain, true);
+    $uniacid = !empty($_SERVER['PATH_INFO']) ? ltrim($_SERVER['PATH_INFO'], '/') : end(explode('/', $_SERVER['REQUEST_URI']));
+    $setting = uni_setting($uniacid, array('payment'));
+    if ($setting['payment']['wechat']['switch'] == 2) {
+        $setting = uni_setting($setting['payment']['wechat']['borrow'], array('payment'));
+    }
+    $key = empty($setting['payment']['wechat_v3']['signkey']) ? $setting['payment']['wechat']['apikey'] : $setting['payment']['wechat_v3']['signkey'];
+	if (!empty($setting['payment']['wechat']['platform_public_key'])) {
+        load()->library('wechatpayv3');
+        $inWechatpaySignature = $_SERVER['HTTP_WECHATPAY_SIGNATURE'];
+        $inWechatpayTimestamp = $_SERVER['HTTP_WECHATPAY_TIMESTAMP'];
+        $inWechatpaySerial = $_SERVER['HTTP_WECHATPAY_SERIAL'];
+        $inWechatpayNonce = $_SERVER['HTTP_WECHATPAY_NONCE'];
+        $thing = strpos($_SERVER['HTTP_WECHATPAY_SERIAL'], 'PUB_KEY_ID_') !== false ? $setting['payment']['wechat']['platform_public_key'] : $setting['payment']['wechat']['wechat_platform_certificate_expired'][0];
+        $verifiedStatus = WeChatPay\Crypto\Rsa::verify(
+            WeChatPay\Formatter::joinedByLineFeed($inWechatpayTimestamp, $inWechatpayNonce, $input),
+            $inWechatpaySignature,
+            WeChatPay\Crypto\Rsa::from($thing, WeChatPay\Crypto\Rsa::KEY_TYPE_PUBLIC)
+        );
+        if ($verifiedStatus) {
+            $v3Verify = STATUS_ON;
+        }
+
+        ['resource' => [
+            'ciphertext'      => $ciphertext,
+            'nonce'           => $nonce,
+            'associated_data' => $aad
+        ]] = $data_v3;
+        $inBodyResource = WeChatPay\Crypto\AesGcm::decrypt($ciphertext, $key, $nonce, $aad);
+        $data_v3 = json_decode($inBodyResource, true);
+    } else {
+        load()->library('wechatpay-v3');
+        $decrypter = new \WechatPay\GuzzleMiddleware\Util\AesUtil($key);
+        $plain = $decrypter->decryptToString($data_v3['resource']['associated_data'], $data_v3['resource']['nonce'], $data_v3['resource']['ciphertext']);
+        $data_v3 = json_decode($plain, true);
+    }
+
     if (empty($data_v3)) {
         echo json_encode(['code' => 'FAIL', 'message' => '解密失败']);
         exit;

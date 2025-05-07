@@ -76,20 +76,13 @@ if ('save_setting' == $do) {
     $pay_setting = empty($setting['payment']) ? ['wechat' => [], 'alipay' => []] : $setting['payment'];
     if ('wechat' == $type) {
         $param['account'] = $_W['uniacid'];
-        $param['mchid'] = safe_gpc_string($_GPC['mchid']);
-        $param['apikey'] = safe_gpc_string($_GPC['apikey']);
-        $param['ertificate_serial_number'] = safe_gpc_string($_GPC['ertificate_serial_number']);
-        if (!empty($_FILES['apiclient_cert'])) {
-            $param['apiclient_cert'] = file_get_contents($_FILES['apiclient_cert']['tmp_name']);
-            if (strexists($param['apiclient_cert'], '<?php') || '-----BEGIN CERTIFICATE-----' != substr($param['apiclient_cert'], 0, 27) || '-----END CERTIFICATE-----' != substr($param['apiclient_cert'], -26, 25)) {
-                iajax(-1, 'apiclient_cert.pem证书内容不合法！');
-            }
+        if (strexists($param['apiclient_key'], '<?php') || '-----BEGIN PRIVATE KEY-----' != substr($param['apiclient_key'], 0, 27) || '---END PRIVATE KEY-----' != substr($param['apiclient_key'], -23, 23)) {
+            iajax(-1, 'apiclient_key.pem证书内容不合法！');
         }
-        if (!empty($_FILES['apiclient_key'])) {
-            $param['apiclient_key'] = file_get_contents($_FILES['apiclient_key']['tmp_name']);
-            if (strexists($param['apiclient_key'], '<?php') || '-----BEGIN PRIVATE KEY-----' != substr($param['apiclient_key'], 0, 27) || '-----END PRIVATE KEY-----' != substr($param['apiclient_key'], -26, 25)) {
-                iajax(-1, 'apiclient_key.pem证书内容不合法！');
-            }
+        if (empty($pay_setting['wechat']['compatible_platform_certificate'])) {
+            $param['compatible_platform_certificate'] = STATUS_ON;
+            $param['ertificate_serial_number_expired'] = empty($pay_setting['wechat']['ertificate_serial_number']) ? '' : $pay_setting['wechat']['ertificate_serial_number'];
+            $param['wechat_platform_certificate_expired'] = empty($pay_setting['wechat']['wechat_platform_certificate']) ? '' : $pay_setting['wechat']['wechat_platform_certificate'];
         }
         load()->library('wechatpay-v3');
         $merchantId = $param['mchid'];
@@ -100,50 +93,53 @@ if ('save_setting' == $do) {
         if (empty($merchantPrivateKey) && !empty($pay_setting['wechat']['apiclient_key'])) {
             $merchantPrivateKey = $pay_setting['wechat']['apiclient_key'];
         }
-        if (empty($merchantPrivateKey)) {
-            iajax(-1, 'apiclient_key.pem证书必须传！');
-        }
-        $wechatpayMiddleware = WechatPay\GuzzleMiddleware\WechatPayMiddleware::builder()
-            ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
-            ->withValidator(new WechatPay\GuzzleMiddleware\NoopValidator)
-            ->build();
-        $stack = GuzzleHttp\HandlerStack::create();
-        $stack->push($wechatpayMiddleware, 'wechatpay');
-        $client = new GuzzleHttp\Client(['handler' => $stack]);
-        try {
-            $canonical_url = '/v3/certificates';
-            $http_method = 'GET';
-            $timestamp = time();
-            $nonce = random(32);
-            $message = $http_method . "\n" . $canonical_url . "\n" . $timestamp . "\n" . $nonce . "\n\n";
-            openssl_sign($message, $raw_sign, $merchantPrivateKey, 'sha256WithRSAEncryption');
-            $sign = base64_encode($raw_sign);
-            $schema = "WECHATPAY2-SHA256-RSA2048";
-            $token = sprintf('mchid="%s",nonce_str="%s",timestamp="%d",serial_no="%s",signature="%s"', $merchantId, $nonce, $timestamp, $merchantSerialNumber, $sign);
-            $resp = $client->request('GET', 'https://api.mch.weixin.qq.com/v3/certificates', [
-                'headers' => [
-                    'Authorization' => $schema . ' ' . $token,
-                    'Accept' => 'application/json',
-                    'User-Agent' => '用户代理(https://zh.wikipedia.org/wiki/User_agent)',
-                ]
-            ]);
-            if ($resp->getStatusCode() < 200 || $resp->getStatusCode() > 299) {
-                iajax(-1, "download failed, code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
-            }
-            $list = json_decode($resp->getBody(), true);
-            $plain_certs = [];
-            $decrypter = new WechatPay\GuzzleMiddleware\Util\AesUtil($param['apikey']);
-            foreach ($list['data'] as $item) {
-                $encCert = $item['encrypt_certificate'];
-                $plain = $decrypter->decryptToString($encCert['associated_data'], $encCert['nonce'], $encCert['ciphertext']);
-                if (empty($plain)) {
-                    iajax(-1, "微信平台证书解密失败!");
+        if (empty($param['platform_public_key'])) {
+            load()->library('wechatpay-v3');
+            $merchantId = $param['mchid'];
+            $merchantSerialNumber = $param['ertificate_serial_number'];
+            $merchantPrivateKey = $param['apiclient_key'];
+            $wechatpayMiddleware = WechatPay\GuzzleMiddleware\WechatPayMiddleware::builder()
+                ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
+                ->withValidator(new WechatPay\GuzzleMiddleware\NoopValidator)
+                ->build();
+            $stack = GuzzleHttp\HandlerStack::create();
+            $stack->push($wechatpayMiddleware, 'wechatpay');
+            $client = new GuzzleHttp\Client(['handler' => $stack]);
+            try {
+                $canonical_url = '/v3/certificates';
+                $http_method = 'GET';
+                $timestamp = time();
+                $nonce = random(32);
+                $message = $http_method . "\n" . $canonical_url . "\n" . $timestamp . "\n" . $nonce . "\n\n";
+                openssl_sign($message, $raw_sign, $merchantPrivateKey, 'sha256WithRSAEncryption');
+                $sign = base64_encode($raw_sign);
+                $schema = "WECHATPAY2-SHA256-RSA2048";
+                $token = sprintf('mchid="%s",nonce_str="%s",timestamp="%d",serial_no="%s",signature="%s"', $merchantId, $nonce, $timestamp, $merchantSerialNumber, $sign);
+                $resp = $client->request('GET', 'https://api.mch.weixin.qq.com/v3/certificates', [
+                    'headers' => [
+                        'Authorization' => $schema . ' ' . $token,
+                        'Accept' => 'application/json',
+                        'User-Agent' => '用户代理(https://zh.wikipedia.org/wiki/User_agent)',
+                    ]
+                ]);
+                if ($resp->getStatusCode() < 200 || $resp->getStatusCode() > 299) {
+                    iajax(-1, "download failed, code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
                 }
-                $plain_certs[] = $plain;
+                $list = json_decode($resp->getBody(), true);
+                $plain_certs = [];
+                $decrypter = new WechatPay\GuzzleMiddleware\Util\AesUtil($param['apikey']);
+                foreach ($list['data'] as $item) {
+                    $encCert = $item['encrypt_certificate'];
+                    $plain = $decrypter->decryptToString($encCert['associated_data'], $encCert['nonce'], $encCert['ciphertext']);
+                    if (empty($plain)) {
+                        iajax(-1, "微信平台证书解密失败!");
+                    }
+                    $plain_certs[] = $plain;
+                }
+                $param['wechat_platform_certificate'] = $plain_certs;
+            } catch (GuzzleHttp\Exception\RequestException $e) {
+                iajax(-1, $e->getMessage());
             }
-            $param['wechat_platform_certificate'] = $plain_certs;
-        } catch (GuzzleHttp\Exception\RequestException $e) {
-            iajax(-1, $e->getMessage());
         }
     }
     if ('alipay' == $type) {
@@ -167,17 +163,19 @@ if ('save_setting' == $do) {
 }
 
 if ('change_status' == $do) {
-    $pay_type = in_array($_GPC['pay_type'], ['alipay', 'wechat']) ? safe_gpc_string($_GPC['pay_type']) : '';
+    $pay_type = in_array($_GPC['type'], ['alipay', 'wechat']) ? safe_gpc_string($_GPC['type']) : '';
     if (empty($pay_type)) {
         iajax(-1, '参数错误！');
     }
+    $param = safe_gpc_array($_GPC['param']);
     $switch_type = safe_gpc_string($_GPC['switch_type']);
-    $switch_type = in_array($_GPC['switch_type'], ['pay_switch', 'refund_switch']) ? safe_gpc_string($_GPC['switch_type']) : '';
-    $setting = uni_setting_load('payment', $_W['uniacid']);
-    $pay_setting = !empty($setting['payment']) ? $setting['payment'] : [];
-    $pay_setting[$pay_type][$switch_type] = !$pay_setting[$pay_type][$switch_type] ? STATUS_ON : STATUS_OFF;
-    uni_setting_save('payment', $pay_setting);
-    iajax(0, '设置成功！', referer());
+    $switch_type = in_array($switch_type, ['pay_switch', 'refund_switch']) ? $switch_type : '';
+	$setting = uni_setting_load('payment', $_W['uniacid']);
+	$pay_setting = !empty($setting['payment']) ? $setting['payment'] : array();
+	$pay_setting[$pay_type][$switch_type] = empty($pay_setting[$pay_type][$switch_type]) ? STATUS_ON : STATUS_OFF;
+	$payment = iserializer($pay_setting);
+	uni_setting_save('payment', $payment);
+	iajax(0, '设置成功！', referer());
 }
 
 if ('display' == $do) {

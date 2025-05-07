@@ -166,7 +166,7 @@ function reufnd_wechat_build($refund_id) {
     $refund_param = [
         'out_trade_no' => $refundlog['uniontid'],
         'out_refund_no' => $refundlog['refund_uniontid'],
-        'reason' => $refundlog['reason'],
+        'reason' => empty($refundlog['reason']) ? '系统退款' : $refundlog['reason'],
         'notify_url' => $_W['siteroot'] . 'payment/wechat/refund.php/' . $_W['uniacid'],
         'amount' => ['refund' => $refundlog['fee'] * 100, 'total' => $paylog['card_fee'] * 100, 'currency' => 'CNY']
     ];

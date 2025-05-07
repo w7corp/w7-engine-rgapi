@@ -1,0 +1,6 @@
+{
+    "require": {
+        "wechatpay/wechatpay": "^1.4"
+    }
+}
+

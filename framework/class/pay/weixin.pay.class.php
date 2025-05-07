@@ -55,37 +55,59 @@ class WeiXinPay extends pay {
      * */
     public function refundV3($params) {
         global $_W;
-        load()->library('wechatpay-v3');
         $setting = uni_setting_load('payment', $_W['uniacid']);
         $pay_setting = empty($setting['payment']['wechat']) ? [] : $setting['payment']['wechat'];
 
-        $merchantId = $pay_setting['mchid'];
-        $merchantSerialNumber = $pay_setting['ertificate_serial_number'];
-        $wechatpayCertificate = $pay_setting['wechat_platform_certificate'];
-        $merchantPrivateKey = $pay_setting['apiclient_key'];
-        $wechatpayMiddleware = WechatPay\GuzzleMiddleware\WechatPayMiddleware::builder()
-            ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
-            ->withWechatPay($wechatpayCertificate)
-            ->build();
-        $stack = GuzzleHttp\HandlerStack::create();
-        $stack->push($wechatpayMiddleware, 'wechatpay');
-        $client = new \GuzzleHttp\Client(['handler' => $stack]);
+        if (!empty($pay_setting['platform_public_key'])) {
+			load()->library('wechatpayv3');
+			$wechatpayConfig = [
+				'mchid' => $pay_setting['mchid'],
+				'serial' => $pay_setting['ertificate_serial_number'],
+				'privateKey' => WeChatPay\Crypto\Rsa::from($pay_setting['apiclient_key'], WeChatPay\Crypto\Rsa::KEY_TYPE_PRIVATE),
+				'certs' => [
+					$pay_setting['platform_public_key_id'] => WeChatPay\Crypto\Rsa::from($pay_setting['platform_public_key'], WeChatPay\Crypto\Rsa::KEY_TYPE_PUBLIC),
+				],
+			];
+			if (!empty($pay_setting['ertificate_serial_number_expired']) && !empty($pay_setting['wechat_platform_certificate_expired'])) {
+				$wechatpayConfig['certs'][$pay_setting['ertificate_serial_number_expired']] = $pay_setting['wechat_platform_certificate_expired'][0];
+			}
+			$instance = WeChatPay\Builder::factory($wechatpayConfig);
+			$wechatpayPost = ['json' => $params];
+			try {
+				$resp = $instance->chain('v3/refund/domestic/refunds')->post($wechatpayPost);
+			} catch (Exception $e) {
+				return error(-1, $e->getMessage());
+			}
+		} else {
+            load()->library('wechatpay-v3');
+            $merchantId = $pay_setting['mchid'];
+            $merchantSerialNumber = $pay_setting['ertificate_serial_number'];
+            $wechatpayCertificate = $pay_setting['wechat_platform_certificate'];
+            $merchantPrivateKey = $pay_setting['apiclient_key'];
+            $wechatpayMiddleware = WechatPay\GuzzleMiddleware\WechatPayMiddleware::builder()
+                ->withMerchant($merchantId, $merchantSerialNumber, $merchantPrivateKey)
+                ->withWechatPay($wechatpayCertificate)
+                ->build();
+            $stack = GuzzleHttp\HandlerStack::create();
+            $stack->push($wechatpayMiddleware, 'wechatpay');
+            $client = new \GuzzleHttp\Client(['handler' => $stack]);
 
-        try {
-            $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/refund/domestic/refunds', [
-                'json' => $params,
-                'headers' => [ 'Accept' => 'application/json' ]
-            ]);
-            if ($resp->getStatusCode() < 200 || $resp->getStatusCode() > 299) {
-                return error(-1, "退款失败： code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
+            try {
+                $resp = $client->request('POST', 'https://api.mch.weixin.qq.com/v3/refund/domestic/refunds', [
+                    'json' => $params,
+                    'headers' => [ 'Accept' => 'application/json' ]
+                ]);
+            } catch (\Exception $e) {
+                return error(-1, $e->getMessage());
             }
-            $result = json_decode($resp->getBody(), true);
-            if (!in_array($result['status'], ['SUCCESS', 'PROCESSING'])) {
-                return error(-1, "退款失败： code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
-            }
-            return $result;
-        } catch (\Exception $e) {
-            return error(-1, $e->getMessage());
         }
+        if ($resp->getStatusCode() < 200 || $resp->getStatusCode() > 299) {
+            return error(-1, "退款失败： code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
+        }
+        $result = json_decode($resp->getBody(), true);
+        if (!in_array($result['status'], ['SUCCESS', 'PROCESSING'])) {
+            return error(-1, "退款失败： code={$resp->getStatusCode()}, body=[{$resp->getBody()}]");
+        }
+        return $result;
     }
 }
