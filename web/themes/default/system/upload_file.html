@@ -40,7 +40,11 @@
 							<div class="form-group">
 								<label class="col-xs-12 col-sm-3 col-md-2 control-label">上传文件</label>
 								<div class="col-sm-8">
-									<input type="file" name="file" value="">
+									<label for="fileInput" class="custom-file-upload" style="display: inline-block;padding: 6px 12px;cursor: pointer;border: 1px solid #e2e3e3;">
+										<input type="file" name="file" id="fileInput" accept=".txt" style="visibility: hidden;position: absolute;">
+										<i class="wi wi-upload"></i> &nbsp;&nbsp;上传文件
+									</label>
+									<span class="help-block txt-file"></span>
 								</div>
 							</div>
 						</div>
@@ -54,5 +58,10 @@
 			</div>
 	</form>
 </div>
+<script>
+	$(".custom-file-upload").on("change","input[type='file']",function(){
+		$('.txt-file').text($(this).val());
+	})
+</script>
 {template 'common/footer'}
 
