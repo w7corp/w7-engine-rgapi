@@ -42,5 +42,6 @@ function system_setting_items() {
         'icon',
         'log_status',
         'site_name',
+        'cloud_status'
     );
 }

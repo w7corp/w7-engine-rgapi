@@ -26,7 +26,7 @@ $w7_file_permission = [
     ],
     'cloud' => [
         'default' => '',
-        'direct' => [],
+        'direct' => ['dock'],
     ],
     'message' => [
         'default' => '',
@@ -46,7 +46,7 @@ $w7_file_permission = [
     ],
     'system' => [
         'default' => '',
-        'direct' => [],
+        'direct' => ['updatecache'],
     ],
     'user' => [
         'default' => '',

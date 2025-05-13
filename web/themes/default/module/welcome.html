@@ -1,5 +1,163 @@
 {template 'common/header'}
-<div class="module-welcome welcome-container clearfix" style="background: #fff;margin: 0 -30px;">
+<style>
+	.module-welcome {
+		.plugin-list {
+			padding: 0 13px;
+			font-size: 0;
+			margin: 20px 0;
+			display: block;
+			.bg-f3 {
+				background-color: #F3F3F3;
+			}
+			.bg-e8 {
+				background-color: #E8F1FF;
+			}
+			.plugin-item {
+				align-items: center;
+				position: relative;
+				padding: 20px 19px 18px 19px;
+				cursor: pointer;
+				flex: 1;
+				width: 19%;
+				height: 168px;
+				border-radius: 2px;
+				margin-bottom: 15px;
+				margin-right: 15px;
+				display: inline-block;
+				.module-popover{
+					display: none;
+					width: 370px;
+					height: auto;
+					padding: 15px 20px;
+					box-shadow: 0px 5px 8px 2px rgba(213,211,211,.8);
+					position: absolute;
+					top: 174px;
+					left: -32px;
+					background-color: #fff;
+					border-radius: 6px;
+					font-size: 12px;
+					z-index: 99;
+					&::before {
+						content: "";
+						position: absolute;
+						top: -6px;
+						left: 33%;
+						border-bottom: 50px solid #fff;
+						border-right: 50px solid transparent;
+						border-left: 50px solid transparent;
+					}
+					.bottom-info{
+						margin-bottom: 5px;
+						.title{
+							color: #A6A6A6;
+							display: inline-block;
+
+						}
+						.title-line{
+							width: 60px;
+							color: #A6A6A6;
+							float: left;
+						}
+						.content-line{
+							color: #86888C;
+							margin-left: 60px;
+						}
+						.content{
+							color: #86888C;
+							display: inline-block;
+						}
+					}
+					a{
+						margin-top: 10px;
+						text-align: center;
+						display: block;
+						width: 100%;
+					}
+				}
+				.icon-buy{
+					position: absolute;
+					top: 0;
+					left: 0;
+					z-index: 9;
+				}
+				&:hover {
+					box-shadow: 0px 5px 8px 2px rgba(213,211,211,.8);
+					.module-popover {
+						display: block;
+					}
+				}
+				.content-top {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					margin-bottom: 20px;
+					position: relative;
+					.logo {
+						width: 65px;
+						height: 65px;
+						border-radius: 4px;
+						margin-right: 10px;
+					}
+					.info {
+						width: calc(100% - 65px);
+						.title {
+							font-size: 16px;
+							color: $default-font-color;
+							margin-bottom: 10px;
+							padding-right: 78px;
+							font-weight: bold;
+						}
+						.price{
+							.service-residue{
+								font-size: 12px;
+								color: $shallow-font-color;
+							}
+							p {
+								color: #f00;
+							}
+						}
+					}
+					.action {
+						width: auto;
+						position: absolute;
+						top: 0;
+						right: 0;
+						.button{
+							display: inline-block;
+							padding: 6px 12px;
+							margin-bottom: 0;
+							font-size: 14px;
+							font-weight: 400;
+							line-height: 1.42857143;
+							text-align: center;
+							white-space: nowrap;
+							vertical-align: middle;
+							touch-action: manipulation;
+							cursor: pointer;
+							user-select: none;
+							background-image: none;
+							border: 1px solid transparent;
+							width: 100%;
+							border-radius: 4px;
+						}
+					}
+				}
+				.bottom-info{
+					width: 100%;
+					font-size: 12px;
+					line-height: 24px;
+					.label {
+						color: #A6A6A6;
+					}
+					.cont {
+						color: #5D6066;
+					}
+				}
+			}
+		}
+	}
+</style>
+<div class="module-welcome welcome-container clearfix" style="background: #fff;margin: 0 -30px;" id="js-module-welcome" ng-controller="userModuleWelcomeCtrl" ng-cloak>
 	<!-- 默认后台入口 start -->
 	{if $module['welcome_display']}
 	<div class="panel we7-panel">
@@ -42,5 +200,232 @@
 	</div>
 	{/if}
 	<!-- 关联账号end -->
+	{if empty($module['main_module'])}
+	<!-- 插件 start -->
+	<div class="panel we7-panel" ng-if="plugins.length > 0">
+		<div class="panel-heading">
+			<h4>插件</h4>
+		</div>
+		<div class="panel-body"> 
+			<div class="plugin-list">
+				<div class="plugin-item" ng-class="{'bg-e8': plugin.is_bought, 'bg-f3': !plugin.is_bought}" ng-repeat="plugin in plugins track by $index">
+						<img class="icon-buy" src="./resource/images/module-buy.png" alt="" ng-if="plugin.is_bought">
+						<div class="content-top">
+							<img ng-src="{{ plugin.logo }}" class="module-img logo" alt="" >
+							<div class="info">
+								<div class="title text-over">
+									{{ plugin.title }}
+								</div>
+								<div class="price" ng-if="plugin.is_bought">
+									<span class="service-residue">服务剩余：{{plugin.expiretime}}天&nbsp;<a ng-if="plugin.expiretime == 0" class="color-default" href="javascript:;" ng-click="renew(plugin.name)">去续费</a></span>
+								</div>
+							</div>
+							<div class="action">
+								<a ng-if="plugin.is_bought == true && plugin.is_install == true" ng-href="./index.php?c=module&a=welcome&do=display&module_name={{plugin.name}}" class="btn-primary button">进入</a>
+								<button ng-if="plugin.is_bought == true && plugin.is_install == false" type="button" class="btn-primary button" ng-click="downloadPlugin(plugin, $index)">{{plugin.loading ? "安装中" : "安装"}}</button>
+								<button ng-if="plugin.is_bought == false" type="button" class="btn-danger button" ng-click="buyPlugin(plugin, $index)">{{plugin.loading ? '购买中' : '购买'}}</button>
+							</div>
+						</div>
+						<div class="bottom-info">
+							<span class="label">应用版本：</span>
+							<span class="cont">v{{plugin.version}}</span>
+						</div>
+						<div class="bottom-info text-over">
+							<span class="label">应用介绍：</span>
+							<span class="cont text-over">{{plugin.description}}</span>
+						</div>
+						<!-- 信息展示弹框 -->
+						<div class="module-popover" ref="pluginInfoBox">
+							<div class="bottom-info">
+								<div class="title">适用类型：</div>
+								<div class="content"><i ng-repeat="(key, value) in plugin.support_types" class="wi wi-{{value}}" style="font-size: 18px;color: #999;vertical-align: middle;"></i></div>
+							</div>
+							<div class="bottom-info">
+								<div class="title-line">应用介绍：</div>
+								<div class="content-line">{{plugin.description}}</div>
+							</div>
+							<a class="color-default" href="javascript:;" ng-click="openPage(plugin.url)">前往应用商城查看更多详情</a>
+						</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel-heading text-center" ng-if="plugins_copy.length > 10">
+			<a class="color-default" href="javascript:;" ng-click="openMorePlugin($event)">展开查看更多</a>
+		</div>
+	</div>
+	<!-- 插件 end -->
+	{/if}
 </div>
+
+<script>
+	angular.module('moduleApp').value('config', {
+		family: "{IMS_FAMILY}",
+		'module_name': "{$module_name}",
+		'apiLink': "{CLOUD_API_DOMAIN}",
+		'links' : {
+			'get_module_plugins' : "{php echo url('module/welcome/get_module_plugins', array('module_name' => $module_name))}",
+			'edit_extra_modules' : "",
+		}
+	});
+	angular.module('moduleApp').controller('userModuleWelcomeCtrl', ['$scope', '$http', 'config', function ($scope, $http, config) {
+		$scope.module_name = config.module_name;
+		$scope.plugin_page = 1;
+		$scope.plugins_copy = [];
+		$scope.plugins = [];
+		var page_size = 10;
+		var total_page = 0;
+		var loading = 0;
+		$scope.getPlugins = function() {
+			$scope.plugins_copy = [];
+			$scope.plugins = [];
+			total_page = 0;
+			$http.get(config.links.get_module_plugins).success(function (data) {
+				if (data.message.errno == 0) {
+					$scope.plugins_copy = data.message.message;
+					total_page = Math.ceil($scope.plugins_copy.length / page_size);
+					for (var i in $scope.plugins_copy) {
+						$scope.plugins_copy[i]['expiretime'] = $scope.serviceDay($scope.plugins_copy[i].service_expiretime)
+						$scope.plugins_copy[i]['loading'] = false
+						if (i < 10) {
+							$scope.plugins.push($scope.plugins_copy[i])
+						}
+					}
+					util.post_message_height();
+					if ($scope.plugins_copy.length == 0) {
+						$scope.plugins = [];
+						$scope.plugins_copy = [];
+					}
+				} else {
+					util.message(data.message.message, '', 'error');
+				}
+			});
+		};
+		$scope.getPlugins();
+		$scope.serviceDay = function(time) {
+			if(!time) {
+				return 0
+			}
+			var service_expiretime = Math.ceil((new Date(time * 1000) - new Date()) / (1000 * 60 * 60 * 24))
+			return service_expiretime > 0 ? service_expiretime : 0
+		},
+		$scope.openMorePlugin = function(ev) {
+			$scope.plugins = [];
+			if (ev.currentTarget.text == '展开查看更多') {
+				$scope.plugin_page = $scope.plugin_page + 1;
+				if ($scope.plugin_page < total_page) {
+					var array = $scope.plugins_copy.slice(0, $scope.plugin_page * page_size)
+					for(var i in array) {
+						$scope.plugins.push(array[i]);
+					}
+				} else {
+					$scope.plugins = $scope.plugins_copy;
+					ev.currentTarget.text = '收起';
+					$scope.plugin_page = 1;
+				}
+			} else if (ev.currentTarget.text == '收起') {
+				$scope.plugin_page = 1;
+				for (var i in $scope.plugins_copy) {
+					if (i < 10) {
+						$scope.plugins.push($scope.plugins_copy[i]);
+					}
+				}
+				ev.currentTarget.text = '展开查看更多';
+			}
+		}
+		$scope.openPage = function(url) {
+			window.open(url, '_blank')
+		};
+		$scope.renew = function(module_name) {
+			window.w7.ready(function(){
+				window.w7.module({module_name: module_name,type: 'module_service'}, function(){
+					util.post_message_height();
+					$scope.getPlugins();
+				});
+			})
+		};
+		$scope.buyPlugin = function (item, index) {
+			window.w7.ready(function(){
+				window.w7.module({module_name: item.name,type: 'module_plugin'}, function(){
+					$scope.we7Axios({
+						method: 'POST',
+						url: './index.php?c=system&a=updatecache&do=updatecache'
+					}).then(function() {
+						$scope.downloadPlugin(item, index)
+					})
+				});
+			})
+		};
+		$scope.downloadPlugin = function (item, index) {
+			$scope.plugins_copy[index].loading = true
+			$scope.we7Axios({
+				method: 'get',
+				url: './index.php?c=cloud&a=newprocess&do=module_build',
+				params: {
+					module_name: item.name,
+					is_upgrade: 0,
+				}
+			}).then(function(res) {
+				$scope.installPlugin(item, index)
+			}).catch(function(res) {
+				if (!res) {
+					util.confirm(function () {
+						$scope.getPlugins();
+					}, function () {
+						$scope.getPlugins();
+					}, '有未知错误，请尝试开启开发模式查看具体详情或联系管理员提交工单！');
+				} else {
+					util.confirm(function () {
+						$scope.getPlugins();
+					}, function () {
+						$scope.getPlugins();
+					}, res);
+				}
+			})
+		}
+		$scope.installPlugin = function (item, index) {
+			$scope.we7Axios({
+				method: 'get',
+				url: './index.php?c=module&a=manage-system&do=install',
+				params: {}
+			}).then(function(res) {
+				$scope.getPlugins();
+			}).catch(function(res) {
+				if (!res) {
+					util.confirm(function () {
+						$scope.getPlugins();
+					}, function () {
+						$scope.getPlugins();
+					}, res);
+				} else {
+					util.confirm(function () {
+						$scope.getPlugins();
+					}, function () {
+						$scope.getPlugins();
+					}, res);
+				}
+			})
+		}
+		$scope.we7Axios = function (data) {
+			return new Promise(function(resolve, reject) {
+				loading++
+				if (!data.params) {
+					data.params = {}
+				}
+				$http(data).then(function(res) {
+					loading--
+					if (res.data.message.errno === 0) {
+						resolve(res.data.message.message)
+					} else {
+						reject(res.data.message.message)
+					}
+				}).catch(function(res) {
+					reject(res.data.message.message)
+					loading--
+				}).finally(function() {
+				})
+			})
+		};
+	}])
+	angular.bootstrap($('#js-module-welcome'), ['moduleApp']);
+</script>
 {template 'common/footer'}

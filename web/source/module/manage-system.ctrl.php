@@ -30,7 +30,7 @@ if ('install' == $do) {
         }
     }
     if (empty($modules)) {
-        message('没有检测到可安装的应用，请联系开发者处理。', url('system/base-info'));
+        $_W['isajax'] ? iajax(-1, '没有检测到可安装的应用') : message('没有检测到可安装的应用', url('system/base-info'));
     }
     foreach ($modules as $module_name) {
         $installed_module = table('modules')->getByName($module_name);
@@ -42,7 +42,7 @@ if ('install' == $do) {
         if (!empty($manifest['platform']['main_module'])) {
             $main_module_fetch = module_fetch($manifest['platform']['main_module']);
             if (empty($main_module_fetch)) {
-                itoast('请先安装主模块后再安装插件');
+                // itoast('请先安装主模块后再安装插件');
             }
             $plugin_exist = table('modules_plugin')->getPluginExists($manifest['platform']['main_module'], $manifest['application']['identifie']);
             if (empty($plugin_exist)) {
@@ -52,11 +52,11 @@ if ('install' == $do) {
     
         $check_manifest_result = ext_manifest_check($module_name, $manifest);
         if (is_error($check_manifest_result)) {
-            itoast($check_manifest_result['message'], '', 'error');
+            $_W['isajax'] ? iajax(-1, $check_manifest_result['message']) : itoast($check_manifest_result['message'], '', 'error');
         }
         $check_file_result = ext_file_check($module_name, $manifest);
         if (is_error($check_file_result)) {
-            itoast('模块缺失文件，请检查模块文件中site.php, processor.php, module.php, receiver.php 文件是否存在！', '', 'error');
+            $_W['isajax'] ? iajax(-1, '模块缺失文件，请检查模块文件中site.php, processor.php, module.php, receiver.php 文件是否存在！') : itoast('模块缺失文件，请检查模块文件中site.php, processor.php, module.php, receiver.php 文件是否存在！', '', 'error');
         }
     
         $module['logo'] = 'addons/' . $module['name'] . '/icon.jpg';
@@ -111,7 +111,8 @@ if ('install' == $do) {
         }
         setting_save($init_version, 'local_version');
     }
-    itoast('所有模块安装成功！', url('module/display'), 'success');
+    cache_delete(cache_system_key('plugins', array('module_name' => 'main_module')));
+    $_W['isajax'] ? iajax(0, '所有模块安装成功！') : itoast('所有模块安装成功！', url('module/display'), 'success');
 }
 
 //卸载模块

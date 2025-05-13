@@ -245,3 +245,73 @@ function module_get_plugin_list($module_name) {
         return array();
     }
 }
+
+function module_plugin_list($module_name = '') {
+    global $_W;
+	load()->model('cloud');
+	if (empty($module_name) || empty($_W['setting']['copyright']['cloud_status'])) {
+		return array();
+	}
+	$cachekey = cache_system_key('plugins', array('module_name' => 'main_module'));
+	$plugins = cache_load($cachekey);
+	if (empty($plugins)) {
+		$cloud_plugins = cloud_m_plugins($module_name);
+		if (is_error($cloud_plugins)) {
+			return $cloud_plugins;
+		}
+		$plugins = array();
+		foreach ($cloud_plugins as $id => $plugin) {
+			if (!is_array($plugin) || empty($plugin['name'])) {
+				continue;
+			}
+			$plugin_exist = module_fetch($plugin['name']);
+			if (empty($plugin_exist)) {
+				$supports = $plugin['support_types'];
+				foreach ($supports as &$support) {
+					if ('app' == $support) {
+						$support = 'wx-circle';
+					} elseif ('system_welcome' == $support) {
+						$support = 'welcome';
+					} elseif ('android' == $support || 'ios' == $support) {
+						$support = 'phoneapp';
+					}
+				}
+				$plugin_info = array(
+					'cloud_id' => $id,
+					'name' => $plugin['name'],
+					'title' => $plugin['title'],
+					'version' => $plugin['version_max'],
+					'description' => $plugin['design_description'],
+					'logo' => $plugin['logo'],
+					'url' => $plugin['url'],
+					'is_bought' => $plugin['is_bought'],
+					'is_install' => false,
+					'service_expiretime' => $plugin['service_expiretime'],
+					'support_types' => $supports
+				);
+				array_push($plugins, $plugin_info);
+			} else {
+				$plugin_info = array(
+					'cloud_id' => $id,
+					'name' => $plugin['name'],
+					'title' => $plugin_exist['title'],
+					'version' => $plugin_exist['version'],
+					'description' => $plugin_exist['description'],
+					'logo' => $plugin_exist['logo'],
+					'url' => $plugin['url'],
+					'is_bought' => $plugin['is_bought'],
+					'is_install' => true,
+					'service_expiretime' => $plugin['service_expiretime'],
+					'support_types' => array()
+				);
+				array_unshift($plugins, $plugin_info);
+			}
+		}
+		if (empty($plugins)) {
+			return $plugins;
+		}
+		cache_write($cachekey, $plugins);
+	}
+
+	return $plugins;
+}

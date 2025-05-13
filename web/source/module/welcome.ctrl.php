@@ -10,7 +10,7 @@ load()->model('reply');
 load()->model('miniapp');
 load()->model('cache');
 
-$dos = array('display', 'welcome_display', 'get_module_replies', 'get_module_covers');
+$dos = array('display', 'welcome_display', 'get_module_replies', 'get_module_covers', 'get_module_plugins');
 $do = in_array($do, $dos) ? $do : 'display';
 
 $module_name = safe_gpc_string($_GPC['module_name'] ?? $_GPC['m']);
@@ -111,4 +111,16 @@ if ('get_module_covers' == $do) {
         $cover_eid = $cover_eid['eid'];
     }
     iajax(0, array('covers' => $covers, 'cover_eid' => $cover_eid));
+}
+
+if ('get_module_plugins' == $do) {
+	if (!empty($module['from']) && 'cloud' != $module['from']) {
+		iajax(0, []);
+	}
+	$plugins = module_plugin_list($module_name);
+	if (is_error($plugins)) {
+		iajax(-1, $plugins['message']);
+	}
+
+	iajax(0, $plugins);
 }

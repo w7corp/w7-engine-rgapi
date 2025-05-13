@@ -345,6 +345,10 @@ function cache_key_all() {
                 'group' => '',
             ),
 
+            'plugins' => array('key' => 'plugins:%module_name', 'group' => ''),
+
+            'cloud_transtoken_spare' => array('key' => 'cloud_transtoken_spare', 'group' => ''),
+
             'local_dev_modules' => array(
                 // 本地应用
                 'key' => 'local_dev_modules',

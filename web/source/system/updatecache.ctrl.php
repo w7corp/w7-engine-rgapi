@@ -8,10 +8,10 @@ defined('IN_IA') or exit('Access Denied');
 load()->model('cache');
 load()->model('setting');
 
-$dos = array('update_cache');
+$dos = array('updatecache');
 $do = in_array($do, $dos) ? $do : '';
 
-if ('update_cache' == $do) {
+if ('updatecache' == $do) {
     cache_updatecache();
     if ($_W['isajax']) {
         iajax(0, '更新缓存成功！', '');

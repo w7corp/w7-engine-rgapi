@@ -165,6 +165,7 @@ if (!$_W['isajax']) {
 $_W['uniacid'] = $_W['uid'] = 0;
 
 setting_load();
+$_W['setting']['copyright']['cloud_status'] = empty(getenv('CLOUD_STATUS')) ? STATUS_OFF : STATUS_ON;
 if (empty($_W['setting']['upload'])) {
     $_W['setting']['upload'] = array_merge($_W['config']['upload']);
 }

@@ -231,7 +231,7 @@ function buildframes($framename = '') {
             'title' => '支付参数',
             'icon' => 'wi wi-user',
             'url' => url('profile/payment/display', ['module_name' => $modulename]),
-            'is_display' => 1,
+            'is_display' => empty($module['main_module']) ? true : false,
         ];
         if (MODULE_SUPPORT_WXAPP == $module['wxapp_support']) {
             $frames['account']['section']['platform_module_common']['menu']['platform_module_publish'] = [
