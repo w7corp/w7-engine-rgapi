@@ -9,17 +9,6 @@
 	<div class="form-files-box">
 		<div class="form-files we7-margin-bottom">
 					<div class="form-file header">基本设置</div>
-					<!-- 网站名称 start -->
-					<div class="form-files">
-						<div class="form-file">
-							<div class="form-label">网站名称</div>
-							<div class="form-value" ng-bind="settings.site_name"></div>
-							<div class="form-edit">
-								<we7-modal-form label="'网站名称'" on-confirm="saveSetting(formValue, 'site_name')" value="settings.site_name"></we7-modal-form>
-							</div>
-						</div>
-					</div>
-					<!-- 网站名称 end -->
 					<!-- 日志开关 start -->
 					<div class="form-file">
 						<div class="form-label">日志开关</div>
@@ -29,34 +18,6 @@
 						</div>
 					</div>
 					<!-- 日志开关 end -->
-					<!-- 缩略图标 start -->
-					<div class="form-file">
-						<div class="form-label" >favorite icon</div>
-						<div class="form-value">
-							<img src="{php echo to_global_media($settings['icon'])}" alt="">
-							<span class="we7-margin-left">建议尺寸16*16px,是指显示在浏览器地址栏,收藏夹或者导航条的图标</span>
-						</div>
-						<div class="form-edit">
-							<a href="javascript:;" ng-click="changePicture('icon')">修改</a>
-						</div>
-					</div>
-					<!-- 缩略图标 end -->
-					<!-- 后台LOGO start -->
-					<div class="form-file">
-						<div class="form-label" >LOGO</div>
-						<div class="form-value">
-							{if !empty($settings['logo'])}
-							<img src="{php echo $settings['logo']}" alt="">
-							{else}
-							<img src="" alt="">
-							{/if}
-							<span class="we7-margin-left">此logo是指在左上角显示的logo。(最佳尺寸：宽度最宽为40px)</span>
-						</div>
-						<div class="form-edit">
-							<a href="javascript:;" ng-click="changePicture('logo')">修改</a>
-						</div>
-					</div>
-					<!-- 后台LOGO start -->
 				</div>
 	</div>
 </div>
