@@ -13,6 +13,6 @@ RUN echo '#!/bin/sh' >> start.sh \
     && echo "tail -f /dev/null" >> start.sh
 CMD ["sh", "start.sh"]
 
-RUN rm -rf Dockerfile .git \
+RUN rm -rf Dockerfile .git .env \
     && chown -R 1000:1000 $WEB_PATH \
     && chmod -R 755 $WEB_PATH

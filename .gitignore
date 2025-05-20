@@ -7,3 +7,4 @@ attachment/**/*
 data/logs/
 data/tpl/
 data/install.lock
+.env
